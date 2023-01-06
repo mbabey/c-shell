@@ -28,4 +28,10 @@ Ensure(input, get_path)
 
 }
 
+TestSuite *input_tests(void)
+{
+    return NULL;
+}
+
+
 // NOLINTEND

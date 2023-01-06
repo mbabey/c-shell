@@ -28,4 +28,10 @@ Ensure(command, get_path)
 
 }
 
+TestSuite *command_tests(void)
+{
+    return NULL;
+}
+
+
 // NOLINTEND

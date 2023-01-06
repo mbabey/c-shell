@@ -28,4 +28,9 @@ Ensure(shell_impl, get_path)
 
 }
 
+TestSuite *shell_impl_tests(void)
+{
+    return NULL;
+}
+
 // NOLINTEND
