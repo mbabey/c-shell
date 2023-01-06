@@ -22,7 +22,6 @@ set(TEST_SOURCE_LIST
         ${SOURCE_DIR}/input_tests.c
         ${SOURCE_DIR}/main.c
         ${SOURCE_DIR}/shell_impl_tests.c
-        ${SOURCE_DIR}/shell_tests.c
         ${SOURCE_DIR}/util_tests.c
         )
 

@@ -23,14 +23,19 @@ AfterEach(execute)
     dc_error_reset(error);
 }
 
-Ensure(execute, get_path)
+Ensure(execute, execute)
 {
 
 }
 
 TestSuite *execute_tests(void)
 {
-    return NULL;
+    TestSuite *suite;
+    
+    suite = create_test_suite();
+    add_test_with_context(suite, execute, execute);
+    
+    return suite;
 }
 
 

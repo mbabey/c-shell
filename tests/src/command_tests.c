@@ -23,14 +23,19 @@ AfterEach(command)
     dc_error_reset(error);
 }
 
-Ensure(command, get_path)
+Ensure(command, parse_command)
 {
 
 }
 
 TestSuite *command_tests(void)
 {
-    return NULL;
+    TestSuite *suite;
+    
+    suite = create_test_suite();
+    add_test_with_context(suite, command, parse_command);
+    
+    return suite;
 }
 
 

@@ -30,7 +30,12 @@ Ensure(util, get_path)
 
 TestSuite *util_tests(void)
 {
-    return NULL;
+    TestSuite *suite;
+    
+    suite = create_test_suite();
+    add_test_with_context(suite, util, get_path);
+    
+    return suite;
 }
 
 
