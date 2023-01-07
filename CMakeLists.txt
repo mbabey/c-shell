@@ -17,24 +17,24 @@ set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCE_LIST
-        ${SOURCE_DIR}/builtins.c
-        ${SOURCE_DIR}/command.c
-        ${SOURCE_DIR}/execute.c
-        ${SOURCE_DIR}/input.c
-        ${SOURCE_DIR}/shell.c
-        ${SOURCE_DIR}/shell_impl.c
+#        ${SOURCE_DIR}/builtins.c
+#        ${SOURCE_DIR}/command.c
+#        ${SOURCE_DIR}/execute.c
+#        ${SOURCE_DIR}/input.c
+#        ${SOURCE_DIR}/shell.c
+#        ${SOURCE_DIR}/shell_impl.c
         ${SOURCE_DIR}/util.c
         )
-SET(SOURCE_MAIN ${SOURCE_DIR}/main.c
-        )
+#SET(SOURCE_MAIN ${SOURCE_DIR}/main.c
+#        )
 set(HEADER_LIST
-        ${INCLUDE_DIR}/builtins.h
-        ${INCLUDE_DIR}/command.h
-        ${INCLUDE_DIR}/execute.h
-        ${INCLUDE_DIR}/input.h
-        ${INCLUDE_DIR}/shell.h
-        ${INCLUDE_DIR}/shell_impl.h
-        ${INCLUDE_DIR}/state.h
+#        ${INCLUDE_DIR}/builtins.h
+#        ${INCLUDE_DIR}/command.h
+#        ${INCLUDE_DIR}/execute.h
+#        ${INCLUDE_DIR}/input.h
+#        ${INCLUDE_DIR}/shell.h
+#        ${INCLUDE_DIR}/shell_impl.h
+#        ${INCLUDE_DIR}/state.h
         ${INCLUDE_DIR}/util.h
         )
 
