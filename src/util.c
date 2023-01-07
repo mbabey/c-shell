@@ -2,7 +2,7 @@
 
 const char *get_prompt(const struct dc_env *env, struct dc_error *err)
 {
-    return "$";
+    return "$ ";
 }
 
 char *get_path(const struct dc_env *env, struct dc_error *err)

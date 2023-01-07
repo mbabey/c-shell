@@ -29,19 +29,47 @@ AfterEach(util)
 Ensure(util, get_prompt)
 {
     const char *envname = "PS1";
-    const char *envval  = NULL;
     char       *prompt;
     
     prompt = dc_getenv(environ, envname);
-    
     if (prompt != NULL)
     {
-        dc_setenv(environ, error, envname, envval, true);
+        dc_setenv(environ, error, envname, NULL, true);
     }
     
     prompt = get_prompt(environ, error);
+    assert_that(prompt, is_equal_to_string("$ ")); // Test when PS1 not set
     
-    assert_that(prompt, is_equal_to_string("$"));
+    dc_setenv(environ, error, envname, "ABC", true);
+    
+    prompt = get_prompt(environ, error);
+    assert_that(prompt, is_equal_to_string("ABC")); // Test when PS1 set
+}
+
+Ensure(util, get_path)
+{
+    const char *envname = "PATH";
+    
+    static const char *paths[] =
+            {
+                "",
+                ".",
+                "abc",
+                "abc:def",
+                "/usr/bin",
+                "/usr/bin:/usr/local/bin:/bin",
+                ":",
+                NULL
+            };
+    
+    for (char *path = *paths; path != NULL; ++path)
+    {
+        char *env_path;
+    
+        dc_setenv(environ, error, envname, path, true);
+        env_path = dc_getenv(environ, envname);
+        assert_that(env_path, is_equal_to_string(path)); // Test PATH=<empty-string>
+    }
 }
 
 TestSuite *util_tests(void)
