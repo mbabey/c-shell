@@ -3,7 +3,7 @@
 
 #include <cgreen/cgreen.h>
 
-TestSuite *buitlin_tests(void);
+TestSuite *builtin_tests(void);
 
 TestSuite *command_tests(void);
 
