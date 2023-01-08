@@ -88,6 +88,7 @@ Ensure(util, do_reset_state)
 
 Ensure(util, state_to_string)
 {
+    char *state_str;
     struct state state;
     
     state.in_redirect_regex = NULL;
@@ -101,15 +102,15 @@ Ensure(util, state_to_string)
     state.command = NULL;
     state.fatal_error = false;
     
-    assert_that(state_to_string(environ, &state),
-                is_equal_to_string(
-                        "Current line: NULL\n"
-                        "Current line length: 0\n"
-                        "Current command: NULL\n"
-                        "Fatal error: false\n"
-                        ));
+    state_str = state_to_string(environ, error, &state);
+    assert_that(state_str, is_equal_to_string("Current line: NULL\nFatal error: false\n"));
+    free(state_str);
+    
+    state.current_line = "";
+    state_str = state_to_string(environ, error, &state);
+    assert_that(state_str, is_equal_to_string("Current line: \nFatal error: false\n"));
+    free(state_str);
 }
-
 
 TestSuite *util_tests(void)
 {
@@ -125,6 +126,5 @@ TestSuite *util_tests(void)
     
     return suite;
 }
-
 
 // NOLINTEND

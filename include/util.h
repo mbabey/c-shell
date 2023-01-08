@@ -77,6 +77,6 @@ void display_state(const struct dc_env *env, const struct state *state, FILE *st
  * @param state the state to display
  * @return the state as a string
  */
-char *state_to_string(const struct dc_env *env, const struct state *state);
+char *state_to_string(const struct dc_env *env, struct dc_error *err, const struct state *state);
 
 #endif //CSHELL_TESTS_UTIL_H
