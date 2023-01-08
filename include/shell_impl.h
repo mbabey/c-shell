@@ -105,4 +105,28 @@ int parse_commands(const struct dc_env *env, struct dc_error *err, void *arg);
  */
 int execute_commands(const struct dc_env *env, struct dc_error *err, void *arg);
 
+/**
+ * do_exit
+ * <p>
+ * Handle the exit command (see do_reset_state)
+ * </p>
+ * @param env the environment
+ * @param err the error object
+ * @param arg the current struct state
+ * @return DESTROY_STATE
+ */
+int do_exit(const struct dc_env *env, struct dc_error *err, void *arg);
+
+/**
+ * handle_error
+ * <p>
+ * Print the err->message to stderr and reset the err (see dc_err_reset)
+ * </p>
+ * @param env the environment
+ * @param err the error object
+ * @param arg the current struct state
+ * @return RESET_STATE or DESTROY_STATE (if state->fatal_error)
+ */
+int handle_error(const struct dc_env *env, struct dc_error *err, void *arg);
+
 #endif //CSH_SHELL_IMPL_H
