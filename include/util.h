@@ -66,7 +66,7 @@ void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state
  * @param state the state to display
  * @param stream the stream on which to display the state
  */
-void display_state(const struct dc_env *env, const struct state *state, FILE *stream);
+void display_state(const struct dc_env *env, struct dc_error *err, const struct state *state, FILE *stream);
 
 /**
  * state_to_string

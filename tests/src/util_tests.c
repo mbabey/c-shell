@@ -110,6 +110,11 @@ Ensure(util, state_to_string)
     state_str = state_to_string(environ, error, &state);
     assert_that(state_str, is_equal_to_string("Current line: \nFatal error: false\n"));
     free(state_str);
+    
+    state.current_line = "hello";
+    state_str = state_to_string(environ, error, &state);
+    assert_that(state_str, is_equal_to_string("Current line: hello\nFatal error: false\n"));
+    free(state_str);
 }
 
 TestSuite *util_tests(void)

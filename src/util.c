@@ -3,6 +3,14 @@
 #include <dc_c/dc_stdlib.h>
 #include <string.h>
 
+/**
+ * bool_to_string
+ * <p>
+ * Convert a boolean to a string, either "true" or "false".
+ * </p>
+ * @param boolean the boolean to convert
+ * @return the boolean as a string
+ */
 inline const char *bool_to_string(bool boolean);
 
 const char *get_prompt(const struct dc_env *env, struct dc_error *err)
@@ -25,9 +33,13 @@ void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state
 
 }
 
-void display_state(const struct dc_env *env, const struct state *state, FILE *stream)
+void display_state(const struct dc_env *env, struct dc_error *err, const struct state *state, FILE *stream)
 {
-
+    char *state_str;
+    
+    state_str = state_to_string(env, err, state);
+    fprintf(stream, "%s", state_str);
+    free(state_str);
 }
 
 char *state_to_string(const struct dc_env *env, struct dc_error *err, const struct state *state)
@@ -39,7 +51,7 @@ char *state_to_string(const struct dc_env *env, struct dc_error *err, const stru
     len = (state->current_line == NULL) ? strlen("Current line: NULL\n") : strlen("Current line: \n");
     len += (state->fatal_error) ? strlen("Fatal error: true\n") : strlen("Fatal error: false\n");
     
-    line = dc_malloc(env, err, len + 1);
+    line = dc_malloc(env, err, len + state->current_line_length + 1);
     
     /* Print the line. */
     if (state->current_line == NULL)
@@ -49,7 +61,7 @@ char *state_to_string(const struct dc_env *env, struct dc_error *err, const stru
     } else
     {
         sprintf(line, "Current line: %s\n"
-                      "Fatal error: %s\n",state->current_line, bool_to_string(state->fatal_error));
+                      "Fatal error: %s\n", state->current_line, bool_to_string(state->fatal_error));
     }
     
     return line;
