@@ -34,7 +34,7 @@ set(HEADER_LIST
 #        ${INCLUDE_DIR}/input.h
 #        ${INCLUDE_DIR}/shell.h
 #        ${INCLUDE_DIR}/shell_impl.h
-#        ${INCLUDE_DIR}/state.h
+        ${INCLUDE_DIR}/state.h
         ${INCLUDE_DIR}/util.h
         )
 

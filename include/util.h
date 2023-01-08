@@ -48,7 +48,7 @@ char **parse_path(const struct dc_env *env, struct dc_error *err, char *path_str
 /**
  * do_reset_state
  * <p>
- * Reset the state for the next read by freeing dynamically allocated memory
+ * Reset the state for the next read by freeing dynamically allocated memory.
  * </p>
  * @param env the environment
  * @param err the error object
@@ -59,12 +59,23 @@ void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state
 /**
  * display_state
  * <p>
- * Display the state values to the parameter stream
+ * Display the state values to the parameter stream.
  * </p>
  * @param env the environment
  * @param state the state to display
  * @param stream the stream on which to display the state
  */
 void display_state(const struct dc_env *env, const struct state *state, FILE *stream);
+
+/**
+ * state_to_string
+ * <p>
+ * Display the state value as a string.
+ * </p>
+ * @param env the environment
+ * @param state the state to display
+ * @return the state as a string
+ */
+char *state_to_string(const struct dc_env *env, const struct state *state);
 
 #endif //CSHELL_TESTS_UTIL_H
