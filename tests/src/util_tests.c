@@ -85,11 +85,13 @@ Ensure(util, parse_path)
     test_parse_path("a", strs_to_array(2, "a", NULL));
     test_parse_path("a:b", strs_to_array(3, "a", "b", NULL));
     test_parse_path("a:bcde:f", strs_to_array(4, "a", "bcde", "f", NULL));
+    test_parse_path("a::b", strs_to_array(3, "a", "b", NULL));
 }
 
 void test_parse_path(const char *path_str, char **dirs)
 {
     char **path_dirs;
+    size_t i;
     //    printf("\"%s\"\n", path_str);
 //
 //    if (dirs)
@@ -102,6 +104,13 @@ void test_parse_path(const char *path_str, char **dirs)
 
     path_dirs = parse_path(environ, error, path_str);
 
+    for (i = 0; *(dirs + i) && *(path_dirs + i); ++i)
+    {
+        assert_that(*(path_dirs + i), is_equal_to_string(*(dirs + i)));
+    }
+    
+    assert_that(*(dirs + i), is_null);
+    assert_that(*(path_dirs + i), is_null);
 }
 
 char **strs_to_array(size_t n, ...)
