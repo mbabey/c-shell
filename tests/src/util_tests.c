@@ -83,7 +83,19 @@ Ensure(util, parse_path)
 
 Ensure(util, do_reset_state)
 {
-
+    char *state_str;
+    struct state state;
+    
+    state.in_redirect_regex = NULL;
+    state.out_redirect_regex = NULL;
+    state.err_redirect_regex = NULL;
+    state.path = NULL;
+    state.prompt = NULL;
+    state.max_line_length = 0;
+    state.current_line = NULL;
+    state.current_line_length = 0;
+    state.command = NULL;
+    state.fatal_error = false;
 }
 
 Ensure(util, state_to_string)
@@ -114,6 +126,12 @@ Ensure(util, state_to_string)
     state.current_line = "hello";
     state_str = state_to_string(environ, error, &state);
     assert_that(state_str, is_equal_to_string("Current line: hello\nFatal error: false\n"));
+    free(state_str);
+    
+    state.current_line = "world";
+    state.fatal_error = true;
+    state_str = state_to_string(environ, error, &state);
+    assert_that(state_str, is_equal_to_string("Current line: world\nFatal error: true\n"));
     free(state_str);
 }
 
