@@ -40,4 +40,15 @@ struct command
 void parse_command(const struct dc_env *env, struct dc_error *err,
         struct state *state, struct command *command);
 
+/**
+ * do_reset_command
+ * <p>
+ * Reset the command struct by freeing dynamically allocated memory and clearing variables.
+ * </p>
+ * @param env the environment
+ * @param err the error object
+ * @param command the command object to reset
+ */
+void do_reset_command(const struct dc_env *env, struct dc_error *err, struct command *command);
+
 #endif //CSH_COMMAND_H

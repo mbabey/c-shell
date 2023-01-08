@@ -49,11 +49,12 @@ char **parse_path(const struct dc_env *env, struct dc_error *err, char *path_str
 /**
  * do_reset_state
  * <p>
- * Reset the state for the next read by freeing dynamically allocated memory.
+ * Reset the state for the next read by freeing dynamically allocated memory
+ * of impermanent settings. Reset the error object.
  * </p>
  * @param env the environment
  * @param err the error object
- * @param state the state
+ * @param state the state to reset
  */
 void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state *state);
 
