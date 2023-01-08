@@ -34,6 +34,7 @@ void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state
     state->current_line_length = 0;
     state->fatal_error = false;
     do_reset_command(env, err, state->command);
+    dc_error_reset(err);
 }
 
 void display_state(const struct dc_env *env, struct dc_error *err, const struct state *state, FILE *stream)

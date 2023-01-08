@@ -1,12 +1,13 @@
 #include "../include/tests.h"
 #include "../../include/util.h"
-#include <dc_posix/dc_stdlib.h>
+#include "../../include/command.h"
 #include <dc_c/dc_stdlib.h>
+#include <dc_posix/dc_stdlib.h>
 
 
 // NOLINTBEGIN
 
-static void check_state_reset(const struct dc_error error, const struct state state, FILE in, FILE out, FILE err);
+static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err);
 
 static void test_parse_path(const char path_str, char *dirs);
 
@@ -83,7 +84,6 @@ Ensure(util, parse_path)
 
 Ensure(util, do_reset_state)
 {
-    char *state_str;
     struct state state;
     
     state.in_redirect_regex = NULL;
@@ -96,6 +96,32 @@ Ensure(util, do_reset_state)
     state.current_line_length = 0;
     state.command = NULL;
     state.fatal_error = false;
+    
+    do_reset_state(environ, error, &state);
+    check_state_reset(&state, NULL, NULL, NULL);
+    
+    state.current_line = strdup("");
+    state.current_line_length = strlen(state.current_line);
+    do_reset_state(environ, error, &state);
+    check_state_reset(&state, NULL, NULL, NULL);
+    
+    state.current_line = strdup("ls");
+    state.current_line_length = strlen(state.current_line);
+    state.command = dc_calloc(environ, error, 1, sizeof(struct command));
+    do_reset_state(environ, error, &state);
+    check_state_reset(&state, NULL, NULL, NULL);
+    
+    DC_ERROR_RAISE_ERRNO(error, E2BIG);
+    do_reset_state(environ, error, &state);
+    check_state_reset(&state, NULL, NULL, NULL);
+}
+
+void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err)
+{
+    assert_that(state->current_line, is_null);
+    assert_that(state->current_line_length, is_equal_to(0));
+    assert_that(state->command, is_null);
+    assert_that(dc_error_get_message(error), is_equal_to_string("*there is no error message set*"));
 }
 
 Ensure(util, state_to_string)
