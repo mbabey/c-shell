@@ -9,7 +9,9 @@
 
 static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err);
 
-static void test_parse_path(const char path_str, char *dirs);
+static void test_parse_path(const char *path_str, char **dirs);
+
+static char **strs_to_array(size_t n, ...);
 
 Describe(util);
 
@@ -79,7 +81,48 @@ Ensure(util, get_path)
 
 Ensure(util, parse_path)
 {
+    test_parse_path("", strs_to_array(1, NULL));
+    test_parse_path("a", strs_to_array(2, "a", NULL));
+    test_parse_path("a:b", strs_to_array(3, "a", "b", NULL));
+    test_parse_path("a:bcde:f", strs_to_array(4, "a", "bcde", "f", NULL));
+}
 
+void test_parse_path(const char *path_str, char **dirs)
+{
+    printf("\"%s\"\n", path_str);
+    
+    if (dirs)
+    {
+        for (size_t i = 0; *(dirs + i); ++i)
+        {
+            printf("%s\n", *(dirs + i));
+        }
+    }
+}
+
+char **strs_to_array(size_t n, ...)
+{
+    char **array;
+    va_list args;
+    
+    array = calloc(n, sizeof(char *));
+    va_start(args, n);
+    
+    for (size_t i = 0; i < n; ++i)
+    {
+        char *str;
+        
+        str = va_arg(args, char *);
+     
+        if (str)
+        {
+            *(array + i) = strdup(str);
+        }
+    }
+    
+    va_end(args);
+    
+    return array;
 }
 
 Ensure(util, do_reset_state)
