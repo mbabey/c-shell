@@ -44,7 +44,7 @@ char *get_path(const struct dc_env *env, struct dc_error *err);
  * @param path_str the path var
  * @return the directories that make up the path
  */
-char **parse_path(const struct dc_env *env, struct dc_error *err, char *path_str);
+char **parse_path(const struct dc_env *env, struct dc_error *err, const char *path_str);
 
 /**
  * do_reset_state

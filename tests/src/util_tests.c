@@ -89,15 +89,19 @@ Ensure(util, parse_path)
 
 void test_parse_path(const char *path_str, char **dirs)
 {
-    printf("\"%s\"\n", path_str);
-    
-    if (dirs)
-    {
-        for (size_t i = 0; *(dirs + i); ++i)
-        {
-            printf("%s\n", *(dirs + i));
-        }
-    }
+    char **path_dirs;
+    //    printf("\"%s\"\n", path_str);
+//
+//    if (dirs)
+//    {
+//        for (size_t i = 0; *(dirs + i); ++i)
+//        {
+//            printf("%s\n", *(dirs + i));
+//        }
+//    }
+
+    path_dirs = parse_path(environ, error, path_str);
+
 }
 
 char **strs_to_array(size_t n, ...)

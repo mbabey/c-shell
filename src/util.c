@@ -23,7 +23,7 @@ char *get_path(const struct dc_env *env, struct dc_error *err)
     return NULL;
 }
 
-char **parse_path(const struct dc_env *env, struct dc_error *err, char *path_str)
+char **parse_path(const struct dc_env *env, struct dc_error *err, const char *path_str)
 {
     return NULL;
 }
