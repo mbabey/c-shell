@@ -7,6 +7,7 @@
 
 #include <dc_env/env.h>
 #include <dc_error/error.h>
+#include <stdio.h>
 
 /**
  * get_prompt
@@ -43,5 +44,27 @@ char *get_path(const struct dc_env *env, struct dc_error *err);
  * @return the directories that make up the path
  */
 char **parse_path(const struct dc_env *env, struct dc_error *err, char *path_str);
+
+/**
+ * do_reset_state
+ * <p>
+ * Reset the state for the next read by freeing dynamically allocated memory
+ * </p>
+ * @param env the environment
+ * @param err the error object
+ * @param state the state
+ */
+void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state *state);
+
+/**
+ * display_state
+ * <p>
+ * Display the state values to the parameter stream
+ * </p>
+ * @param env the environment
+ * @param state the state to display
+ * @param stream the stream on which to display the state
+ */
+void display_state(const struct dc_env *env, const struct state *state, FILE *stream);
 
 #endif //CSHELL_TESTS_UTIL_H

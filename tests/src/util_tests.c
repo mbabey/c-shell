@@ -51,25 +51,34 @@ Ensure(util, get_path)
     const char *envname = "PATH";
     
     static const char *paths[] =
-            {
-                "",
-                ".",
-                "abc",
-                "abc:def",
-                "/usr/bin",
-                "/usr/bin:/usr/local/bin:/bin",
-                ":",
-                NULL
-            };
+                              {
+                                      "",
+                                      ".",
+                                      "abc",
+                                      "abc:def",
+                                      "/usr/bin",
+                                      "/usr/bin:/usr/local/bin:/bin",
+                                      ":",
+                                      NULL
+                              };
     
-    for (char *path = *paths; path != NULL; ++path)
+    char *env_path;
+    
+    dc_setenv(environ, error, envname, NULL, true);
+    env_path = dc_getenv(environ, envname);
+    assert_that(env_path, is_null); // Test PATH=NULL
+    
+    for (char *path = *paths; path != NULL; ++path) // Test PATH=<string>
     {
-        char *env_path;
-    
         dc_setenv(environ, error, envname, path, true);
         env_path = dc_getenv(environ, envname);
-        assert_that(env_path, is_equal_to_string(path)); // Test PATH=<empty-string>
+        assert_that(env_path, is_equal_to_string(path));
     }
+}
+
+Ensure(util, reset_state)
+{
+
 }
 
 TestSuite *util_tests(void)
@@ -78,6 +87,8 @@ TestSuite *util_tests(void)
     
     suite = create_test_suite();
     add_test_with_context(suite, util, get_prompt);
+    add_test_with_context(suite, util, get_path);
+    add_test_with_context(suite, util, do_reset_state);
     
     return suite;
 }
