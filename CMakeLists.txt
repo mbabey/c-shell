@@ -29,7 +29,7 @@ set(SOURCE_LIST
 #        )
 set(HEADER_LIST
 #        ${INCLUDE_DIR}/builtins.h
-#        ${INCLUDE_DIR}/command.h
+        ${INCLUDE_DIR}/command.h
 #        ${INCLUDE_DIR}/execute.h
 #        ${INCLUDE_DIR}/input.h
 #        ${INCLUDE_DIR}/shell.h

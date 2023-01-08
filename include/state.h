@@ -3,6 +3,7 @@
 
 #include <regex.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 /**
  * struct state

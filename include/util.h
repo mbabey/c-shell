@@ -5,6 +5,7 @@
 #ifndef CSHELL_TESTS_UTIL_H
 #define CSHELL_TESTS_UTIL_H
 
+#include "state.h"
 #include <dc_env/env.h>
 #include <dc_error/error.h>
 #include <stdio.h>

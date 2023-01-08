@@ -88,7 +88,26 @@ Ensure(util, do_reset_state)
 
 Ensure(util, state_to_string)
 {
-
+    struct state state;
+    
+    state.in_redirect_regex = NULL;
+    state.out_redirect_regex = NULL;
+    state.err_redirect_regex = NULL;
+    state.path = NULL;
+    state.prompt = NULL;
+    state.max_line_length = 0;
+    state.current_line = NULL;
+    state.current_line_length = 0;
+    state.command = NULL;
+    state.fatal_error = false;
+    
+    assert_that(state_to_string(environ, &state),
+                is_equal_to_string(
+                        "Current line: NULL\n"
+                        "Current line length: 0\n"
+                        "Current command: NULL\n"
+                        "Fatal error: false\n"
+                        ));
 }
 
 
