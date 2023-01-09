@@ -26,7 +26,7 @@ AfterEach(command)
 
 Ensure(command, parse_command)
 {
-
+    
 }
 
 TestSuite *command_tests(void)

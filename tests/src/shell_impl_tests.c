@@ -23,6 +23,8 @@ static void test_read_commands(const char *test_input, const char *expected_comm
 
 static void test_separate_commands(const char *test_input, const char *expected_command, int read_expected_state);
 
+static void test_parse_commands(const char *test_input);
+
 Describe(shell_impl);
 
 static struct dc_error *error;
@@ -255,6 +257,8 @@ static void test_separate_commands(const char *test_input, const char *expected_
     assert_that(next_state, is_equal_to(read_expected_state));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
+    assert_that(state.current_line, is_equal_to_string(expected_command));
+    assert_that(state.current_line_length, is_equal_to(strlen(state.current_line)));
     
     if (next_state == RESET_STATE)
     {
@@ -282,7 +286,49 @@ static void test_separate_commands(const char *test_input, const char *expected_
 
 Ensure(shell_impl, parse_commands)
 {
+    test_parse_commands("hello\n");
+}
 
+static void test_parse_commands(const char *test_input)
+{
+    struct state state;
+    FILE         *in;
+    FILE         *out;
+    size_t       in_size;
+    char         *in_buf;
+    char         out_buf[BUFSIZ];
+    int          next_state;
+    
+    in_buf  = strdup(test_input);
+    in_size = strlen(in_buf) + 1;
+    in      = fmemopen(in_buf, in_size, "r");
+    out     = fmemopen(out_buf, sizeof(out_buf), "w");
+    
+    state.stdin  = in;
+    state.stdout = out;
+    state.stderr = stderr;
+    dc_unsetenv(environ, error, "PS1");
+    next_state = init_state(environ, error, &state);
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    next_state = read_commands(environ, error, &state);
+    assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    next_state = separate_commands(environ, error, &state);
+    assert_that(next_state, is_equal_to(PARSE_COMMANDS));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    next_state = parse_commands(environ, error, &state);
+    assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    
 }
 
 Ensure(shell_impl, execute_commands)
