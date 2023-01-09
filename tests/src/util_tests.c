@@ -126,6 +126,10 @@ Ensure(util, do_reset_state)
     DC_ERROR_RAISE_ERRNO(error, E2BIG);
     do_reset_state(environ, error, &state);
     check_state_reset(&state, NULL, NULL, NULL);
+    
+    state.fatal_error = true;
+    do_reset_state(environ, error, &state);
+    check_state_reset(&state, NULL, NULL, NULL);
 }
 
 void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err)
@@ -133,6 +137,7 @@ void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err
     assert_that(state->current_line, is_null);
     assert_that(state->current_line_length, is_equal_to(0));
     assert_that(state->command, is_null);
+    assert_false(state->fatal_error);
     assert_that(dc_error_get_message(error), is_equal_to_string("*there is no error message set*"));
 }
 

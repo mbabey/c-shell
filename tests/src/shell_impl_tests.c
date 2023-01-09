@@ -14,6 +14,8 @@ static void test_init_state(const char *expected_prompt);
 
 static void test_destroy_state(bool initial_fatal);
 
+static void test_reset_state(const char *expected_prompt, bool initial_fatal);
+
 Describe(shell_impl);
 
 static struct dc_error *error;
@@ -35,8 +37,8 @@ Ensure(shell_impl, init_state)
     dc_unsetenv(environ, error, "PS1");
     test_init_state("$ ");
     
-    dc_setenv(environ, error, "PS1", "gabagool", true);
-    test_init_state("gabagool");
+    dc_setenv(environ, error, "PS1", "gabagool: ", true);
+    test_init_state("gabagool: ");
 }
 
 static void test_init_state(const char *expected_prompt)
@@ -51,7 +53,7 @@ static void test_init_state(const char *expected_prompt)
     next_state = init_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
-    assert_false(state.fatal_error);
+    
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     assert_that(state.in_redirect_regex, is_not_null);
     assert_that(state.out_redirect_regex, is_not_null);
@@ -62,6 +64,7 @@ static void test_init_state(const char *expected_prompt)
     assert_that(state.current_line, is_null);
     assert_that(state.current_line_length, is_equal_to(0));
     assert_that(state.command, is_null);
+    assert_false(state.fatal_error);
 }
 
 Ensure(shell_impl, destroy_state)
@@ -83,8 +86,7 @@ static void test_destroy_state(bool initial_fatal)
     next_state = destroy_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
-    state.fatal_error = initial_fatal;
-    assert_false(state.fatal_error);
+    
     assert_that(next_state, is_equal_to(EXIT));
     assert_that(state.in_redirect_regex, is_null);
     assert_that(state.out_redirect_regex, is_null);
@@ -95,11 +97,50 @@ static void test_destroy_state(bool initial_fatal)
     assert_that(state.current_line, is_null);
     assert_that(state.current_line_length, is_equal_to(0));
     assert_that(state.command, is_null);
+    state.fatal_error = initial_fatal;
+    assert_false(state.fatal_error);
 }
 
 Ensure(shell_impl, reset_state)
 {
+    dc_unsetenv(environ, error, "PS1");
+    test_reset_state("$ ", false);
+    
+    dc_setenv(environ, error, "PS1", "hahaha: ", true);
+    test_reset_state("hahaha: ", false);
+    
+    dc_unsetenv(environ, error, "PS1");
+    test_reset_state("$ ", true);
+    
+    dc_setenv(environ, error, "PS1", "hahaha: ", true);
+    test_reset_state("hahaha: ", true);
+}
 
+static void test_reset_state(const char *expected_prompt, bool initial_fatal)
+{
+    struct state state;
+    int          next_state;
+    long         line_length;
+    
+    line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
+    assert_that_expression(line_length >= 0);
+    
+    next_state = init_state(environ, error, &state);
+    
+    assert_false(dc_error_has_no_error(error));
+    
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
+    assert_that(state.in_redirect_regex, is_not_null);
+    assert_that(state.out_redirect_regex, is_not_null);
+    assert_that(state.err_redirect_regex, is_not_null);
+    assert_that(state.path, is_not_null);
+    assert_that(state.prompt, is_equal_to_string(expected_prompt));
+    assert_that(state.max_line_length, is_equal_to(line_length));
+    assert_that(state.current_line, is_null);
+    assert_that(state.current_line_length, is_equal_to(0));
+    assert_that(state.command, is_null);
+    state.fatal_error = initial_fatal;
+    assert_false(state.fatal_error);
 }
 
 Ensure(shell_impl, read_commands)
