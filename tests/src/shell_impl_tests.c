@@ -286,7 +286,7 @@ static void test_separate_commands(const char *test_input, const char *expected_
 
 Ensure(shell_impl, parse_commands)
 {
-    test_parse_commands("hello\n");
+    test_parse_commands("hello\n", NULL);
 }
 
 static void test_parse_commands(const char *test_input)
