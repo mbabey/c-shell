@@ -12,6 +12,8 @@
 
 static void test_init_state(const char *expected_prompt);
 
+static void test_destroy_state(bool initial_fatal);
+
 Describe(shell_impl);
 
 static struct dc_error *error;
@@ -54,6 +56,7 @@ static void test_init_state(const char *expected_prompt)
     assert_that(state.in_redirect_regex, is_not_null);
     assert_that(state.out_redirect_regex, is_not_null);
     assert_that(state.err_redirect_regex, is_not_null);
+    assert_that(state.path, is_not_null);
     assert_that(state.prompt, is_equal_to_string(expected_prompt));
     assert_that(state.max_line_length, is_equal_to(line_length));
     assert_that(state.current_line, is_null);
@@ -63,17 +66,30 @@ static void test_init_state(const char *expected_prompt)
 
 Ensure(shell_impl, destroy_state)
 {
+    test_destroy_state(true);
+    test_destroy_state(false);
+}
+
+static void test_destroy_state(bool initial_fatal)
+{
     struct state state;
-    int next_state;
+    int          next_state;
+    long         line_length;
+    
+    line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
+    assert_that_expression(line_length >= 0);
     
     init_state(environ, error, &state);
     next_state = destroy_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
+    state.fatal_error = initial_fatal;
+    assert_false(state.fatal_error);
     assert_that(next_state, is_equal_to(EXIT));
     assert_that(state.in_redirect_regex, is_null);
     assert_that(state.out_redirect_regex, is_null);
     assert_that(state.err_redirect_regex, is_null);
+    assert_that(state.path, is_null);
     assert_that(state.prompt, is_null);
     assert_that(state.max_line_length, is_equal_to(0));
     assert_that(state.current_line, is_null);

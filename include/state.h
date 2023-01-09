@@ -18,7 +18,7 @@ struct state
     regex_t *out_redirect_regex;    // stdout regex
     regex_t *err_redirect_regex;    // stderr regex
     char **path;                    // tokenized path
-    char *prompt;             // prompt to display before a command is entered
+    char *prompt;                   // prompt to display before a command is entered
     size_t max_line_length;         // largest possible line
    
     /* Impermanent settings */

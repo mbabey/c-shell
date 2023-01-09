@@ -32,7 +32,8 @@ int init_state(const struct dc_env *env, struct dc_error *err, void *arg);
 /**
  * destroy_state
  * <p>
- * Free any dynamically allocated memory in the state.
+ * Reclaim memory fro the state object and zero it out (NULL, 0, false).
+ * This will terminate the shell.
  * </p>
  * @param env the environment
  * @param err the error object
