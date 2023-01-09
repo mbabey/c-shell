@@ -10,6 +10,8 @@
 
 // NOLINTBEGIN
 
+static void test_init_state(const char *expected_prompt);
+
 Describe(shell_impl);
 
 static struct dc_error *error;
@@ -28,15 +30,22 @@ AfterEach(shell_impl)
 
 Ensure(shell_impl, init_state)
 {
+    dc_unsetenv(environ, error, "PS1");
+    test_init_state("$ ");
+    
+    dc_setenv(environ, error, "PS1", "gabagool", true);
+    test_init_state("gabagool");
+}
+
+static void test_init_state(const char *expected_prompt)
+{
     struct state state;
     int          next_state;
     long         line_length;
     
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
+    assert_that_expression(line_length >= 0);
     
-    assert_that_expression(line_length == _SC_ARG_MAX);
-    
-    dc_unsetenv(environ, error, "PS1");
     next_state = init_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
@@ -45,7 +54,7 @@ Ensure(shell_impl, init_state)
     assert_that(state.in_redirect_regex, is_not_null);
     assert_that(state.out_redirect_regex, is_not_null);
     assert_that(state.err_redirect_regex, is_not_null);
-    assert_that(state.prompt, is_equal_to_string("$ "));
+    assert_that(state.prompt, is_equal_to_string(expected_prompt));
     assert_that(state.max_line_length, is_equal_to(line_length));
     assert_that(state.current_line, is_null);
     assert_that(state.current_line_length, is_equal_to(0));
@@ -54,7 +63,22 @@ Ensure(shell_impl, init_state)
 
 Ensure(shell_impl, destroy_state)
 {
-
+    struct state state;
+    int next_state;
+    
+    init_state(environ, error, &state);
+    next_state = destroy_state(environ, error, &state);
+    
+    assert_false(dc_error_has_no_error(error));
+    assert_that(next_state, is_equal_to(EXIT));
+    assert_that(state.in_redirect_regex, is_null);
+    assert_that(state.out_redirect_regex, is_null);
+    assert_that(state.err_redirect_regex, is_null);
+    assert_that(state.prompt, is_null);
+    assert_that(state.max_line_length, is_equal_to(0));
+    assert_that(state.current_line, is_null);
+    assert_that(state.current_line_length, is_equal_to(0));
+    assert_that(state.command, is_null);
 }
 
 Ensure(shell_impl, reset_state)

@@ -30,22 +30,19 @@ AfterEach(util)
 
 Ensure(util, get_prompt)
 {
-    const char *envname = "PS1";
-    const char *prompt;
+    char *prompt;
     
-    dc_unsetenv(environ, error, envname);
+    dc_unsetenv(environ, error, "PS1");
     prompt = get_prompt(environ, error);
     assert_that(prompt, is_equal_to_string("$ ")); // Test when PS1 not set
     
-    dc_setenv(environ, error, envname, "ABC", true);
+    dc_setenv(environ, error, "PS1", "ABC", true);
     prompt = get_prompt(environ, error);
     assert_that(prompt, is_equal_to_string("ABC")); // Test when PS1 set
 }
 
 Ensure(util, get_path)
 {
-    const char *envname = "PATH";
-    
     static const char *paths[] =
                               {
                                       "",
@@ -60,14 +57,14 @@ Ensure(util, get_path)
     
     char *env_path;
     
-    dc_unsetenv(environ, error, envname);
-    env_path = dc_getenv(environ, envname);
+    dc_unsetenv(environ, error, "PATH");
+    env_path = dc_getenv(environ, "PATH");
     assert_that(env_path, is_null); // Test PATH=NULL
     
     for (const char *path = *paths; path != NULL; ++path) // Test PATH=<string>
     {
-        dc_setenv(environ, error, envname, path, true);
-        env_path = dc_getenv(environ, envname);
+        dc_setenv(environ, error, "PATH", path, true);
+        env_path = dc_getenv(environ, "PATH");
         assert_that(env_path, is_equal_to_string(path));
     }
 }
@@ -85,15 +82,6 @@ void test_parse_path(const char *path_str, char **dirs)
 {
     char   **path_dirs;
     size_t i;
-    //    printf("\"%s\"\n", path_str);
-//
-//    if (dirs)
-//    {
-//        for (size_t i = 0; *(dirs + i); ++i)
-//        {
-//            printf("%s\n", *(dirs + i));
-//        }
-//    }
     
     path_dirs = parse_path(environ, error, path_str);
     
@@ -150,8 +138,8 @@ void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err
 
 Ensure(util, state_to_string)
 {
-    char         *state_str;
     struct state state;
+    char         *state_str;
     
     state.in_redirect_regex   = NULL;
     state.out_redirect_regex  = NULL;

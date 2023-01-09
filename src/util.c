@@ -13,7 +13,7 @@
  */
 inline const char *bool_to_string(bool boolean);
 
-const char *get_prompt(const struct dc_env *env, struct dc_error *err)
+char *get_prompt(const struct dc_env *env, struct dc_error *err)
 {
     return "$ ";
 }

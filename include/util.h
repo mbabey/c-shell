@@ -19,7 +19,7 @@
  * @param err the error object
  * @return the value of the PS1 env var or "$ " if PS1 not set
  */
-const char *get_prompt(const struct dc_env *env, struct dc_error *err);
+char *get_prompt(const struct dc_env *env, struct dc_error *err);
 
 /**
  * get_path
