@@ -8,7 +8,7 @@
 
 // NOLINTBEGIN
 
-static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err);
+static void check_state_reset(const struct state *state);
 
 static void test_parse_path(const char *path_str, char **dirs);
 
@@ -78,7 +78,7 @@ Ensure(util, parse_path)
     test_parse_path("a::b", dc_strs_to_array(environ, error, 3, "a", "b", NULL));
 }
 
-void test_parse_path(const char *path_str, char **dirs)
+static void test_parse_path(const char *path_str, char **dirs)
 {
     char   **path_dirs;
     size_t i;
@@ -98,6 +98,9 @@ Ensure(util, do_reset_state)
 {
     struct state state;
     
+    state.stdin = stdin;
+    state.stdout = stdout;
+    state.stderr = stderr;
     state.in_redirect_regex   = NULL;
     state.out_redirect_regex  = NULL;
     state.err_redirect_regex  = NULL;
@@ -110,30 +113,33 @@ Ensure(util, do_reset_state)
     state.fatal_error         = false;
     
     do_reset_state(environ, error, &state);
-    check_state_reset(&state, NULL, NULL, NULL);
+    check_state_reset(&state);
     
     state.current_line        = strdup("");
     state.current_line_length = strlen(state.current_line);
     do_reset_state(environ, error, &state);
-    check_state_reset(&state, NULL, NULL, NULL);
+    check_state_reset(&state);
     
     state.current_line        = strdup("ls");
     state.current_line_length = strlen(state.current_line);
     state.command             = dc_calloc(environ, error, 1, sizeof(struct command));
     do_reset_state(environ, error, &state);
-    check_state_reset(&state, NULL, NULL, NULL);
+    check_state_reset(&state);
     
     DC_ERROR_RAISE_ERRNO(error, E2BIG);
     do_reset_state(environ, error, &state);
-    check_state_reset(&state, NULL, NULL, NULL);
+    check_state_reset(&state);
     
     state.fatal_error = true;
     do_reset_state(environ, error, &state);
-    check_state_reset(&state, NULL, NULL, NULL);
+    check_state_reset(&state);
 }
 
-void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err)
+static void check_state_reset(const struct state *state)
 {
+    assert_that(state->stdin, is_equal_to(stdin));
+    assert_that(state->stdout, is_equal_to(stdout));
+    assert_that(state->stderr, is_equal_to(stderr));
     assert_that(state->current_line, is_null);
     assert_that(state->current_line_length, is_equal_to(0));
     assert_that(state->command, is_null);
