@@ -14,6 +14,9 @@
 struct state
 {
     /* Permanent settings */
+    FILE *stdin;                    // stream from which to read commands
+    FILE *stdout;                   // stream on which to print the prompt
+    FILE *stderr;                   // stream on which to print error messages
     regex_t *in_redirect_regex;     // stdin regex
     regex_t *out_redirect_regex;    // stdout regex
     regex_t *err_redirect_regex;    // stderr regex
