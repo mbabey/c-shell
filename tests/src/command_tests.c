@@ -6,13 +6,14 @@
 #include <dc_error/error.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_util/path.h>
+#include <dc_util/strings.h>
 
 // NOLINTBEGIN
 
 static void test_parse_commands(const char *expected_line,
                                 const char *expected_command,
                                 const size_t expected_argc,
-                                const char **expected_argv,
+                                char **expected_argv,
                                 const char *expected_stdin_file,
                                 const char *expected_stdout_file,
                                 const bool expected_stdout_overwrite,
@@ -42,19 +43,38 @@ Ensure(command, parse_command)
 {
 //    "./a.out foo bar < in.txt > out.txt 2>>err.txt\n
     
+    char **argv;
+    
+    argv = dc_strs_to_array(environ, error, 2, "hello", NULL);
     test_parse_commands("hello",
                         "hello",
-                        1, NULL,
+                        1, argv,
                         NULL,
                         NULL, false,
                         NULL, false,
                         0);
+    dc_strs_destroy_array(environ, 2, argv);
+    
     test_parse_commands("./a.out 2>>err.txt\n",
                         "./a.out",
                         1, NULL,
                         NULL,
                         NULL, false,
                         "err.txt", false,
+                        0);
+    test_parse_commands("~/cProjects/projects/c-shell/build/csh\n",
+                        "~/cProjects/projects/c-shell/build/csh",
+                        1, NULL,
+                        NULL,
+                        "out.txt", true,
+                        NULL, false,
+                        0);
+    test_parse_commands("~/cProjects/projects/reliable-udp/server-src/build/server -i 192.168.0.252\n",
+                        "~/cProjects/projects/reliable-udp/server-src/build/server -i 192.168.0.252",
+                        1, NULL,
+                        NULL,
+                        "out.txt", true,
+                        NULL, false,
                         0);
     test_parse_commands("./a.out > out.txt\n",
                         "./a.out",
@@ -103,7 +123,7 @@ Ensure(command, parse_command)
 static void test_parse_commands(const char *expected_line,
                                 const char *expected_command,
                                 const size_t expected_argc,
-                                const char **expected_argv,
+                                char **expected_argv,
                                 const char *expected_stdin_file,
                                 const char *expected_stdout_file,
                                 const bool expected_stdout_overwrite,
