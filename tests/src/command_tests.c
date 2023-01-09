@@ -1,6 +1,7 @@
 #include "../include/tests.h"
 #include "../../include/util.h"
-#include <dc_util/strings.h>
+#include <dc_env/env.h>
+#include <dc_error/error.h>
 
 // NOLINTBEGIN
 

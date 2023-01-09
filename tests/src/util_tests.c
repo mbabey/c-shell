@@ -4,7 +4,6 @@
 #include <dc_c/dc_stdlib.h>
 #include <dc_posix/dc_stdlib.h>
 
-
 // NOLINTBEGIN
 
 static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err);

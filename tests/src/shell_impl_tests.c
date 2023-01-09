@@ -1,6 +1,12 @@
 #include "../include/tests.h"
-#include "../../include/util.h"
-#include <dc_util/strings.h>
+#include "../../include/shell_impl.h"
+#include "../../include/state.h"
+#include "../../include/shell.h"
+#include <dc_env/env.h>
+#include <dc_error/error.h>
+#include <dc_posix/dc_stdlib.h>
+#include <dc_posix/dc_unistd.h>
+#include <stdbool.h>
 
 // NOLINTBEGIN
 
@@ -25,7 +31,24 @@ AfterEach(shell_impl)
 
 Ensure(shell_impl, init_state)
 {
-
+    struct state state;
+    int next_state;
+    long line_length;
+    
+    line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
+    
+    assert_that_expression(line_length == _SC_ARG_MAX);
+    
+    dc_setenv(environ, error, "PS1", NULL, true);
+    next_state = init_state(environ, error, &state);
+    
+    assert_false(dc_error_has_no_error(error));
+    assert_that_expression(next_state == RESET_STATE);
+    assert_that(state.in_redirect_regex, is_not_null);
+    assert_that(state.out_redirect_regex, is_not_null);
+    assert_that(state.err_redirect_regex, is_not_null);
+    assert_that(state.prompt, is_equal_to_string("$ "));
+    assert_that_expression(state.max_line_length == 0)
 }
 
 Ensure(shell_impl, destroy_state)
@@ -67,7 +90,6 @@ Ensure(shell_impl, handle_error)
 {
 
 }
-
 
 TestSuite *shell_impl_tests(void)
 {
