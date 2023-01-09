@@ -39,16 +39,16 @@ Ensure(shell_impl, init_state)
     
     assert_that_expression(line_length == _SC_ARG_MAX);
     
-    dc_setenv(environ, error, "PS1", NULL, true);
+    dc_setenv(environ, error, "PS1", "", true);
     next_state = init_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
-    assert_that_expression(next_state == RESET_STATE);
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
     assert_that(state.in_redirect_regex, is_not_null);
     assert_that(state.out_redirect_regex, is_not_null);
     assert_that(state.err_redirect_regex, is_not_null);
     assert_that(state.prompt, is_equal_to_string("$ "));
-    assert_that_expression(state.max_line_length == 0)
+    assert_that(state.max_line_length, is_equal_to())
 }
 
 Ensure(shell_impl, destroy_state)

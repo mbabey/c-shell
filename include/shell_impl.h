@@ -25,7 +25,7 @@
  * @param env the environment
  * @param err the error object
  * @param arg the current struct state
- * @return READ_COMMANDS or INIT_ERROR
+ * @return READ_COMMANDS or ERROR
  */
 int init_state(const struct dc_env *env, struct dc_error *err, void *arg);
 
@@ -37,7 +37,7 @@ int init_state(const struct dc_env *env, struct dc_error *err, void *arg);
  * @param env the environment
  * @param err the error object
  * @param arg the current struct state
- * @return DC_FSM_EXIT
+ * @return EXIT
  */
 int destroy_state(const struct dc_env *env, struct dc_error *err, void *arg);
 
@@ -75,7 +75,7 @@ int read_commands(const struct dc_env *env, struct dc_error *err, void *arg);
  * @param env the environment
  * @param err the error object
  * @param arg the current struct state
- * @return PARSE_COMMANDS or SEPARATE_ERROR
+ * @return PARSE_COMMANDS or ERROR
  */
 int separate_commands(const struct dc_env *env, struct dc_error *err, void *arg);
 
@@ -87,7 +87,7 @@ int separate_commands(const struct dc_env *env, struct dc_error *err, void *arg)
  * @param env the environment
  * @param err the error object
  * @param arg the current struct state
- * @return EXECUTE_COMMANDS or PARSE_ERROR
+ * @return EXECUTE_COMMANDS or ERROR
  */
 int parse_commands(const struct dc_env *env, struct dc_error *err, void *arg);
 
@@ -101,7 +101,7 @@ int parse_commands(const struct dc_env *env, struct dc_error *err, void *arg);
  * @param env the environment
  * @param err the error object
  * @param arg the current struct state
- * @return EXECUTE_COMMANDS or PARSE_ERROR
+ * @return EXECUTE_COMMANDS or ERROR
  */
 int execute_commands(const struct dc_env *env, struct dc_error *err, void *arg);
 
