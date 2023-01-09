@@ -59,6 +59,17 @@ char **parse_path(const struct dc_env *env, struct dc_error *err, const char *pa
 void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state *state);
 
 /**
+ * do_reset_command
+ * <p>
+ * Reset the command struct by freeing dynamically allocated memory and clearing variables.
+ * </p>
+ * @param env the environment
+ * @param err the error object
+ * @param command the command object to reset
+ */
+void do_reset_command(const struct dc_env *env, struct dc_error *err, struct command *command);
+
+/**
  * display_state
  * <p>
  * Display the state values to the parameter stream.

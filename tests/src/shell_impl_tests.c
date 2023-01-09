@@ -53,8 +53,11 @@ static void test_init_state(const char *expected_prompt)
     next_state = init_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
-    
     assert_that(next_state, is_equal_to(READ_COMMANDS));
+    
+    assert_that(state.stdin, is_equal_to(stdin));
+    assert_that(state.stdout, is_equal_to(stdout));
+    assert_that(state.stderr, is_equal_to(stderr));
     assert_that(state.in_redirect_regex, is_not_null);
     assert_that(state.out_redirect_regex, is_not_null);
     assert_that(state.err_redirect_regex, is_not_null);
