@@ -6,7 +6,9 @@
 #include <dc_error/error.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_posix/dc_unistd.h>
+#include <dc_util/filesystem.h>
 #include <stdbool.h>
+#include <dc_c/dc_stdlib.h>
 
 // NOLINTBEGIN
 
@@ -15,6 +17,8 @@ static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FI
 static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *err);
 
 static void test_reset_state(const char *expected_prompt, bool initial_fatal);
+
+static void test_read_commands(const char *test_input, const char *expected_command, int expected_state);
 
 Describe(shell_impl);
 
@@ -47,7 +51,7 @@ static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FI
     int          next_state;
     long         line_length;
     
-    state.stdin = stdin;
+    state.stdin  = stdin;
     state.stdout = stdout;
     state.stderr = stderr;
     
@@ -86,7 +90,7 @@ static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *er
     int          next_state;
     long         line_length;
     
-    state.stdin = stdin;
+    state.stdin  = stdin;
     state.stdout = stdout;
     state.stderr = stderr;
     
@@ -136,7 +140,7 @@ static void test_reset_state(const char *expected_prompt, bool initial_fatal)
     int          next_state;
     long         line_length;
     
-    state.stdin = stdin;
+    state.stdin  = stdin;
     state.stdout = stdout;
     state.stderr = stderr;
     
@@ -166,7 +170,52 @@ static void test_reset_state(const char *expected_prompt, bool initial_fatal)
 
 Ensure(shell_impl, read_commands)
 {
+    test_read_commands("hello\n", "hello", SEPARATE_COMMANDS);
+    test_read_commands("\n", "", RESET_STATE);
+    test_read_commands("hello", "hello", SEPARATE_COMMANDS);
+    test_read_commands("", "", RESET_STATE);
+}
 
+static void test_read_commands(const char *test_input, const char *expected_command, int expected_state)
+{
+    const size_t extra_prompt_chars = 5;
+    struct state state;
+    FILE         *in;
+    FILE         *out;
+    size_t       in_size;
+    char         *in_buf;
+    char         out_buf[BUFSIZ];
+    char         *cwd;
+    char         *prompt;
+    int          next_state;
+    
+    in_buf  = strdup(test_input);
+    in_size = strlen(in_buf) + 1;
+    in      = fmemopen(in_buf, in_size, "r");
+    out     = fmemopen(out_buf, sizeof(out_buf), "w");
+    
+    state.stdin  = in;
+    state.stdout = out;
+    state.stderr = stderr;
+    
+    dc_unsetenv(environ, error, "PS1");
+    next_state = init_state(environ, error, &state);
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    next_state = read_commands(environ, error, &state);
+    assert_that(next_state, is_equal_to(expected_state));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    cwd    = dc_get_working_dir(environ, error);
+    prompt = dc_malloc(environ, error, strlen(cwd) + strlen(state.prompt) + extra_prompt_chars);
+    sprintf(prompt, "[%s] %s", cwd, state.prompt);
+    
+    assert_that(out_buf, is_equal_to_string(prompt));
+    assert_that(state.current_line, is_equal_to_string(expected_command));
+    assert_that(state.current_line_length, is_equal_to(strlen(state.current_line)));
 }
 
 Ensure(shell_impl, separate_commands)

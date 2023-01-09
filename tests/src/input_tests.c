@@ -77,10 +77,6 @@ static void test_read_command_line(const char *initial_line, ...)
     dc_free(environ, str);
 }
 
-static void do_test_read_command_line(FILE *strstream, size_t *line_length, const char *expected_line)
-{
-}
-
 TestSuite *input_tests(void)
 {
     TestSuite *suite;
