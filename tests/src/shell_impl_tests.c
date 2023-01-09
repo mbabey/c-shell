@@ -10,9 +10,9 @@
 
 // NOLINTBEGIN
 
-static void test_init_state(const char *expected_prompt);
+static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FILE *err);
 
-static void test_destroy_state(bool initial_fatal);
+static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *err);
 
 static void test_reset_state(const char *expected_prompt, bool initial_fatal);
 
@@ -35,17 +35,21 @@ AfterEach(shell_impl)
 Ensure(shell_impl, init_state)
 {
     dc_unsetenv(environ, error, "PS1");
-    test_init_state("$ ");
+    test_init_state("$ ", stdin, stdout, stderr);
     
     dc_setenv(environ, error, "PS1", "gabagool: ", true);
-    test_init_state("gabagool: ");
+    test_init_state("gabagool: ", stdin, stdout, stderr);
 }
 
-static void test_init_state(const char *expected_prompt)
+static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FILE *err)
 {
     struct state state;
     int          next_state;
     long         line_length;
+    
+    state.stdin = stdin;
+    state.stdout = stdout;
+    state.stderr = stderr;
     
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
@@ -55,9 +59,9 @@ static void test_init_state(const char *expected_prompt)
     assert_false(dc_error_has_no_error(error));
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     
-    assert_that(state.stdin, is_equal_to(stdin));
-    assert_that(state.stdout, is_equal_to(stdout));
-    assert_that(state.stderr, is_equal_to(stderr));
+    assert_that(state.stdin, is_equal_to(in));
+    assert_that(state.stdout, is_equal_to(out));
+    assert_that(state.stderr, is_equal_to(err));
     assert_that(state.in_redirect_regex, is_not_null);
     assert_that(state.out_redirect_regex, is_not_null);
     assert_that(state.err_redirect_regex, is_not_null);
@@ -72,15 +76,19 @@ static void test_init_state(const char *expected_prompt)
 
 Ensure(shell_impl, destroy_state)
 {
-    test_destroy_state(true);
-    test_destroy_state(false);
+    test_destroy_state(true, stdin, stdout, stderr);
+    test_destroy_state(false, stdin, stdout, stderr);
 }
 
-static void test_destroy_state(bool initial_fatal)
+static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *err)
 {
     struct state state;
     int          next_state;
     long         line_length;
+    
+    state.stdin = stdin;
+    state.stdout = stdout;
+    state.stderr = stderr;
     
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
@@ -89,8 +97,11 @@ static void test_destroy_state(bool initial_fatal)
     next_state = destroy_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
-    
     assert_that(next_state, is_equal_to(EXIT));
+    
+    assert_that(state.stdin, is_equal_to(in));
+    assert_that(state.stdout, is_equal_to(out));
+    assert_that(state.stderr, is_equal_to(err));
     assert_that(state.in_redirect_regex, is_null);
     assert_that(state.out_redirect_regex, is_null);
     assert_that(state.err_redirect_regex, is_null);
@@ -125,14 +136,21 @@ static void test_reset_state(const char *expected_prompt, bool initial_fatal)
     int          next_state;
     long         line_length;
     
+    state.stdin = stdin;
+    state.stdout = stdout;
+    state.stderr = stderr;
+    
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
     
     next_state = init_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
-    
     assert_that(next_state, is_equal_to(READ_COMMANDS));
+    
+    assert_that(state.stdin, is_equal_to(stdin));
+    assert_that(state.stdout, is_equal_to(stdout));
+    assert_that(state.stderr, is_equal_to(stderr));
     assert_that(state.in_redirect_regex, is_not_null);
     assert_that(state.out_redirect_regex, is_not_null);
     assert_that(state.err_redirect_regex, is_not_null);

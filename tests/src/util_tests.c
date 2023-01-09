@@ -9,7 +9,7 @@
 
 // NOLINTBEGIN
 
-static void check_state_reset(const struct state *state);
+static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err);
 
 static void test_parse_path(const char *path_str, char **dirs);
 
@@ -114,33 +114,33 @@ Ensure(util, do_reset_state)
     state.fatal_error         = false;
     
     do_reset_state(environ, error, &state);
-    check_state_reset(&state);
+    check_state_reset(&state, stdin, stdout, stderr);
     
     state.current_line        = strdup("");
     state.current_line_length = strlen(state.current_line);
     do_reset_state(environ, error, &state);
-    check_state_reset(&state);
+    check_state_reset(&state, stdin, stdout, stderr);
     
     state.current_line        = strdup("ls");
     state.current_line_length = strlen(state.current_line);
     state.command             = dc_calloc(environ, error, 1, sizeof(struct command));
     do_reset_state(environ, error, &state);
-    check_state_reset(&state);
+    check_state_reset(&state, stdin, stdout, stderr);
     
     DC_ERROR_RAISE_ERRNO(error, E2BIG);
     do_reset_state(environ, error, &state);
-    check_state_reset(&state);
+    check_state_reset(&state, stdin, stdout, stderr);
     
     state.fatal_error = true;
     do_reset_state(environ, error, &state);
-    check_state_reset(&state);
+    check_state_reset(&state, stdin, stdout, stderr);
 }
 
-static void check_state_reset(const struct state *state)
+static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err)
 {
-    assert_that(state->stdin, is_equal_to(stdin));
-    assert_that(state->stdout, is_equal_to(stdout));
-    assert_that(state->stderr, is_equal_to(stderr));
+    assert_that(state->stdin, is_equal_to(in));
+    assert_that(state->stdout, is_equal_to(out));
+    assert_that(state->stderr, is_equal_to(err));
     assert_that(state->current_line, is_null);
     assert_that(state->current_line_length, is_equal_to(0));
     assert_that(state->command, is_null);
