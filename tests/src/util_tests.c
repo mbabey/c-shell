@@ -95,6 +95,35 @@ static void test_parse_path(const char *path_str, char **dirs)
     assert_that(*(path_dirs + i), is_null);
 }
 
+Ensure(util, do_reset_command)
+{
+    struct command command;
+    
+    command.line = strdup("cd");
+    command.command = strdup("cd");
+    command.argc = 2;
+    command.argv = NULL;
+    command.stdin_file = strdup("stdin");
+    command.stdout_file = strdup("stdout");
+    command.stdout_overwrite = true;
+    command.stderr_file = strdup("stderr");
+    command.stderr_overwrite = true;
+    command.exit_code = 1;
+    
+    do_reset_command(environ, error, &command);
+    
+    assert_that(command.line, is_null);
+    assert_that(command.command, is_null);
+    assert_that(command.argc, is_equal_to(0));
+    assert_that(command.argv, is_null);
+    assert_that(command.stdin_file, is_null);
+    assert_that(command.stdout_file, is_null);
+    assert_false(command.stdout_overwrite);
+    assert_that(command.stderr_file, is_null);
+    assert_false(command.stderr_overwrite);
+    assert_that(command.exit_code, is_equal_to(0));
+}
+
 Ensure(util, do_reset_state)
 {
     struct state state;
@@ -144,6 +173,7 @@ static void check_state_reset(const struct state *state, FILE *in, FILE *out, FI
     assert_that(state->current_line, is_null);
     assert_that(state->current_line_length, is_equal_to(0));
     assert_that(state->command, is_null);
+    
     assert_false(state->fatal_error);
     assert_that(dc_error_get_message(error), is_equal_to_string("*there is no error message set*"));
 }

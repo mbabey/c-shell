@@ -1,4 +1,5 @@
 #include "../include/tests.h"
+#include "../../include/command.h"
 #include "../../include/shell_impl.h"
 #include "../../include/state.h"
 #include "../../include/shell.h"
@@ -19,6 +20,8 @@ static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *er
 static void test_reset_state(const char *expected_prompt, bool initial_fatal);
 
 static void test_read_commands(const char *test_input, const char *expected_command, int expected_state);
+
+static void test_separate_commands(const char *test_input, const char *expected_command, int expected_state);
 
 Describe(shell_impl);
 
@@ -197,7 +200,6 @@ static void test_read_commands(const char *test_input, const char *expected_comm
     state.stdin  = in;
     state.stdout = out;
     state.stderr = stderr;
-    
     dc_unsetenv(environ, error, "PS1");
     next_state = init_state(environ, error, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
@@ -220,7 +222,60 @@ static void test_read_commands(const char *test_input, const char *expected_comm
 
 Ensure(shell_impl, separate_commands)
 {
+    test_read_commands("./a.out\n", "./a.out", SEPARATE_COMMANDS);
+    test_read_commands("cd ~\n", "cd ~", SEPARATE_COMMANDS);
+    
+    test_separate_commands()
+}
 
+static void test_separate_commands(const char *test_input, const char *expected_command, int expected_state)
+{
+    const size_t extra_prompt_chars = 5;
+    struct state state;
+    FILE         *in;
+    FILE         *out;
+    size_t       in_size;
+    char         *in_buf;
+    char         out_buf[BUFSIZ];
+    char         *cwd;
+    char         *prompt;
+    int          next_state;
+    
+    in_buf  = strdup(test_input);
+    in_size = strlen(in_buf) + 1;
+    in      = fmemopen(in_buf, in_size, "r");
+    out     = fmemopen(out_buf, sizeof(out_buf), "w");
+    
+    state.stdin  = in;
+    state.stdout = out;
+    state.stderr = stderr;
+    dc_unsetenv(environ, error, "PS1");
+    next_state = init_state(environ, error, &state);
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    next_state = read_commands(environ, error, &state);
+    assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    
+    next_state = separate_commands(environ, error, &state);
+    assert_that(next_state, is_equal_to(expected_state));
+    assert_false(dc_error_has_no_error(error));
+    assert_false(state.fatal_error);
+    assert_that(state.command, is_null);
+    assert_that(state.command->line, is_null);
+    assert_that(state.command->command, is_null);
+    assert_that(state.command->argc, is_equal_to(0));
+    assert_that(state.command->argv, is_null);
+    assert_that(state.command->stdin_file, is_null);
+    assert_that(state.command->stdout_file, is_null);
+    assert_false(state.command->stdout_overwrite);
+    assert_that(state.command->stderr_file, is_null);
+    assert_false(state.command->stderr_overwrite);
+    assert_that(state.command->exit_code, is_equal_to(0));
+    
 }
 
 Ensure(shell_impl, parse_commands)
