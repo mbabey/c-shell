@@ -10,17 +10,14 @@
 
 // NOLINTBEGIN
 
-static void check_state_reset(const struct dc_error error, const struct state state, FILE in, FILE out, FILE err);
-static void test_parse_path(const char path_str, char *dirs);
-
 Describe(shell_impl);
 
 static struct dc_error *error;
-static struct dc_env *environ;
+static struct dc_env   *environ;
 
 BeforeEach(shell_impl)
 {
-    error = dc_error_create(false);
+    error   = dc_error_create(false);
     environ = dc_env_create(error, false, NULL);
 }
 
@@ -32,14 +29,14 @@ AfterEach(shell_impl)
 Ensure(shell_impl, init_state)
 {
     struct state state;
-    int next_state;
-    long line_length;
+    int          next_state;
+    long         line_length;
     
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
     
     assert_that_expression(line_length == _SC_ARG_MAX);
     
-    dc_setenv(environ, error, "PS1", "", true);
+    dc_unsetenv(environ, error, "PS1");
     next_state = init_state(environ, error, &state);
     
     assert_false(dc_error_has_no_error(error));
