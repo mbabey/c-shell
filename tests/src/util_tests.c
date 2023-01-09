@@ -3,6 +3,7 @@
 #include "../../include/command.h"
 #include <dc_c/dc_stdlib.h>
 #include <dc_posix/dc_stdlib.h>
+#include <stdbool.h>
 
 // NOLINTBEGIN
 
