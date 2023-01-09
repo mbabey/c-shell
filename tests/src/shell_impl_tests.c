@@ -21,7 +21,7 @@ static void test_reset_state(const char *expected_prompt, bool initial_fatal);
 
 static void test_read_commands(const char *test_input, const char *expected_command, int expected_state);
 
-static void test_separate_commands(const char *test_input, const char *expected_command, int expected_state);
+static void test_separate_commands(const char *test_input, const char *expected_command, int read_expected_state);
 
 Describe(shell_impl);
 
@@ -222,23 +222,19 @@ static void test_read_commands(const char *test_input, const char *expected_comm
 
 Ensure(shell_impl, separate_commands)
 {
-    test_read_commands("./a.out\n", "./a.out", SEPARATE_COMMANDS);
-    test_read_commands("cd ~\n", "cd ~", SEPARATE_COMMANDS);
-    
-    test_separate_commands()
+    test_separate_commands("./a.out\n", "./a.out", SEPARATE_COMMANDS);
+    test_separate_commands("cd ~\n", "cd ~", SEPARATE_COMMANDS);
+    test_separate_commands("\n", "", RESET_STATE);
 }
 
-static void test_separate_commands(const char *test_input, const char *expected_command, int expected_state)
+static void test_separate_commands(const char *test_input, const char *expected_command, int read_expected_state)
 {
-    const size_t extra_prompt_chars = 5;
     struct state state;
     FILE         *in;
     FILE         *out;
     size_t       in_size;
     char         *in_buf;
     char         out_buf[BUFSIZ];
-    char         *cwd;
-    char         *prompt;
     int          next_state;
     
     in_buf  = strdup(test_input);
@@ -256,16 +252,22 @@ static void test_separate_commands(const char *test_input, const char *expected_
     assert_false(state.fatal_error);
     
     next_state = read_commands(environ, error, &state);
-    assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
+    assert_that(next_state, is_equal_to(read_expected_state));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
     
+    if (next_state == RESET_STATE)
+    {
+        return;
+    }
+    
     next_state = separate_commands(environ, error, &state);
-    assert_that(next_state, is_equal_to(expected_state));
+    assert_that(next_state, is_equal_to(PARSE_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
     assert_that(state.command, is_null);
-    assert_that(state.command->line, is_null);
+    assert_that(state.command->line, is_equal_to_string(state.current_line)); // TODO: will need to be token later
+    assert_that(state.command->line, is_not_equal_to(state.current_line));
     assert_that(state.command->command, is_null);
     assert_that(state.command->argc, is_equal_to(0));
     assert_that(state.command->argv, is_null);
