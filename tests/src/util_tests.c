@@ -35,10 +35,12 @@ Ensure(util, get_prompt)
     
     dc_unsetenv(environ, error, "PS1");
     prompt = get_prompt(environ, error);
+    assert_false(dc_error_has_no_error(error));
     assert_that(prompt, is_equal_to_string("$ ")); // Test when PS1 not set
     
     dc_setenv(environ, error, "PS1", "ABC", true);
     prompt = get_prompt(environ, error);
+    assert_false(dc_error_has_no_error(error));
     assert_that(prompt, is_equal_to_string("ABC")); // Test when PS1 set
 }
 
@@ -59,13 +61,16 @@ Ensure(util, get_path)
     char *env_path;
     
     dc_unsetenv(environ, error, "PATH");
-    env_path = dc_getenv(environ, "PATH");
+//    env_path = dc_getenv(environ, "PATH");
+    env_path = get_path(environ, error);
+    assert_false(dc_error_has_no_error(error));
     assert_that(env_path, is_null); // Test PATH=NULL
     
     for (const char *path = *paths; path != NULL; ++path) // Test PATH=<string>
     {
         dc_setenv(environ, error, "PATH", path, true);
-        env_path = dc_getenv(environ, "PATH");
+        env_path = get_path(environ, error);
+        assert_false(dc_error_has_no_error(error));
         assert_that(env_path, is_equal_to_string(path));
     }
 }
@@ -85,6 +90,7 @@ static void test_parse_path(const char *path_str, char **dirs)
     size_t i;
     
     path_dirs = parse_path(environ, error, path_str);
+    assert_false(dc_error_has_no_error(error));
     
     for (i = 0; *(dirs + i) && *(path_dirs + i); ++i)
     {
@@ -112,6 +118,7 @@ Ensure(util, do_reset_command)
     
     do_reset_command(environ, error, &command);
     
+    assert_false(dc_error_has_no_error(error));
     assert_that(command.line, is_null);
     assert_that(command.command, is_null);
     assert_that(command.argc, is_equal_to(0));
@@ -167,15 +174,16 @@ Ensure(util, do_reset_state)
 
 static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err)
 {
+    assert_false(dc_error_has_no_error(error));
+    
     assert_that(state->stdin, is_equal_to(in));
     assert_that(state->stdout, is_equal_to(out));
     assert_that(state->stderr, is_equal_to(err));
     assert_that(state->current_line, is_null);
     assert_that(state->current_line_length, is_equal_to(0));
     assert_that(state->command, is_null);
-    
     assert_false(state->fatal_error);
-    assert_that(dc_error_get_message(error), is_equal_to_string("*there is no error message set*"));
+    
 }
 
 Ensure(util, state_to_string)
@@ -195,22 +203,26 @@ Ensure(util, state_to_string)
     state.fatal_error         = false;
     
     state_str = state_to_string(environ, error, &state);
+    assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: NULL\nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "";
     state_str = state_to_string(environ, error, &state);
+    assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: \nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "hello";
     state_str = state_to_string(environ, error, &state);
+    assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: hello\nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "world";
     state.fatal_error  = true;
     state_str = state_to_string(environ, error, &state);
+    assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: world\nFatal error: true\n"));
     free(state_str);
 }

@@ -57,6 +57,7 @@ static void test_read_command_line(const char *initial_line, ...)
         char *line;
         
         line = read_command_line(environ, error, strstream, NULL, &line_length);
+        assert_false(dc_error_has_no_error(error));
         
         expected_line = va_arg(strings, char *);
         
