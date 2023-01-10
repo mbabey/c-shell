@@ -1,9 +1,6 @@
 #include "../include/tests.h"
 #include "../../include/command.h"
 #include "../../include/shell_impl.h"
-#include "../../include/util.h"
-#include <dc_env/env.h>
-#include <dc_error/error.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_util/path.h>
 #include <dc_util/strings.h>
@@ -25,18 +22,30 @@ static void expand_file_name(const char *expected_file, char **expanded_file);
 
 Describe(command);
 
-static struct dc_error *error;
-static struct dc_env   *environ;
+static struct supervisor     *supvis;
+static struct dc_env         *environ;
+static struct dc_error       *error;
+static struct memory_manager *mm;
 
 BeforeEach(command)
 {
+    supvis  = malloc(sizeof(struct supervisor));
     error   = dc_error_create(false);
     environ = dc_env_create(error, false, NULL);
+    mm      = init_mem_manager();
+    
+    supvis->env = environ;
+    supvis->err = error;
+    supvis->mm = mm;
+    
+    supvis->mm->mm_add(supvis->mm, error);
+    supvis->mm->mm_add(supvis->mm, environ);
 }
 
 AfterEach(command)
 {
-    dc_error_reset(error);
+    supvis->mm->mm_free_all(supvis->mm);
+    free(supvis);
 }
 
 Ensure(command, parse_command)
@@ -45,7 +54,7 @@ Ensure(command, parse_command)
     
     char **argv;
     
-    argv = dc_strs_to_array(environ, error, 2, "hello", NULL);
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "hello", NULL);
     test_parse_commands("hello",
                         "hello",
                         1, argv,
@@ -53,7 +62,7 @@ Ensure(command, parse_command)
                         NULL, false,
                         NULL, false,
                         0);
-    dc_strs_destroy_array(environ, 2, argv);
+    dc_strs_destroy_array(supvis->env, 2, argv);
     
     test_parse_commands("./a.out 2>>err.txt\n",
                         "./a.out",
@@ -143,13 +152,13 @@ static void test_parse_commands(const char *expected_line,
     state.stdin  = NULL;
     state.stdout = NULL;
     state.stderr = NULL;
-    dc_unsetenv(environ, error, "PS1");
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
     init_state(NULL, &state);
     
     state.command       = calloc(1, sizeof(struct command));
     state.command->line = strdup(expected_line);
     
-    parse_command(environ, error, &state, state.command);
+    parse_command(supvis, &state, state.command);
     
     assert_that(state.command->line, is_equal_to_string(expected_line));
     assert_that(state.command->command, is_equal_to_string(expected_command));
@@ -173,8 +182,8 @@ static void expand_file_name(const char *expected_file, char **expanded_file)
         (*expanded_file) = NULL;
     } else
     {
-        dc_expand_path(environ, error, expanded_file, expected_file);
-        if (dc_error_has_error(error))
+        dc_expand_path(supvis->env, supvis->err, expanded_file, expected_file);
+        if (dc_error_has_error(supvis->err))
         {
             fail_test(expected_file);
         }

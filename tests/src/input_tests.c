@@ -1,8 +1,5 @@
 #include "../include/tests.h"
-#include "../../include/util.h"
 #include "../../include/input.h"
-#include <dc_env/env.h>
-#include <dc_error/error.h>
 #include <dc_c/dc_stdlib.h>
 
 // NOLINTBEGIN
@@ -11,18 +8,30 @@ Describe(input);
 
 static void test_read_command_line(const char *initial_line, ...);
 
-static struct dc_error *error;
-static struct dc_env   *environ;
+static struct supervisor     *supvis;
+static struct dc_env         *environ;
+static struct dc_error       *error;
+static struct memory_manager *mm;
 
 BeforeEach(input)
 {
+    supvis  = malloc(sizeof(struct supervisor));
     error   = dc_error_create(false);
     environ = dc_env_create(error, false, NULL);
+    mm      = init_mem_manager();
+    
+    supvis->env = environ;
+    supvis->err = error;
+    supvis->mm = mm;
+    
+    supvis->mm->mm_add(supvis->mm, error);
+    supvis->mm->mm_add(supvis->mm, environ);
 }
 
 AfterEach(input)
 {
-    dc_error_reset(error);
+    supvis->mm->mm_free_all(supvis->mm);
+    free(supvis);
 }
 
 Ensure(input, read_command_line)
@@ -44,7 +53,7 @@ static void test_read_command_line(const char *initial_line, ...)
     size_t  line_length;
     
     line_length = strlen(initial_line + 1);
-    str         = dc_malloc(environ, error, line_length);
+    str         = dc_malloc(supvis->env, supvis->err, line_length);
     
     strstream = fmemopen(str, sizeof(str), "r");
     strcpy(str, initial_line);
@@ -56,7 +65,7 @@ static void test_read_command_line(const char *initial_line, ...)
     {
         char *line;
         
-        line = read_command_line(NULL, strstream, NULL, &line_length);
+        line = read_command_line(supvis, strstream, NULL, &line_length);
         assert_false(dc_error_has_no_error(error));
         
         expected_line = va_arg(strings, char *);
@@ -75,7 +84,7 @@ static void test_read_command_line(const char *initial_line, ...)
     va_end(strings);
     
     fclose(strstream);
-    dc_free(environ, str);
+    dc_free(supvis->env, str);
 }
 
 TestSuite *input_tests(void)

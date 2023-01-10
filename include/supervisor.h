@@ -16,7 +16,7 @@ struct supervisor
 {
     struct dc_env *env;
     struct dc_error *err;
-    struct mem_manager *mm;
+    struct memory_manager *mm;
 };
 
 #endif //CSH_SUPERVISOR_H

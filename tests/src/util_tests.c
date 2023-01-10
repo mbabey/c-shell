@@ -15,31 +15,43 @@ static void test_parse_path(const char *path_str, char **dirs);
 
 Describe(util);
 
-static struct dc_error *error;
-static struct dc_env   *environ;
+static struct supervisor     *supvis;
+static struct dc_env         *environ;
+static struct dc_error       *error;
+static struct memory_manager *mm;
 
 BeforeEach(util)
 {
+    supvis  = malloc(sizeof(struct supervisor));
     error   = dc_error_create(false);
     environ = dc_env_create(error, false, NULL);
+    mm      = init_mem_manager();
+    
+    supvis->env = environ;
+    supvis->err = error;
+    supvis->mm = mm;
+    
+    supvis->mm->mm_add(supvis->mm, error);
+    supvis->mm->mm_add(supvis->mm, environ);
 }
 
 AfterEach(util)
 {
-    dc_error_reset(error);
+    supvis->mm->mm_free_all(supvis->mm);
+    free(supvis);
 }
 
 Ensure(util, get_prompt)
 {
     char *prompt;
     
-    dc_unsetenv(environ, error, "PS1");
-    prompt = get_prompt(NULL);
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
+    prompt = get_prompt(supvis);
     assert_false(dc_error_has_no_error(error));
     assert_that(prompt, is_equal_to_string("$ ")); // Test when PS1 not set
     
-    dc_setenv(environ, error, "PS1", "ABC", true);
-    prompt = get_prompt(NULL);
+    dc_setenv(supvis->env, supvis->err, "PS1", "ABC", true);
+    prompt = get_prompt(supvis);
     assert_false(dc_error_has_no_error(error));
     assert_that(prompt, is_equal_to_string("ABC")); // Test when PS1 set
 }
@@ -60,16 +72,16 @@ Ensure(util, get_path)
     
     char *env_path;
     
-    dc_unsetenv(environ, error, "PATH");
+    dc_unsetenv(supvis->env, supvis->err, "PATH");
 //    env_path = dc_getenv(environ, "PATH");
-    env_path = get_path(environ, error);
+    env_path = get_path(supvis);
     assert_false(dc_error_has_no_error(error));
     assert_that(env_path, is_null); // Test PATH=NULL
     
     for (const char *path = *paths; path != NULL; ++path) // Test PATH=<string>
     {
-        dc_setenv(environ, error, "PATH", path, true);
-        env_path = get_path(environ, error);
+        dc_setenv(supvis->env, supvis->err, "PATH", path, true);
+        env_path = get_path(supvis);
         assert_false(dc_error_has_no_error(error));
         assert_that(env_path, is_equal_to_string(path));
     }
@@ -77,11 +89,11 @@ Ensure(util, get_path)
 
 Ensure(util, parse_path)
 {
-    test_parse_path("", dc_strs_to_array(environ, error, 1, NULL));
-    test_parse_path("a", dc_strs_to_array(environ, error, 2, "a", NULL));
-    test_parse_path("a:b", dc_strs_to_array(environ, error, 3, "a", "b", NULL));
-    test_parse_path("a:bcde:f", dc_strs_to_array(environ, error, 4, "a", "bcde", "f", NULL));
-    test_parse_path("a::b", dc_strs_to_array(environ, error, 3, "a", "b", NULL));
+    test_parse_path("", dc_strs_to_array(supvis->env, supvis->err, 1, NULL));
+    test_parse_path("a", dc_strs_to_array(supvis->env, supvis->err, 2, "a", NULL));
+    test_parse_path("a:b", dc_strs_to_array(supvis->env, supvis->err, 3, "a", "b", NULL));
+    test_parse_path("a:bcde:f", dc_strs_to_array(supvis->env, supvis->err, 4, "a", "bcde", "f", NULL));
+    test_parse_path("a::b", dc_strs_to_array(supvis->env, supvis->err, 3, "a", "b", NULL));
 }
 
 static void test_parse_path(const char *path_str, char **dirs)
@@ -89,7 +101,7 @@ static void test_parse_path(const char *path_str, char **dirs)
     char   **path_dirs;
     size_t i;
     
-    path_dirs = parse_path(environ, error, path_str);
+    path_dirs = parse_path(supvis, path_str);
     assert_false(dc_error_has_no_error(error));
     
     for (i = 0; *(dirs + i) && *(path_dirs + i); ++i)
@@ -105,18 +117,18 @@ Ensure(util, do_reset_command)
 {
     struct command command;
     
-    command.line = strdup("cd");
-    command.command = strdup("cd");
-    command.argc = 2;
-    command.argv = NULL;
-    command.stdin_file = strdup("stdin");
-    command.stdout_file = strdup("stdout");
+    command.line             = strdup("cd");
+    command.command          = strdup("cd");
+    command.argc             = 2;
+    command.argv             = NULL;
+    command.stdin_file       = strdup("stdin");
+    command.stdout_file      = strdup("stdout");
     command.stdout_overwrite = true;
-    command.stderr_file = strdup("stderr");
+    command.stderr_file      = strdup("stderr");
     command.stderr_overwrite = true;
-    command.exit_code = 1;
+    command.exit_code        = 1;
     
-    do_reset_command(environ, error, &command);
+    do_reset_command(supvis, &command);
     
     assert_false(dc_error_has_no_error(error));
     assert_that(command.line, is_null);
@@ -135,9 +147,9 @@ Ensure(util, do_reset_state)
 {
     struct state state;
     
-    state.stdin = stdin;
-    state.stdout = stdout;
-    state.stderr = stderr;
+    state.stdin               = stdin;
+    state.stdout              = stdout;
+    state.stderr              = stderr;
     state.in_redirect_regex   = NULL;
     state.out_redirect_regex  = NULL;
     state.err_redirect_regex  = NULL;
@@ -149,26 +161,26 @@ Ensure(util, do_reset_state)
     state.command             = NULL;
     state.fatal_error         = false;
     
-    do_reset_state(environ, error, &state);
+    do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
     
     state.current_line        = strdup("");
     state.current_line_length = strlen(state.current_line);
-    do_reset_state(environ, error, &state);
+    do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
     
     state.current_line        = strdup("ls");
     state.current_line_length = strlen(state.current_line);
-    state.command             = dc_calloc(environ, error, 1, sizeof(struct command));
-    do_reset_state(environ, error, &state);
+    state.command             = dc_calloc(supvis->env, supvis->err, 1, sizeof(struct command));
+    do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
     
     DC_ERROR_RAISE_ERRNO(error, E2BIG);
-    do_reset_state(environ, error, &state);
+    do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
     
     state.fatal_error = true;
-    do_reset_state(environ, error, &state);
+    do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
 }
 
@@ -202,26 +214,26 @@ Ensure(util, state_to_string)
     state.command             = NULL;
     state.fatal_error         = false;
     
-    state_str = state_to_string(environ, error, &state);
+    state_str = state_to_string(supvis, &state);
     assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: NULL\nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "";
-    state_str = state_to_string(environ, error, &state);
+    state_str = state_to_string(supvis, &state);
     assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: \nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "hello";
-    state_str = state_to_string(environ, error, &state);
+    state_str = state_to_string(supvis, &state);
     assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: hello\nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "world";
     state.fatal_error  = true;
-    state_str = state_to_string(environ, error, &state);
+    state_str = state_to_string(supvis, &state);
     assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: world\nFatal error: true\n"));
     free(state_str);

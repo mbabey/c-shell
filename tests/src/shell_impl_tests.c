@@ -27,26 +27,38 @@ static void test_parse_commands(const char *test_input);
 
 Describe(shell_impl);
 
-static struct dc_error *error;
-static struct dc_env   *environ;
+static struct supervisor     *supvis;
+static struct dc_env         *environ;
+static struct dc_error       *error;
+static struct memory_manager *mm;
 
 BeforeEach(shell_impl)
 {
+    supvis  = malloc(sizeof(struct supervisor));
     error   = dc_error_create(false);
     environ = dc_env_create(error, false, NULL);
+    mm      = init_mem_manager();
+    
+    supvis->env = environ;
+    supvis->err = error;
+    supvis->mm = mm;
+    
+    supvis->mm->mm_add(supvis->mm, error);
+    supvis->mm->mm_add(supvis->mm, environ);
 }
 
 AfterEach(shell_impl)
 {
-    dc_error_reset(error);
+    supvis->mm->mm_free_all(supvis->mm);
+    free(supvis);
 }
 
 Ensure(shell_impl, init_state)
 {
-    dc_unsetenv(environ, error, "PS1");
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
     test_init_state("$ ", stdin, stdout, stderr);
     
-    dc_setenv(environ, error, "PS1", "gabagool: ", true);
+    dc_setenv(supvis->env, supvis->err, "PS1", "gabagool: ", true);
     test_init_state("gabagool: ", stdin, stdout, stderr);
 }
 
@@ -60,12 +72,12 @@ static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FI
     state.stdout = stdout;
     state.stderr = stderr;
     
-    line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
+    line_length = dc_sysconf(supvis->env, supvis->err, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
     
-    next_state = init_state(NULL, &state);
+    next_state = init_state(supvis, &state);
     
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     
     assert_that(state.stdin, is_equal_to(in));
@@ -99,13 +111,13 @@ static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *er
     state.stdout = stdout;
     state.stderr = stderr;
     
-    line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
+    line_length = dc_sysconf(supvis->env, supvis->err, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
     
-    init_state(NULL, &state);
-    next_state = destroy_state(NULL, &state);
+    init_state(supvis, &state);
+    next_state = destroy_state(supvis, &state);
     
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(next_state, is_equal_to(EXIT));
     
     assert_that(state.stdin, is_equal_to(in));
@@ -126,16 +138,16 @@ static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *er
 
 Ensure(shell_impl, reset_state)
 {
-    dc_unsetenv(environ, error, "PS1");
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
     test_reset_state("$ ", false);
     
-    dc_setenv(environ, error, "PS1", "hahaha: ", true);
+    dc_setenv(supvis->env, supvis->err, "PS1", "hahaha: ", true);
     test_reset_state("hahaha: ", false);
     
-    dc_unsetenv(environ, error, "PS1");
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
     test_reset_state("$ ", true);
     
-    dc_setenv(environ, error, "PS1", "hahaha: ", true);
+    dc_setenv(supvis->env, supvis->err, "PS1", "hahaha: ", true);
     test_reset_state("hahaha: ", true);
 }
 
@@ -149,12 +161,12 @@ static void test_reset_state(const char *expected_prompt, bool initial_fatal)
     state.stdout = stdout;
     state.stderr = stderr;
     
-    line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
+    line_length = dc_sysconf(supvis->env, supvis->err, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
     
-    next_state = init_state(NULL, &state);
+    next_state = init_state(supvis, &state);
     
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     
     assert_that(state.stdin, is_equal_to(stdin));
@@ -202,19 +214,19 @@ static void test_read_commands(const char *test_input, const char *expected_comm
     state.stdin  = in;
     state.stdout = out;
     state.stderr = stderr;
-    dc_unsetenv(environ, error, "PS1");
-    next_state = init_state(NULL, &state);
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
+    next_state = init_state(supvis, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    next_state = read_commands(NULL, &state);
+    next_state = read_commands(supvis, &state);
     assert_that(next_state, is_equal_to(expected_state));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    cwd    = dc_get_working_dir(environ, error);
-    prompt = dc_malloc(environ, error, strlen(cwd) + strlen(state.prompt) + extra_prompt_chars);
+    cwd    = dc_get_working_dir(supvis->env, supvis->err);
+    prompt = dc_malloc(supvis->env, supvis->err, strlen(cwd) + strlen(state.prompt) + extra_prompt_chars);
     sprintf(prompt, "[%s] %s", cwd, state.prompt);
     
     assert_that(out_buf, is_equal_to_string(prompt));
@@ -247,15 +259,15 @@ static void test_separate_commands(const char *test_input, const char *expected_
     state.stdin  = in;
     state.stdout = out;
     state.stderr = stderr;
-    dc_unsetenv(environ, error, "PS1");
-    next_state = init_state(NULL, &state);
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
+    next_state = init_state(supvis, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    next_state = read_commands(NULL, &state);
+    next_state = read_commands(supvis, &state);
     assert_that(next_state, is_equal_to(read_expected_state));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     assert_that(state.current_line, is_equal_to_string(expected_command));
     assert_that(state.current_line_length, is_equal_to(strlen(state.current_line)));
@@ -265,9 +277,9 @@ static void test_separate_commands(const char *test_input, const char *expected_
         return;
     }
     
-    next_state = separate_commands(NULL, &state);
+    next_state = separate_commands(supvis, &state);
     assert_that(next_state, is_equal_to(PARSE_COMMANDS));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     assert_that(state.command, is_null);
     assert_that(state.command->line, is_equal_to_string(state.current_line)); // TODO: will need to be token later
@@ -286,7 +298,7 @@ static void test_separate_commands(const char *test_input, const char *expected_
 
 Ensure(shell_impl, parse_commands)
 {
-    test_parse_commands("hello\n", NULL);
+    test_parse_commands("hello\n");
 }
 
 static void test_parse_commands(const char *test_input)
@@ -307,25 +319,25 @@ static void test_parse_commands(const char *test_input)
     state.stdin  = in;
     state.stdout = out;
     state.stderr = stderr;
-    dc_unsetenv(environ, error, "PS1");
-    next_state = init_state(NULL, &state);
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
+    next_state = init_state(supvis, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    next_state = read_commands(NULL, &state);
+    next_state = read_commands(supvis, &state);
     assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    next_state = separate_commands(NULL, &state);
+    next_state = separate_commands(supvis, &state);
     assert_that(next_state, is_equal_to(PARSE_COMMANDS));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    next_state = parse_commands(NULL, &state);
+    next_state = parse_commands(supvis, &state);
     assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
     
