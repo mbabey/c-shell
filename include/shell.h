@@ -5,6 +5,7 @@
 #ifndef CSH_SHELL_H
 #define CSH_SHELL_H
 
+#include "supervisor.h"
 #include <dc_fsm/fsm.h>
 
 /**
@@ -24,20 +25,6 @@ enum State
     RESET_STATE,                    // reset the state      8
     ERROR,                          // handle errors        9
     DESTROY_STATE                   // destroy the state    10
-};
-
-/**
- * struct supervisor
- * <p>
- * Object containing objects passed throughout the program.
- * Contains a dc_env, a dc_error, and a mem_manager.
- * </p>
- */
-struct supervisor
-{
-    struct dc_env *env;
-    struct dc_error *err;
-    struct mem_manager *mm;
 };
 
 /**

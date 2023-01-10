@@ -6,8 +6,7 @@
 #define CSHELL_TESTS_UTIL_H
 
 #include "state.h"
-#include <dc_env/env.h>
-#include <dc_error/error.h>
+#include "supervisor.h"
 #include <stdio.h>
 
 /**
@@ -15,22 +14,20 @@
  * <p>
  * Get the prompt to use.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @return the value of the PS1 env var or "$ " if PS1 not set
  */
-char *get_prompt(const struct dc_env *env, struct dc_error *err);
+char *get_prompt(struct supervisor *supvis);
 
 /**
  * get_path
  * <p>
  * Get the PATH environment variable.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @return the PATH env var
  */
-char *get_path(const struct dc_env *env, struct dc_error *err);
+char *get_path(struct supervisor *supvis);
 
 /**
  * parse_path
@@ -39,12 +36,11 @@ char *get_path(const struct dc_env *env, struct dc_error *err);
  * Directories are separated with a ':' character. Any paths with '~'
  * are converted to the user's home directory.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param path_str the path var
  * @return the directories that make up the path
  */
-char **parse_path(const struct dc_env *env, struct dc_error *err, const char *path_str);
+char **parse_path(struct supervisor *supvis, const char *path_str);
 
 /**
  * do_reset_state
@@ -52,45 +48,41 @@ char **parse_path(const struct dc_env *env, struct dc_error *err, const char *pa
  * Reset the state for the next read by freeing dynamically allocated memory
  * of impermanent settings. Reset the error object.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param state the state to reset
  */
-void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state *state);
+void do_reset_state(struct supervisor *supvis, struct state *state);
 
 /**
  * do_reset_command
  * <p>
  * Reset the command struct by freeing dynamically allocated memory and clearing variables.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param command the command object to reset
  */
-void do_reset_command(const struct dc_env *env, struct dc_error *err, struct command *command);
+void do_reset_command(struct supervisor *supvis, struct command *command);
 
 /**
  * display_state
  * <p>
  * Display the state values to the parameter stream.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param state the state to display
  * @param stream the stream on which to display the state
  */
-void display_state(const struct dc_env *env, struct dc_error *err, const struct state *state, FILE *stream);
+void display_state(struct supervisor *supvis, const struct state *state, FILE *stream);
 
 /**
  * state_to_string
  * <p>
  * Display the state value as a string.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param state the state to display
  * @return the state as a string
  */
-char *state_to_string(const struct dc_env *env, struct dc_error *err, const struct state *state);
+char *state_to_string(struct supervisor *supvis, const struct state *state);
 
 #endif //CSHELL_TESTS_UTIL_H

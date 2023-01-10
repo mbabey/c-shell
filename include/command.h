@@ -2,8 +2,7 @@
 #define CSH_COMMAND_H
 
 #include "state.h"
-#include <dc_env/env.h>
-#include <dc_error/error.h>
+#include "supervisor.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -32,12 +31,11 @@ struct command
  * <p>
  * Parse the command by using the command->line to fill the rest of the command fields.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param state the state object
  * @param command the command object
  */
-void parse_command(const struct dc_env *env, struct dc_error *err,
+void parse_command(struct supervisor *supvis,
         struct state *state, struct command *command);
 
 #endif //CSH_COMMAND_H

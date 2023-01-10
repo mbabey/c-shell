@@ -34,12 +34,12 @@ Ensure(util, get_prompt)
     char *prompt;
     
     dc_unsetenv(environ, error, "PS1");
-    prompt = get_prompt(environ, error);
+    prompt = get_prompt(NULL);
     assert_false(dc_error_has_no_error(error));
     assert_that(prompt, is_equal_to_string("$ ")); // Test when PS1 not set
     
     dc_setenv(environ, error, "PS1", "ABC", true);
-    prompt = get_prompt(environ, error);
+    prompt = get_prompt(NULL);
     assert_false(dc_error_has_no_error(error));
     assert_that(prompt, is_equal_to_string("ABC")); // Test when PS1 set
 }

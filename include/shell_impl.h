@@ -5,7 +5,7 @@
 #ifndef CSH_SHELL_IMPL_H
 #define CSH_SHELL_IMPL_H
 
-#include "shell.h"
+#include "supervisor.h"
 
 /**
  * init_state

@@ -2,7 +2,6 @@
 #include "../include/command.h"
 #include <dc_c/dc_stdlib.h>
 #include <dc_c/dc_string.h>
-#include <mem_manager/manager.h>
 #include <wordexp.h>
 #include <string.h>
 
@@ -27,11 +26,11 @@ inline const char *bool_to_string(bool boolean);
  */
 size_t count_char_in_string(char c, char *str);
 
-char *get_prompt(const struct dc_env *env, struct dc_error *err)
+char *get_prompt(struct supervisor *supvis)
 {
     char *prompt;
     
-    if ((prompt = dc_getenv(env, "PS1")) == NULL)
+    if ((prompt = dc_getenv(supvis->env, "PS1")) == NULL)
     {
         prompt = strdup("$ ");
     }
@@ -39,20 +38,20 @@ char *get_prompt(const struct dc_env *env, struct dc_error *err)
     return prompt;
 }
 
-char *get_path(const struct dc_env *env, struct dc_error *err)
+char *get_path(struct supervisor *supvis)
 {
     char *path;
     
-    path = dc_getenv(env, "PATH");
+    path = dc_getenv(supvis->env, "PATH");
     if (path == NULL)
     {
-        DC_ERROR_RAISE_ERRNO(err, ENODATA);
+        DC_ERROR_RAISE_ERRNO(supvis->err, ENODATA);
     }
     
     return path;
 }
 
-char **parse_path(const struct dc_env *env, struct dc_error *err, const char *path_str)
+char **parse_path(struct supervisor *supvis, const char *path_str)
 {
     char **paths;
     char *path_str_dup;
@@ -62,17 +61,17 @@ char **parse_path(const struct dc_env *env, struct dc_error *err, const char *pa
     path_str_dup = strdup(path_str); // mem alloc here
     num_paths = count_char_in_string(':', path_str_dup) + 1;
     
-    paths = dc_malloc(env, err, num_paths * sizeof(char *)); // mem alloc here
+    paths = dc_malloc(supvis->env, supvis->err, num_paths * sizeof(char *)); // mem alloc here
     
     // tokenize the path string
-    path_str_dup = dc_strtok(env, path_str_dup, ":");
+    path_str_dup = dc_strtok(supvis->env, path_str_dup, ":");
     *paths = path_str_dup;
     for (size_t i = 1; path_str_dup; ++i)
     {
-        path_str_dup = dc_strtok(env, NULL, ":");
+        path_str_dup = dc_strtok(supvis->env, NULL, ":");
         if (path_str_dup)
         {
-            path_str_dup = ;
+//            path_str_dup = ;
             *(paths + i) = path_str_dup;
         }
     }
@@ -100,32 +99,32 @@ size_t count_char_in_string(char c, char *str)
     return occurrences;
 }
 
-void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state *state)
+void do_reset_state(struct supervisor *supvis, struct state *state)
 {
-    dc_free(env, state->current_line);
+    dc_free(supvis->env, state->current_line);
     state->current_line_length = 0;
     state->fatal_error = false;
-    do_reset_command(env, err, state->command);
-    dc_free(env, state->command);
+    do_reset_command(supvis, state->command);
+    dc_free(supvis->env, state->command);
     
-    dc_error_reset(err);
+    dc_error_reset(supvis->err);
 }
 
-void do_reset_command(const struct dc_env *env, struct dc_error *err, struct command *command)
+void do_reset_command(struct supervisor *supvis, struct command *command)
 {
 
 }
 
-void display_state(const struct dc_env *env, struct dc_error *err, const struct state *state, FILE *stream)
+void display_state(struct supervisor *supvis, const struct state *state, FILE *stream)
 {
     char *state_str;
     
-    state_str = state_to_string(env, err, state);
+    state_str = state_to_string(supvis, state);
     fprintf(stream, "%s", state_str);
     free(state_str);
 }
 
-char *state_to_string(const struct dc_env *env, struct dc_error *err, const struct state *state)
+char *state_to_string(struct supervisor *supvis, const struct state *state)
 {
     size_t len;
     char   *line;
@@ -134,7 +133,7 @@ char *state_to_string(const struct dc_env *env, struct dc_error *err, const stru
     len = (state->current_line == NULL) ? strlen("Current line: NULL\n") : strlen("Current line: \n");
     len += (state->fatal_error) ? strlen("Fatal error: true\n") : strlen("Fatal error: false\n");
     
-    line = dc_malloc(env, err, len + state->current_line_length + 1);
+    line = dc_malloc(supvis->env, supvis->err, len + state->current_line_length + 1);
     
     /* Print the line. */
     if (state->current_line == NULL)
