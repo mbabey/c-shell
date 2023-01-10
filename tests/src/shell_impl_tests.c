@@ -63,7 +63,7 @@ static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FI
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
     
-    next_state = init_state(environ, error, &state);
+    next_state = init_state(NULL, &state);
     
     assert_false(dc_error_has_no_error(error));
     assert_that(next_state, is_equal_to(READ_COMMANDS));
@@ -102,8 +102,8 @@ static void test_destroy_state(bool initial_fatal, FILE *in, FILE *out, FILE *er
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
     
-    init_state(environ, error, &state);
-    next_state = destroy_state(environ, error, &state);
+    init_state(NULL, &state);
+    next_state = destroy_state(NULL, &state);
     
     assert_false(dc_error_has_no_error(error));
     assert_that(next_state, is_equal_to(EXIT));
@@ -152,7 +152,7 @@ static void test_reset_state(const char *expected_prompt, bool initial_fatal)
     line_length = dc_sysconf(environ, error, _SC_ARG_MAX);
     assert_that_expression(line_length >= 0);
     
-    next_state = init_state(environ, error, &state);
+    next_state = init_state(NULL, &state);
     
     assert_false(dc_error_has_no_error(error));
     assert_that(next_state, is_equal_to(READ_COMMANDS));
@@ -203,12 +203,12 @@ static void test_read_commands(const char *test_input, const char *expected_comm
     state.stdout = out;
     state.stderr = stderr;
     dc_unsetenv(environ, error, "PS1");
-    next_state = init_state(environ, error, &state);
+    next_state = init_state(NULL, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
     
-    next_state = read_commands(environ, error, &state);
+    next_state = read_commands(NULL, &state);
     assert_that(next_state, is_equal_to(expected_state));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
@@ -248,12 +248,12 @@ static void test_separate_commands(const char *test_input, const char *expected_
     state.stdout = out;
     state.stderr = stderr;
     dc_unsetenv(environ, error, "PS1");
-    next_state = init_state(environ, error, &state);
+    next_state = init_state(NULL, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
     
-    next_state = read_commands(environ, error, &state);
+    next_state = read_commands(NULL, &state);
     assert_that(next_state, is_equal_to(read_expected_state));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
@@ -265,7 +265,7 @@ static void test_separate_commands(const char *test_input, const char *expected_
         return;
     }
     
-    next_state = separate_commands(environ, error, &state);
+    next_state = separate_commands(NULL, &state);
     assert_that(next_state, is_equal_to(PARSE_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
@@ -308,22 +308,22 @@ static void test_parse_commands(const char *test_input)
     state.stdout = out;
     state.stderr = stderr;
     dc_unsetenv(environ, error, "PS1");
-    next_state = init_state(environ, error, &state);
+    next_state = init_state(NULL, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
     
-    next_state = read_commands(environ, error, &state);
+    next_state = read_commands(NULL, &state);
     assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
     
-    next_state = separate_commands(environ, error, &state);
+    next_state = separate_commands(NULL, &state);
     assert_that(next_state, is_equal_to(PARSE_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);
     
-    next_state = parse_commands(environ, error, &state);
+    next_state = parse_commands(NULL, &state);
     assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
     assert_false(dc_error_has_no_error(error));
     assert_false(state.fatal_error);

@@ -144,7 +144,7 @@ static void test_parse_commands(const char *expected_line,
     state.stdout = NULL;
     state.stderr = NULL;
     dc_unsetenv(environ, error, "PS1");
-    init_state(environ, error, &state);
+    init_state(NULL, &state);
     
     state.command       = calloc(1, sizeof(struct command));
     state.command->line = strdup(expected_line);

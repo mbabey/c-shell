@@ -5,8 +5,7 @@
 #ifndef CSH_SHELL_IMPL_H
 #define CSH_SHELL_IMPL_H
 
-#include <dc_error/error.h>
-#include <dc_env/env.h>
+#include "shell.h"
 
 /**
  * init_state
@@ -22,12 +21,11 @@
  * <li>prompt: the PS1 env var if set, otherwise "$"</li>
  * <li>max_line_length: the value of _SC_ARG_MAX (see sysconfig)</li>
  * </ul>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return READ_COMMANDS or ERROR
  */
-int init_state(const struct dc_env *env, struct dc_error *err, void *arg);
+int init_state(struct supervisor *supvis, void *arg);
 
 /**
  * destroy_state
@@ -35,24 +33,22 @@ int init_state(const struct dc_env *env, struct dc_error *err, void *arg);
  * Reclaim memory fro the state object and zero it out (NULL, 0, false).
  * This will terminate the shell.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return EXIT
  */
-int destroy_state(const struct dc_env *env, struct dc_error *err, void *arg);
+int destroy_state(struct supervisor *supvis, void *arg);
 
 /**
  * reset_state
  * <p>
  * Reset the state for the next read.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return READ_COMMANDS
  */
-int reset_state(const struct dc_env *env, struct dc_error *err, void *arg);
+int reset_state(struct supervisor *supvis, void *arg);
 
 /**
  * read_commands
@@ -60,12 +56,11 @@ int reset_state(const struct dc_env *env, struct dc_error *err, void *arg);
  * Prompt the user and read the command line. Sets state->current_line and
  * current_line_length.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return SEPARATE_COMMANDS
  */
-int read_commands(const struct dc_env *env, struct dc_error *err, void *arg);
+int read_commands(struct supervisor *supvis, void *arg);
 
 /**
  * separate_commands
@@ -73,24 +68,22 @@ int read_commands(const struct dc_env *env, struct dc_error *err, void *arg);
  * Separate the commands. In the current implementation there is only one
  * command. Sets state->command
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return PARSE_COMMANDS or ERROR
  */
-int separate_commands(const struct dc_env *env, struct dc_error *err, void *arg);
+int separate_commands(struct supervisor *supvis, void *arg);
 
 /**
  * parse_commands
  * <p>
  * Parse the commands (see parse_command).
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return EXECUTE_COMMANDS or ERROR
  */
-int parse_commands(const struct dc_env *env, struct dc_error *err, void *arg);
+int parse_commands(struct supervisor *supvis, void *arg);
 
 /**
  * execute_commands
@@ -99,35 +92,32 @@ int parse_commands(const struct dc_env *env, struct dc_error *err, void *arg);
  * If the command->command is "cd", run builtin_cd.
  * If the command->command is
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return EXECUTE_COMMANDS or ERROR
  */
-int execute_commands(const struct dc_env *env, struct dc_error *err, void *arg);
+int execute_commands(struct supervisor *supvis, void *arg);
 
 /**
  * do_exit
  * <p>
  * Handle the exit command (see do_reset_state)
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return DESTROY_STATE
  */
-int do_exit(const struct dc_env *env, struct dc_error *err, void *arg);
+int do_exit(struct supervisor *supvis, void *arg);
 
 /**
  * handle_error
  * <p>
  * Print the err->message to stderr and reset the err (see dc_err_reset)
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @param arg the current struct state
  * @return RESET_STATE or DESTROY_STATE (if state->fatal_error)
  */
-int handle_error(const struct dc_env *env, struct dc_error *err, void *arg);
+int handle_error(struct supervisor *supvis, void *arg);
 
 #endif //CSH_SHELL_IMPL_H

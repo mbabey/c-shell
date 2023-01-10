@@ -2,6 +2,7 @@
 #include "../include/command.h"
 #include <dc_c/dc_stdlib.h>
 #include <dc_c/dc_string.h>
+#include <mem_manager/manager.h>
 #include <wordexp.h>
 #include <string.h>
 
@@ -32,7 +33,7 @@ char *get_prompt(const struct dc_env *env, struct dc_error *err)
     
     if ((prompt = dc_getenv(env, "PS1")) == NULL)
     {
-        prompt = "$ ";
+        prompt = strdup("$ ");
     }
     
     return prompt;
@@ -71,7 +72,7 @@ char **parse_path(const struct dc_env *env, struct dc_error *err, const char *pa
         path_str_dup = dc_strtok(env, NULL, ":");
         if (path_str_dup)
         {
-            path_str_dup = wordexp();
+            path_str_dup = ;
             *(paths + i) = path_str_dup;
         }
     }

@@ -5,10 +5,14 @@
 #ifndef CSH_SHELL_H
 #define CSH_SHELL_H
 
-#include <dc_error/error.h>
-#include <dc_env/env.h>
 #include <dc_fsm/fsm.h>
 
+/**
+ * State
+ * <p>
+ * The states in which the shell may exist.
+ * </p>
+ */
 enum State
 {
     INIT_STATE = DC_FSM_USER_START, // the initial state    2
@@ -23,14 +27,27 @@ enum State
 };
 
 /**
+ * struct supervisor
+ * <p>
+ * Object containing objects passed throughout the program.
+ * Contains a dc_env, a dc_error, and a mem_manager.
+ * </p>
+ */
+struct supervisor
+{
+    struct dc_env *env;
+    struct dc_error *err;
+    struct mem_manager *mm;
+};
+
+/**
  * run_shell
  * <p>
  * Run the shell FSM.
  * </p>
- * @param env the environment
- * @param err the error object
+ * @param supvis the supervisor object
  * @return the exit code of the shell
  */
-int run_shell(const struct dc_env *env, struct dc_error *err);
+int run_shell(struct supervisor *supvis);
 
 #endif //CSH_SHELL_H
