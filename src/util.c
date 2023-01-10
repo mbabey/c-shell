@@ -15,9 +15,14 @@ inline const char *bool_to_string(bool boolean);
 
 char *get_prompt(const struct dc_env *env, struct dc_error *err)
 {
+    char *prompt;
     
+    if ((prompt = dc_getenv(env, "PS1")) == NULL)
+    {
+        prompt = "$ ";
+    }
     
-    return NULL;
+    return prompt;
 }
 
 char *get_path(const struct dc_env *env, struct dc_error *err)
