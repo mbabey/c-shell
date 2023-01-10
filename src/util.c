@@ -1,6 +1,7 @@
 #include "../include/util.h"
 #include "../include/command.h"
 #include <dc_c/dc_stdlib.h>
+#include <dc_c/dc_string.h>
 #include <string.h>
 
 /**
@@ -40,18 +41,40 @@ char *get_path(const struct dc_env *env, struct dc_error *err)
 
 char **parse_path(const struct dc_env *env, struct dc_error *err, const char *path_str)
 {
+    char *path_str_dup;
+    char *tok;
+    
+    path_str_dup = strdup(path_str);
+    
+    // tokenize the path string
+    tok = dc_strtok(env, path_str_dup, ":");
+    while (tok)
+    {
+        printf("%s\n%s\n", tok, path_str_dup);
+        tok = dc_strtok(env, path_str_dup, ":");
+    }
+    
+    // wordexp the path string
+    
+    // return a pointer to the first item in the list of tokens
+    
     return NULL;
 }
 
 void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state *state)
 {
-    free(state->current_line);
+    dc_free(env, state->current_line);
     state->current_line_length = 0;
     state->fatal_error = false;
     do_reset_command(env, err, state->command);
-    free(state->command);
+    dc_free(env, state->command);
     
     dc_error_reset(err);
+}
+
+void do_reset_command(const struct dc_env *env, struct dc_error *err, struct command *command)
+{
+
 }
 
 void display_state(const struct dc_env *env, struct dc_error *err, const struct state *state, FILE *stream)
@@ -88,7 +111,7 @@ char *state_to_string(const struct dc_env *env, struct dc_error *err, const stru
     return line;
 }
 
-inline const char *bool_to_string(bool boolean)
+const char *bool_to_string(bool boolean)
 {
     const char *str = (boolean) ? "true" : "false";
     return str;

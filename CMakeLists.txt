@@ -25,8 +25,8 @@ set(SOURCE_LIST
 #        ${SOURCE_DIR}/shell_impl.c
         ${SOURCE_DIR}/util.c
         )
-#SET(SOURCE_MAIN ${SOURCE_DIR}/main.c
-#        )
+SET(SOURCE_MAIN ${SOURCE_DIR}/main.c
+        )
 set(HEADER_LIST
 #        ${INCLUDE_DIR}/builtins.h
         ${INCLUDE_DIR}/command.h

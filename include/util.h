@@ -75,6 +75,7 @@ void do_reset_command(const struct dc_env *env, struct dc_error *err, struct com
  * Display the state values to the parameter stream.
  * </p>
  * @param env the environment
+ * @param err the error object
  * @param state the state to display
  * @param stream the stream on which to display the state
  */
@@ -86,6 +87,7 @@ void display_state(const struct dc_env *env, struct dc_error *err, const struct 
  * Display the state value as a string.
  * </p>
  * @param env the environment
+ * @param err the error object
  * @param state the state to display
  * @return the state as a string
  */
