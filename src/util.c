@@ -2,6 +2,7 @@
 #include "../include/command.h"
 #include <dc_c/dc_stdlib.h>
 #include <dc_c/dc_string.h>
+#include <wordexp.h>
 #include <string.h>
 
 /**
@@ -13,6 +14,17 @@
  * @return the boolean as a string
  */
 inline const char *bool_to_string(bool boolean);
+
+/**
+ * count_char_in_string
+ * <p>
+ * Count the number of occurrences of a character in a string.
+ * </p>
+ * @param c the char of which to find occurrences
+ * @param str the string in which to find occurrences
+ * @return the number of occurrences of c in str
+ */
+size_t count_char_in_string(char c, char *str);
 
 char *get_prompt(const struct dc_env *env, struct dc_error *err)
 {
@@ -41,24 +53,50 @@ char *get_path(const struct dc_env *env, struct dc_error *err)
 
 char **parse_path(const struct dc_env *env, struct dc_error *err, const char *path_str)
 {
+    char **paths;
     char *path_str_dup;
     char *tok;
+    size_t num_paths;
     
-    path_str_dup = strdup(path_str);
+    path_str_dup = strdup(path_str); // mem alloc here
+    num_paths = count_char_in_string(':', path_str_dup) + 1;
+    
+    paths = dc_malloc(env, err, num_paths * sizeof(char *)); // mem alloc here
     
     // tokenize the path string
-    tok = dc_strtok(env, path_str_dup, ":");
-    while (tok)
+    path_str_dup = dc_strtok(env, path_str_dup, ":");
+    *paths = path_str_dup;
+    for (size_t i = 1; path_str_dup; ++i)
     {
-        printf("%s\n%s\n", tok, path_str_dup);
-        tok = dc_strtok(env, path_str_dup, ":");
+        path_str_dup = dc_strtok(env, NULL, ":");
+        if (path_str_dup)
+        {
+            path_str_dup = wordexp();
+            *(paths + i) = path_str_dup;
+        }
     }
     
     // wordexp the path string
     
+    
     // return a pointer to the first item in the list of tokens
     
-    return NULL;
+    return paths;
+}
+
+size_t count_char_in_string(char c, char *str)
+{
+    size_t occurrences;
+    
+    occurrences = 0;
+    for (char *path_iter = str; *path_iter; ++path_iter)
+    {
+        if (*path_iter == c)
+        {
+            ++occurrences;
+        }
+    }
+    return occurrences;
 }
 
 void do_reset_state(const struct dc_env *env, struct dc_error *err, struct state *state)
