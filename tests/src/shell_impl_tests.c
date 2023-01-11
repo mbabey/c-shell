@@ -93,6 +93,8 @@ static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FI
     assert_that(state.current_line_length, is_equal_to(0));
     assert_that(state.command, is_null);
     assert_false(state.fatal_error);
+    
+    destroy_state(supvis, &state);
 }
 
 Ensure(shell_impl, destroy_state)
@@ -183,6 +185,8 @@ static void test_reset_state(const char *expected_prompt, bool initial_fatal)
     assert_that(state.command, is_null);
     state.fatal_error = initial_fatal;
     assert_false(state.fatal_error);
+    
+    destroy_state(supvis, &state);
 }
 
 Ensure(shell_impl, read_commands)
@@ -232,6 +236,8 @@ static void test_read_commands(const char *test_input, const char *expected_comm
     assert_that(out_buf, is_equal_to_string(prompt));
     assert_that(state.current_line, is_equal_to_string(expected_command));
     assert_that(state.current_line_length, is_equal_to(strlen(state.current_line)));
+    
+    destroy_state(supvis, &state);
 }
 
 Ensure(shell_impl, separate_commands)
@@ -294,6 +300,7 @@ static void test_separate_commands(const char *test_input, const char *expected_
     assert_false(state.command->stderr_overwrite);
     assert_that(state.command->exit_code, is_equal_to(0));
     
+    destroy_state(supvis, &state);
 }
 
 Ensure(shell_impl, parse_commands)
@@ -340,7 +347,7 @@ static void test_parse_commands(const char *test_input)
     assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    
+    destroy_state(supvis, &state);
 }
 
 Ensure(shell_impl, execute_commands)

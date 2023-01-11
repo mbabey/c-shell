@@ -1,6 +1,7 @@
 #include "../include/tests.h"
 #include "../../include/util.h"
 #include "../../include/command.h"
+#include "../../include/shell_impl.h"
 #include <dc_c/dc_stdlib.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_util/strings.h>
@@ -182,6 +183,8 @@ Ensure(util, do_reset_state)
     state.fatal_error = true;
     do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
+    
+    destroy_state(supvis, &state);
 }
 
 static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err)
@@ -195,7 +198,6 @@ static void check_state_reset(const struct state *state, FILE *in, FILE *out, FI
     assert_that(state->current_line_length, is_equal_to(0));
     assert_that(state->command, is_null);
     assert_false(state->fatal_error);
-    
 }
 
 Ensure(util, state_to_string)
@@ -237,6 +239,8 @@ Ensure(util, state_to_string)
     assert_false(dc_error_has_no_error(error));
     assert_that(state_str, is_equal_to_string("Current line: world\nFatal error: true\n"));
     free(state_str);
+    
+    destroy_state(supvis, &state);
 }
 
 TestSuite *util_tests(void)

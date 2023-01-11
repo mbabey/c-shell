@@ -198,6 +198,8 @@ static void test_parse_commands(const char *expected_line,
     free(expanded_stdin_file);
     free(expanded_stdout_file);
     free(expanded_stderr_file);
+    
+    destroy_state(supvis, &state);
 }
 
 static void expand_file_name(const char *expected_file, char **expanded_file)
