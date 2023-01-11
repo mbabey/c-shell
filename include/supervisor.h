@@ -30,4 +30,14 @@ struct supervisor
  */
 struct supervisor *init_supervisor(void);
 
+/**
+ * destroy_supervisor
+ * <p>
+ * Destroy a supervisor by freeing all memory contained in its memory_manager
+ * and the supervisor itself.
+ * </p>
+ * @param supervisor the supervisor to destroy
+ */
+void destroy_supervisor(struct supervisor *supervisor);
+
 #endif //CSH_SUPERVISOR_H

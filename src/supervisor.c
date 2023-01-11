@@ -26,3 +26,9 @@ struct supervisor *init_supervisor(void)
     
     return supvis;
 }
+
+void destroy_supervisor(struct supervisor *supervisor)
+{
+    supervisor->mm->mm_free_all(supervisor->mm);
+    free(supervisor);
+}
