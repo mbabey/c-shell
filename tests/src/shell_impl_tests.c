@@ -305,10 +305,11 @@ static void test_separate_commands(const char *test_input, const char *expected_
 
 Ensure(shell_impl, parse_commands)
 {
-    test_parse_commands("hello\n");
+    test_parse_commands("hello\n", "hello", 1);
+    test_parse_commands("./a.out a b c\n", "./a.out", 4);
 }
 
-static void test_parse_commands(const char *test_input)
+static void test_parse_commands(const char *test_input, char *expected_command, size_t expected_argc)
 {
     struct state state;
     FILE         *in;
@@ -346,6 +347,9 @@ static void test_parse_commands(const char *test_input)
     assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
     assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
+    
+    assert_that(state.command->command, is_equal_to_string(expected_command));
+    assert_that(state.command->argc, is_equal_to_string(expected_argc));
     
     destroy_state(supvis, &state);
 }
