@@ -199,18 +199,33 @@ char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *curre
 
 void do_reset_state(struct supervisor *supvis, struct state *state)
 {
-    dc_free(supvis->env, state->current_line);
+    supvis->mm->mm_free(supvis->mm, state->current_line);
+    state->current_line = NULL;
     state->current_line_length = 0;
-    state->fatal_error         = false;
     do_reset_command(supvis, state->command);
-    dc_free(supvis->env, state->command);
+    supvis->mm->mm_free(supvis->mm, state->command);
+    state->fatal_error         = false;
     
     dc_error_reset(supvis->err);
 }
 
 void do_reset_command(struct supervisor *supvis, struct command *command)
 {
-
+    supvis->mm->mm_free(supvis->mm, command->line);
+    command->line = NULL;
+    supvis->mm->mm_free(supvis->mm, command->command);
+    command->command = NULL;
+    command->argc = 0;
+    command->argv = NULL; // TODO: have to free all of argv (attach NULL to end of argv in implementation)
+    supvis->mm->mm_free(supvis->mm, command->stdin_file);
+    command->stdin_file = NULL;
+    supvis->mm->mm_free(supvis->mm, command->stdout_file);
+    command->stdout_file = NULL;
+    command->stdout_overwrite = false;
+    supvis->mm->mm_free(supvis->mm, command->stderr_file);
+    command->stderr_file = NULL;
+    command->stderr_overwrite = false;
+    command->exit_code = 0;
 }
 
 void display_state(struct supervisor *supvis, const struct state *state, FILE *stream)
