@@ -36,7 +36,7 @@ BeforeEach(command)
     
     supvis->env = environ;
     supvis->err = error;
-    supvis->mm = mm;
+    supvis->mm  = mm;
     
     supvis->mm->mm_add(supvis->mm, error);
     supvis->mm->mm_add(supvis->mm, environ);
@@ -50,8 +50,6 @@ AfterEach(command)
 
 Ensure(command, parse_command)
 {
-//    "./a.out foo bar < in.txt > out.txt 2>>err.txt\n
-    
     char **argv;
     
     argv = dc_strs_to_array(supvis->env, supvis->err, 2, "hello", NULL);
@@ -64,69 +62,96 @@ Ensure(command, parse_command)
                         0);
     dc_strs_destroy_array(supvis->env, 2, argv);
     
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "hello", NULL);
     test_parse_commands("./a.out 2>>err.txt\n",
                         "./a.out",
-                        1, NULL,
+                        1, argv,
                         NULL,
                         NULL, false,
                         "err.txt", false,
                         0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "~/cProjects/projects/c-shell/build/csh", NULL);
     test_parse_commands("~/cProjects/projects/c-shell/build/csh\n",
                         "~/cProjects/projects/c-shell/build/csh",
-                        1, NULL,
+                        1, argv,
                         NULL,
-                        "out.txt", true,
+                        NULL, false,
                         NULL, false,
                         0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 4, "~/cProjects/projects/reliable-udp/server-src/build/server",
+                            "-i", "192.168.0.252", NULL);
     test_parse_commands("~/cProjects/projects/reliable-udp/server-src/build/server -i 192.168.0.252\n",
                         "~/cProjects/projects/reliable-udp/server-src/build/server -i 192.168.0.252",
-                        1, NULL,
+                        3, argv,
                         NULL,
-                        "out.txt", true,
+                        NULL, false,
                         NULL, false,
                         0);
+    dc_strs_destroy_array(supvis->env, 4, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "./a.out", NULL);
     test_parse_commands("./a.out > out.txt\n",
                         "./a.out",
-                        1, NULL,
+                        1, argv,
                         NULL,
-                        "out.txt", true,
+                        NULL, false,
                         NULL, false,
                         0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "./a.out", NULL);
     test_parse_commands("./a.out < in.txt\n",
                         "./a.out",
-                        1, NULL,
+                        1, argv,
                         "in.txt",
                         NULL, false,
                         NULL, false,
                         0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "./a.out", NULL);
     test_parse_commands("./a.out < in.txt > out.txt 2>>~/err.txt\n",
                         "./a.out",
-                        1, NULL,
+                        1, argv,
                         "in.txt",
                         "out.txt", true,
                         "~/err.txt", false,
                         0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "./a.out", NULL);
     test_parse_commands("./a.out < in.txt > ~/out.txt\n",
                         "./a.out",
-                        1, NULL,
+                        1, argv,
                         "in.txt",
                         "~/out.txt", true,
                         NULL, false,
                         0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "./a.out", NULL);
     test_parse_commands("./a.out <     in.txt >> out.txt 2>   err.txt\n",
                         "./a.out",
-                        1, NULL,
+                        1, argv,
                         "in.txt",
                         "out.txt", false,
                         "err.txt", true,
                         0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 4, "./a.out", "foo", "bar", NULL);
     test_parse_commands("./a.out foo bar < in.txt > out.txt 2>>err.txt\n",
                         "./a.out",
-                        3, NULL,
+                        3, argv,
                         "in.txt",
                         "out.txt", true,
                         "err.txt", false,
                         0);
+    dc_strs_destroy_array(supvis->env, 4, argv);
 }
 
 static void test_parse_commands(const char *expected_line,
