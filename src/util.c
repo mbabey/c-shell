@@ -6,14 +6,16 @@
 #include <string.h>
 
 /**
- * bool_to_string
+ * tokenize_path
  * <p>
- * Convert a boolean to a string, either "true" or "false".
+ * Given a path, separate it into individual directory paths based on the ':' character.
  * </p>
- * @param boolean the boolean to convert
- * @return the boolean as a string
+ * @param supvis the supervisor object
+ * @param path_str_dup the path string
+ * @param num_paths the number of paths
+ * @return the list of tokenized paths
  */
-inline const char *bool_to_string(bool boolean);
+char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_paths);
 
 /**
  * count_char_in_string
@@ -35,9 +37,29 @@ size_t count_char_in_string(char c, char *str);
  */
 char **expand_paths(struct supervisor *supvis, char **paths, size_t num_paths);
 
-char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_paths);
+/**
+ * save_exp_paths
+ * <p>
+ * Duplicate expanded path names from a wordexp_t into a char * array for use
+ * elsewhere.
+ * </p>
+ * @param supvis the supervisor object
+ * @param exp_paths the list into which expanded path names shall be saved
+ * @param current_exp_path the current number of saved expanded path names
+ * @param we the wordexp_t temporarily storing expanded path names
+ * @return the updated list of expanded path names
+ */
+char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *current_exp_path, const wordexp_t *we);
 
-char ** save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *current_exp_path, const wordexp_t *we);
+/**
+ * bool_to_string
+ * <p>
+ * Convert a boolean to a string, either "true" or "false".
+ * </p>
+ * @param boolean the boolean to convert
+ * @return the boolean as a string
+ */
+inline const char *bool_to_string(bool boolean);
 
 char *get_prompt(struct supervisor *supvis)
 {
