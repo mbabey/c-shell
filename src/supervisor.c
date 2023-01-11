@@ -1,5 +1,6 @@
 #include "../include/supervisor.h"
 #include <stdlib.h>
+#include <mem_manager/manager.h>
 
 struct supervisor *init_supervisor(void)
 {

@@ -223,6 +223,7 @@ find_library(LIBDC_UTIL dc_util REQUIRED)
 find_library(LIBDC_FSM dc_fsm REQUIRED)
 find_library(LIB_CONFIG config REQUIRED)
 find_library(LIBDC_APPLICATION dc_application REQUIRED)
+find_library(LIBMEM_MANAGER mem_manager REQUIRED)
 
 target_link_libraries(csh PUBLIC ${LIBDC_ERROR})
 target_link_libraries(csh PUBLIC ${LIBDC_ENV})
@@ -233,8 +234,9 @@ target_link_libraries(csh PUBLIC ${LIBDC_UTIL})
 target_link_libraries(csh PUBLIC ${LIBDC_FSM})
 target_link_libraries(csh PUBLIC ${LIB_CONFIG})
 target_link_libraries(csh PUBLIC ${LIBDC_APPLICATION})
+target_link_libraries(csh PUBLIC ${LIBMEM_MANAGER})
 
-set_target_properties(csh PROPERTIES OUTPUT_NAME "dcshell")
+set_target_properties(csh PROPERTIES OUTPUT_NAME "csh")
 install(TARGETS csh DESTINATION bin)
 
 add_dependencies(csh doxygen)
