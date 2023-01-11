@@ -35,6 +35,8 @@ size_t count_char_in_string(char c, char *str);
  */
 void expand_paths(struct supervisor *supvis, char **paths, size_t num_paths);
 
+char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_paths);
+
 char *get_prompt(struct supervisor *supvis)
 {
     char *prompt;
@@ -69,9 +71,24 @@ char **parse_path(struct supervisor *supvis, const char *path_str)
     path_str_dup = strdup(path_str); // mem alloc here
     num_paths    = count_char_in_string(':', path_str_dup) + 1;
     
-    paths = dc_malloc(supvis->env, supvis->err, num_paths * sizeof(char *)); // mem alloc here
-    
     // tokenize the path string
+    paths = tokenize_path(supvis, path_str_dup, num_paths);
+    
+    // expand each path string
+    expand_paths(supvis, paths, num_paths);
+    
+    // return a pointer to the first item in the list of tokens
+    
+    return paths;
+}
+
+char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_paths)
+{
+    char **paths;
+    
+    paths = mm_malloc(num_paths * sizeof(char *), supvis->mm,
+                      __FILE__, __func__, __LINE__); // mem alloc here
+                      
     path_str_dup = dc_strtok(supvis->env, path_str_dup, ":");
     *paths = path_str_dup;
     for (size_t i = 1; path_str_dup; ++i)
@@ -82,11 +99,6 @@ char **parse_path(struct supervisor *supvis, const char *path_str)
             *(paths + i) = path_str_dup;
         }
     }
-    
-    // expand each path string
-    expand_paths(supvis, paths, num_paths);
-    
-    // return a pointer to the first item in the list of tokens
     
     return paths;
 }
@@ -123,11 +135,11 @@ void expand_paths(struct supervisor *supvis, char **paths, size_t num_paths)
                 DC_ERROR_RAISE_ERRNO(supvis->err, errno);
             }
         }
-    }
-    printf("argc = %zu\n--- argv: ---\n", we.we_wordc);
-    for (size_t i = 0; i < we.we_wordc; ++i)
-    {
-        printf("argv[%zu] = %s\n", i, *(we.we_wordv + i));
+        printf("argc = %zu\n--- argv: ---\n", we.we_wordc);
+        for (size_t j = 0; j < we.we_wordc; ++j)
+        {
+            printf("argv[%zu] = %s\n", j, *(we.we_wordv + j));
+        }
     }
     
     wordfree(&we);
