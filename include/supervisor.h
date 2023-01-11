@@ -19,6 +19,15 @@ struct supervisor
     struct memory_manager *mm;
 };
 
+/**
+ * init_supervisor
+ * <p>
+ * Allocate and initialize a supervisor with a dc_env, a dc_error, and
+ * a memory_manager. Add the dc_env and dc_error to the memory_manager.
+ * If allocation of the supervisor fails, return NULL.
+ * </p>
+ * @return a pointer to the new supervisor, NULL if failure
+ */
 struct supervisor *init_supervisor(void);
 
 #endif //CSH_SUPERVISOR_H
