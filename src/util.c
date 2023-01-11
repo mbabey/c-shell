@@ -26,6 +26,15 @@ inline const char *bool_to_string(bool boolean);
  */
 size_t count_char_in_string(char c, char *str);
 
+/**
+ * expand_paths
+ * <p>
+ * Expand all paths from their condensed forms
+ * </p>
+ * @param paths the paths to expand
+ */
+void expand_paths(struct supervisor *supvis, char **paths, size_t num_paths);
+
 char *get_prompt(struct supervisor *supvis)
 {
     char *prompt;
@@ -53,13 +62,12 @@ char *get_path(struct supervisor *supvis)
 
 char **parse_path(struct supervisor *supvis, const char *path_str)
 {
-    char **paths;
-    char *path_str_dup;
-    char *tok;
+    char   **paths;
+    char   *path_str_dup;
     size_t num_paths;
     
     path_str_dup = strdup(path_str); // mem alloc here
-    num_paths = count_char_in_string(':', path_str_dup) + 1;
+    num_paths    = count_char_in_string(':', path_str_dup) + 1;
     
     paths = dc_malloc(supvis->env, supvis->err, num_paths * sizeof(char *)); // mem alloc here
     
@@ -71,13 +79,12 @@ char **parse_path(struct supervisor *supvis, const char *path_str)
         path_str_dup = dc_strtok(supvis->env, NULL, ":");
         if (path_str_dup)
         {
-//            path_str_dup = ;
             *(paths + i) = path_str_dup;
         }
     }
     
-    // wordexp the path string
-    
+    // expand each path string
+    expand_paths(supvis, paths, num_paths);
     
     // return a pointer to the first item in the list of tokens
     
@@ -99,11 +106,38 @@ size_t count_char_in_string(char c, char *str)
     return occurrences;
 }
 
+void expand_paths(struct supervisor *supvis, char **paths, size_t num_paths)
+{
+    wordexp_t we;
+    
+    for (size_t i = 0; i < num_paths; ++i)
+    {
+        switch (wordexp(*(paths + i), &we, 0))
+        {
+            case 0:
+            {
+                break;
+            }
+            default:
+            {
+                DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+            }
+        }
+    }
+    printf("argc = %zu\n--- argv: ---\n", we.we_wordc);
+    for (size_t i = 0; i < we.we_wordc; ++i)
+    {
+        printf("argv[%zu] = %s\n", i, *(we.we_wordv + i));
+    }
+    
+    wordfree(&we);
+}
+
 void do_reset_state(struct supervisor *supvis, struct state *state)
 {
     dc_free(supvis->env, state->current_line);
     state->current_line_length = 0;
-    state->fatal_error = false;
+    state->fatal_error         = false;
     do_reset_command(supvis, state->command);
     dc_free(supvis->env, state->command);
     

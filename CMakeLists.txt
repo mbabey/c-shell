@@ -24,6 +24,7 @@ set(SOURCE_LIST
 #        ${SOURCE_DIR}/shell.c
 #        ${SOURCE_DIR}/shell_impl.c
         ${SOURCE_DIR}/util.c
+        ${SOURCE_DIR}/supervisor.c
         )
 SET(SOURCE_MAIN ${SOURCE_DIR}/main.c
         )
@@ -36,6 +37,7 @@ set(HEADER_LIST
         ${INCLUDE_DIR}/shell_impl.h
         ${INCLUDE_DIR}/state.h
         ${INCLUDE_DIR}/util.h
+        ${INCLUDE_DIR}/supervisor.h
         )
 
 add_compile_definitions(_POSIX_C_SOURCE=200809L)

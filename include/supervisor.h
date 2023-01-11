@@ -19,4 +19,6 @@ struct supervisor
     struct memory_manager *mm;
 };
 
+struct supervisor *init_supervisor(void);
+
 #endif //CSH_SUPERVISOR_H
