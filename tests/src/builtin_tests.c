@@ -4,6 +4,7 @@
 #include "../../include/supervisor.h"
 #include "../../include/util.h"
 #include <dc_util/strings.h>
+#include <dc_util/path.h>
 #include <dc_util/filesystem.h>
 
 // NOLINTBEGIN
@@ -42,28 +43,28 @@ AfterEach(builtin)
 Ensure(builtin, builtin_cd)
 {
     char **argv;
+    char *path;
     
-    //  cd
-    //  cd ~
     //  cd ..
     //  cd /
     //  cd /path
     //  cd file.txt
     //  cd <no real dir>
     //  cd <no permission dir>
-    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "/", NULL);
+    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, "/", NULL);
     test_builtin_cd("cd /\n", "cd", 1, argv, "/");
     dc_strs_destroy_array(supvis->env, 2, argv);
     
-    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "/", NULL);
+    dc_expand_path(supvis->env, supvis->err, &path, "~");
+    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, path, NULL);
+    test_builtin_cd("cd ~\n", "cd", 1, argv, path);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, "/", NULL);
     test_builtin_cd("cd /\n", "cd", 1, argv, "/");
     dc_strs_destroy_array(supvis->env, 2, argv);
     
-    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "/", NULL);
-    test_builtin_cd("cd /\n", "cd", 1, argv, "/");
-    dc_strs_destroy_array(supvis->env, 2, argv);
-    
-    argv = dc_strs_to_array(supvis->env, supvis->err, 2, "/", NULL);
+    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, "/", NULL);
     test_builtin_cd("cd /\n", "cd", 1, argv, "/");
     dc_strs_destroy_array(supvis->env, 2, argv);
 }
@@ -73,7 +74,6 @@ static void test_builtin_cd(const char *line, const char *cmd,
 {
     struct command command;
     char           *working_dir;
-    
     
     memset(&command, 0, sizeof(struct command));
     command.line    = strdup(line);
