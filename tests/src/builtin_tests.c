@@ -6,11 +6,13 @@
 #include <dc_util/strings.h>
 #include <dc_util/path.h>
 #include <dc_util/filesystem.h>
+#include <unistd.h>
 
 // NOLINTBEGIN
 
 static void
-test_builtin_cd(const char *line, const char *cmd, const size_t argc, char **argv, const char *expected_dir);
+test_builtin_cd(const char *line, const char *cmd, const size_t argc, char **argv, const char *expected_dir,
+                const char *expected_message);
 
 Describe(builtin);
 
@@ -44,6 +46,8 @@ Ensure(builtin, builtin_cd)
 {
     char **argv;
     char *path;
+    char template[16];
+    char message[BUFSIZ];
     
     //  cd ..
     //  cd /
@@ -52,41 +56,69 @@ Ensure(builtin, builtin_cd)
     //  cd <no real dir>
     //  cd <no permission dir>
     argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, "/", NULL);
-    test_builtin_cd("cd /\n", "cd", 1, argv, "/");
+    test_builtin_cd("cd /\n", "cd", 1, argv, "/", NULL);
     dc_strs_destroy_array(supvis->env, 2, argv);
     
     dc_expand_path(supvis->env, supvis->err, &path, "~");
     argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, path, NULL);
-    test_builtin_cd("cd ~\n", "cd", 1, argv, path);
+    test_builtin_cd("cd ~\n", "cd", 2, argv, path, NULL);
     dc_strs_destroy_array(supvis->env, 2, argv);
     
-    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, "/", NULL);
-    test_builtin_cd("cd /\n", "cd", 1, argv, "/");
+    dc_expand_path(supvis->env, supvis->err, &path, "~/");
+    // remove the trailing slash.
+    path[strlen(path) - 1] = '\0';
+    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, path, NULL);
+    test_builtin_cd("cd ~/\n", "cd", 2, argv, path, NULL);
     dc_strs_destroy_array(supvis->env, 2, argv);
     
-    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, "/", NULL);
-    test_builtin_cd("cd /\n", "cd", 1, argv, "/");
+    chdir("/");
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, NULL, NULL);
+    test_builtin_cd("cd /\n", "cd", 2, argv, "~", NULL);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    chdir("/tmp");
+    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, "/dev/null", NULL);
+    test_builtin_cd("cd /dev/null\n", "cd", 2, argv, "/tmp", "cd: not a directory: /dev/null\n");
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    strcpy(template, "/tmp/fileXXXXX");
+    mkstemp(template);
+    rmdir(template);
+    sprintf(message, "cd: %s: does not exist\n", template);
+    argv = dc_strs_to_array(supvis->env, supvis->err, 3, NULL, template, NULL);
+    test_builtin_cd("cd /tmp/fileXXXXX\n", "cd", 2, argv, "/tmp", NULL);
     dc_strs_destroy_array(supvis->env, 2, argv);
 }
 
-static void test_builtin_cd(const char *line, const char *cmd,
-                            const size_t argc, char **argv, const char *expected_dir)
+static void test_builtin_cd(const char *line, const char *cmd, const size_t argc, char **argv,
+                            const char *expected_dir, const char *expected_message)
 {
     struct command command;
-    char           *working_dir;
+    char message[BUFSIZ];
+    char *working_dir;
+    FILE *stderr_file;
     
     memset(&command, 0, sizeof(struct command));
     command.line    = strdup(line);
-    command.command = strdup(cmd);
+    command.command = strdup(cmd) ;
     command.argc    = argc;
     command.argv    = argv;
     
-    builtin_cd(supvis, &command);
-    working_dir = dc_get_working_dir(supvis->env, supvis->err);
+    memset(&message, 0, sizeof(message));
+    stderr_file = fmemopen(message, sizeof(message), "w");
     
-    assert_false(dc_error_has_error(supvis->err));
+    builtin_cd(supvis, &command, stderr);
+    
+    if (dc_error_has_error(supvis->err))
+    {
+        assert_that(message, is_equal_to_string(expected_message));
+        dc_error_reset(supvis->err);
+    }
+    
+    working_dir = dc_get_working_dir(supvis->env, supvis->err);
     assert_that(working_dir, is_equal_to_string(expected_dir));
     
+    fclose(stderr_file);
     do_reset_command(supvis, &command);
 }
 

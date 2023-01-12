@@ -17,7 +17,10 @@
  * </p>
  * @param supvis the supervisor object
  * @param command the command structure
+ * @param errstream the steam onto which errors shall be printed
  */
-void builtin_cd(struct supervisor *supvis, struct command *command); // TODO: call chdir
+void builtin_cd(struct supervisor *supvis, struct command *command, FILE *errstream);
+// TODO: call chdir
+// TODO: check the errno: what is the error? print an appropriate message
 
 #endif //CSH_BUILTINS_H
