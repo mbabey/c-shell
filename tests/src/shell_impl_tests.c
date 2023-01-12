@@ -373,46 +373,21 @@ Ensure(shell_impl, execute_commands)
 Ensure(shell_impl, do_exit)
 {
     struct state state;
-    FILE         *in;
-    FILE         *out;
-    size_t       in_size;
-    char         *in_buf;
-    char         out_buf[BUFSIZ];
     int          next_state;
-    
-    in_buf  = strdup("exit");
-    in_size = strlen(in_buf) + 1;
-    in      = fmemopen(in_buf, in_size, "r");
-    out     = fmemopen(out_buf, sizeof(out_buf), "w");
-    
-    state.stdin  = in;
-    state.stdout = out;
-    state.stderr = stderr;
+
     dc_unsetenv(supvis->env, supvis->err, "PS1");
     next_state = init_state(supvis, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    next_state = read_commands(supvis, &state);
-    assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
+    state.max_line_length = 10;
+    
+    next_state = do_exit(supvis, &state);
+    assert_that(next_state, is_equal_to(DESTROY_STATE));
     assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
-    
-    next_state = separate_commands(supvis, &state);
-    assert_that(next_state, is_equal_to(PARSE_COMMANDS));
-    assert_false(dc_error_has_no_error(supvis->err));
-    assert_false(state.fatal_error);
-    
-    next_state = parse_commands(supvis, &state);
-    assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
-    assert_false(dc_error_has_no_error(supvis->err));
-    assert_false(state.fatal_error);
-    
-    assert_that(state.command->command, is_equal_to_string("exit"));
-    assert_that(state.command->argc, is_equal_to(1));
-    
-    destroy_state(supvis, &state);
+    assert_that(state.max_line_length, is_equal_to(0));
 }
 
 Ensure(shell_impl, handle_error)
