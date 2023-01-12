@@ -25,7 +25,8 @@ static void test_separate_commands(const char *test_input, const char *expected_
 
 static void test_parse_commands(const char *test_input, char *expected_command, size_t expected_argc);
 
-static void test_execute_commands(const char *command, int expected_next_state);
+static void test_execute_commands(const char *command, int expected_next_state, const char *expected_exit_code,
+                                  const char *expected_error_message);
 
 Describe(shell_impl);
 
@@ -358,41 +359,43 @@ static void test_parse_commands(const char *test_input, char *expected_command, 
 
 Ensure(shell_impl, execute_commands)
 {
-    // builtins:
-    //  cd
-    //  cd ~
-    //  cd ..
-    //  cd /
-    //  cd /path
-    //  cd file.txt
+    char *current_working_dir;
     
-    // extern:
-    //  ls
-    //  cat
-    //  (etc.)
-    test_execute_commands("exit", EXIT);
-    test_execute_commands("cd", RESET_STATE);
+    test_execute_commands("exit", EXIT, "", "");
+    
+    test_execute_commands("cd /", RESET_STATE, "0\n", "");
+    current_working_dir = dc_get_working_dir(supvis->env, supvis->err);
+    assert_that(current_working_dir, is_equal_to_string("/"));
+    
+    test_execute_commands("cd /dev/null", RESET_STATE, "1\n", "cd: /dev/null: is not a directory\n");
+    current_working_dir = dc_get_working_dir(supvis->env, supvis->err);
+    assert_that(current_working_dir, is_equal_to_string("/"));
 }
 
-static void test_execute_commands(const char *command, int expected_next_state)
+static void test_execute_commands(const char *command, int expected_next_state, const char *expected_exit_code,
+                                  const char *expected_error_message)
 {
     struct state state;
     FILE         *in;
     FILE         *out;
+    FILE *err;
     size_t       in_size;
     char         *in_buf;
     char         out_buf[BUFSIZ];
+    char         err_buf[BUFSIZ];
     int          next_state;
     
-    in_buf  = strdup(test_input);
+    in_buf  = strdup(command);
     in_size = strlen(in_buf) + 1;
     in      = fmemopen(in_buf, in_size, "r");
     out     = fmemopen(out_buf, sizeof(out_buf), "w");
+    err     = fmemopen(err_buf, sizeof(err_buf), "w");
     
     state.stdin  = in;
     state.stdout = out;
-    state.stderr = stderr;
+    state.stderr = err;
     dc_unsetenv(supvis->env, supvis->err, "PS1");
+    
     next_state = init_state(supvis, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
     assert_false(dc_error_has_no_error(supvis->err));
@@ -413,10 +416,16 @@ static void test_execute_commands(const char *command, int expected_next_state)
     assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
+    fclose(out);
+    out_buf[0] = '\0';
+    out = fmemopen(out_buf, sizeof(out_buf), "w");
+    state.stdout = out;
+    
     next_state = execute_commands(supvis, &state);
-    assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
-    assert_false(dc_error_has_no_error(supvis->err));
-    assert_false(state.fatal_error);
+    
+    assert_that(next_state, is_equal_to(expected_next_state));
+    assert_that(out_buf, is_equal_to_string(expected_exit_code));
+    assert_that(err_buf, is_equal_to_string(expected_error_message));
     
     destroy_state(supvis, &state);
 }
