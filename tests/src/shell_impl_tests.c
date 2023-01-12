@@ -23,7 +23,7 @@ static void test_read_commands(const char *test_input, const char *expected_comm
 
 static void test_separate_commands(const char *test_input, const char *expected_command, int read_expected_state);
 
-static void test_parse_commands(const char *test_input);
+static void test_parse_commands(const char *test_input, char *expected_command, size_t expected_argc);
 
 Describe(shell_impl);
 
@@ -349,7 +349,7 @@ static void test_parse_commands(const char *test_input, char *expected_command, 
     assert_false(state.fatal_error);
     
     assert_that(state.command->command, is_equal_to_string(expected_command));
-    assert_that(state.command->argc, is_equal_to_string(expected_argc));
+    assert_that(state.command->argc, is_equal_to(expected_argc));
     
     destroy_state(supvis, &state);
 }
@@ -372,7 +372,47 @@ Ensure(shell_impl, execute_commands)
 
 Ensure(shell_impl, do_exit)
 {
-
+    struct state state;
+    FILE         *in;
+    FILE         *out;
+    size_t       in_size;
+    char         *in_buf;
+    char         out_buf[BUFSIZ];
+    int          next_state;
+    
+    in_buf  = strdup("exit");
+    in_size = strlen(in_buf) + 1;
+    in      = fmemopen(in_buf, in_size, "r");
+    out     = fmemopen(out_buf, sizeof(out_buf), "w");
+    
+    state.stdin  = in;
+    state.stdout = out;
+    state.stderr = stderr;
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
+    next_state = init_state(supvis, &state);
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    next_state = read_commands(supvis, &state);
+    assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    next_state = separate_commands(supvis, &state);
+    assert_that(next_state, is_equal_to(PARSE_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    next_state = parse_commands(supvis, &state);
+    assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    assert_that(state.command->command, is_equal_to_string("exit"));
+    assert_that(state.command->argc, is_equal_to(1));
+    
+    destroy_state(supvis, &state);
 }
 
 Ensure(shell_impl, handle_error)
