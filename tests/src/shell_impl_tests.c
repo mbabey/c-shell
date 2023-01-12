@@ -25,6 +25,8 @@ static void test_separate_commands(const char *test_input, const char *expected_
 
 static void test_parse_commands(const char *test_input, char *expected_command, size_t expected_argc);
 
+static void test_execute_commands(const char *command, int expected_next_state);
+
 Describe(shell_impl);
 
 static struct supervisor     *supvis;
@@ -368,6 +370,55 @@ Ensure(shell_impl, execute_commands)
     //  ls
     //  cat
     //  (etc.)
+    test_execute_commands("exit", EXIT);
+    test_execute_commands("cd", RESET_STATE);
+}
+
+static void test_execute_commands(const char *command, int expected_next_state)
+{
+    struct state state;
+    FILE         *in;
+    FILE         *out;
+    size_t       in_size;
+    char         *in_buf;
+    char         out_buf[BUFSIZ];
+    int          next_state;
+    
+    in_buf  = strdup(test_input);
+    in_size = strlen(in_buf) + 1;
+    in      = fmemopen(in_buf, in_size, "r");
+    out     = fmemopen(out_buf, sizeof(out_buf), "w");
+    
+    state.stdin  = in;
+    state.stdout = out;
+    state.stderr = stderr;
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
+    next_state = init_state(supvis, &state);
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    next_state = read_commands(supvis, &state);
+    assert_that(next_state, is_equal_to(SEPARATE_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    next_state = separate_commands(supvis, &state);
+    assert_that(next_state, is_equal_to(PARSE_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    next_state = parse_commands(supvis, &state);
+    assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    next_state = execute_commands(supvis, &state);
+    assert_that(next_state, is_equal_to(EXECUTE_COMMANDS));
+    assert_false(dc_error_has_no_error(supvis->err));
+    assert_false(state.fatal_error);
+    
+    destroy_state(supvis, &state);
 }
 
 Ensure(shell_impl, do_exit)
@@ -381,13 +432,13 @@ Ensure(shell_impl, do_exit)
     assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
     
-    state.max_line_length = 10;
+    state.current_line_length = 10;
     
     next_state = do_exit(supvis, &state);
     assert_that(next_state, is_equal_to(DESTROY_STATE));
     assert_false(dc_error_has_no_error(supvis->err));
     assert_false(state.fatal_error);
-    assert_that(state.max_line_length, is_equal_to(0));
+    assert_that(state.current_line_length, is_equal_to(0));
 }
 
 Ensure(shell_impl, handle_error)
