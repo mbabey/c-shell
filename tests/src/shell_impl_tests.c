@@ -356,7 +356,18 @@ static void test_parse_commands(const char *test_input, char *expected_command, 
 
 Ensure(shell_impl, execute_commands)
 {
-
+    // builtins:
+    //  cd
+    //  cd ~
+    //  cd ..
+    //  cd /
+    //  cd /path
+    //  cd file.txt
+    
+    // extern:
+    //  ls
+    //  cat
+    //  (etc.)
 }
 
 Ensure(shell_impl, do_exit)

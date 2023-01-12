@@ -18,6 +18,6 @@
  * @param supvis the supervisor object
  * @param command the command structure
  */
-void builtin_cd(struct supervisor *supvis, struct command *command);
+void builtin_cd(struct supervisor *supvis, struct command *command); // TODO: call chdir
 
 #endif //CSH_BUILTINS_H
