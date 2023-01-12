@@ -72,8 +72,9 @@ Ensure(builtin, builtin_cd)
     dc_strs_destroy_array(supvis->env, 2, argv);
     
     chdir("/");
+    dc_expand_path(supvis->env, supvis->err, &path, "~");
     argv = dc_strs_to_array(supvis->env, supvis->err, 2, NULL, NULL);
-    test_builtin_cd("cd /\n", "cd", 2, argv, "~", NULL);
+    test_builtin_cd("cd\n", "cd", 2, argv, path, NULL);
     dc_strs_destroy_array(supvis->env, 2, argv);
     
     chdir("/tmp");
@@ -94,13 +95,13 @@ static void test_builtin_cd(const char *line, const char *cmd, const size_t argc
                             const char *expected_dir, const char *expected_message)
 {
     struct command command;
-    char message[BUFSIZ];
-    char *working_dir;
-    FILE *stderr_file;
+    char           message[BUFSIZ];
+    char           *working_dir;
+    FILE           *stderr_file;
     
     memset(&command, 0, sizeof(struct command));
     command.line    = strdup(line);
-    command.command = strdup(cmd) ;
+    command.command = strdup(cmd);
     command.argc    = argc;
     command.argv    = argv;
     
@@ -109,9 +110,13 @@ static void test_builtin_cd(const char *line, const char *cmd, const size_t argc
     
     builtin_cd(supvis, &command, stderr);
     
-    if (dc_error_has_error(supvis->err))
+    if (dc_error_has_no_error(supvis->err))
+    {
+        assert_that(command.exit_code, is_equal_to(0));
+    } else
     {
         assert_that(message, is_equal_to_string(expected_message));
+        assert_that(command.exit_code, is_equal_to(1));
         dc_error_reset(supvis->err);
     }
     
