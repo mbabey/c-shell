@@ -3,12 +3,14 @@
 #include "../../include/shell_impl.h"
 #include "../../include/state.h"
 #include "../../include/shell.h"
+#include "../../include/supervisor.h"
 #include <dc_env/env.h>
 #include <dc_error/error.h>
 #include <dc_posix/dc_stdlib.h>
 #include <dc_posix/dc_unistd.h>
 #include <dc_util/filesystem.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <dc_c/dc_stdlib.h>
 
 // NOLINTBEGIN
@@ -28,6 +30,9 @@ static void test_parse_commands(const char *test_input, char *expected_command, 
 static void test_execute_commands(const char *command, int expected_next_state, const char *expected_exit_code,
                                   const char *expected_error_message);
 
+static void test_handle_error(const char *current_line, int expected_err_code, int expected_next_state, bool is_fatal,
+                              const char *expected_err_message);
+
 Describe(shell_impl);
 
 static struct supervisor     *supvis;
@@ -44,7 +49,7 @@ BeforeEach(shell_impl)
     
     supvis->env = environ;
     supvis->err = error;
-    supvis->mm = mm;
+    supvis->mm  = mm;
     
     supvis->mm->mm_add(supvis->mm, error);
     supvis->mm->mm_add(supvis->mm, environ);
@@ -380,7 +385,7 @@ static void test_execute_commands(const char *command, int expected_next_state, 
     struct state state;
     FILE         *in;
     FILE         *out;
-    FILE *err;
+    FILE         *err;
     size_t       in_size;
     char         *in_buf;
     char         out_buf[BUFSIZ];
@@ -436,7 +441,7 @@ Ensure(shell_impl, do_exit)
 {
     struct state state;
     int          next_state;
-
+    
     dc_unsetenv(supvis->env, supvis->err, "PS1");
     next_state = init_state(supvis, &state);
     assert_that(next_state, is_equal_to(READ_COMMANDS));
@@ -454,7 +459,43 @@ Ensure(shell_impl, do_exit)
 
 Ensure(shell_impl, handle_error)
 {
+    test_handle_error(NULL, 4, DESTROY_STATE, true, NULL);
+    test_handle_error("ls", 6, RESET_STATE, false, NULL);
+}
+
+static void test_handle_error(const char *current_line, int expected_err_code, int expected_next_state, bool is_fatal,
+                              const char *expected_err_message)
+{
+    char out_buf[BUFSIZ];
+    char err_buf[BUFSIZ];
+    FILE *out_file;
+    FILE *err_file;
+    struct state state;
+    int next_state;
     
+    memset(out_buf, 0, sizeof(out_buf));
+    memset(err_buf, 0, sizeof(err_buf));
+    out_file = fmemopen(out_buf, sizeof(out_buf), "w");
+    err_file = fmemopen(err_buf, sizeof(err_buf), "w");
+    state.stdout = out_file;
+    state.stderr = err_file;
+    init_state(supvis, &state);
+    if (current_line)
+    {
+        state.current_line        = strdup(current_line);
+        state.current_line_length = strlen(state.current_line);
+    }
+    
+    state.fatal_error = is_fatal;
+    
+    next_state = handle_error(supvis, &state);
+    assert_that(next_state, is_equal_to(expected_next_state));
+    assert_that(out_buf, is_equal_to_string(""));
+//    assert_that(err_buf, is_equal_to_string(expected_err_message)); // Cannot test for implementation of dc_error
+    
+    free(state.current_line);
+    fclose(out_file);
+    fclose(err_file);
 }
 
 TestSuite *shell_impl_tests(void)
