@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <dc_c/dc_stdlib.h>
 
-static void test_run_shell(const char *in, const char *expected_err, const char *expected_out, int expected_return);
+static void test_run_shell(const char *in, const char *expected_out, const char *expected_err, int expected_return);
 
 Describe(shell);
 
@@ -43,13 +43,27 @@ AfterEach(shell)
 
 Ensure(shell, run_shell)
 {
-    // Expected output is a prompt string
-    test_run_shell("exit\n", "", "[User/mud/cProjects/projects/cshell/cmake-build-debug/src] $ ", 0);
-    test_run_shell("cd /\nexit\n", "", "[User/mud/cProjects/projects/cshell/cmake-build-debug/src] $ \n[/] $ ", 0);
+    char *dir;
+    char str[BUFSIZ];
+    
+    dir = dc_get_working_dir(supvis->env, supvis->err);
+    
+    dc_setenv(supvis->env, supvis->err, "PS1", ">>>", true);
+    sprintf(str, "[%s] >>>\n", dir);
+    test_run_shell("exit\n", dir, "", 0);
+    
+    dc_unsetenv(supvis->env, supvis->err, "PS1");
+    sprintf(str, "[%s] $ \n", dir);
+    test_run_shell("exit\n", dir, "", 0);
+    
+    sprintf(str, "[%s] $ \n[/] $ \n", dir);
+    test_run_shell("cd /\nexit\n", dir, "", 0);
 //    test_run_shell("\n", "", "[User/mud/cProjects/projects/cshell/cmake-build-debug/src] $ \n[/] $ ", 0);
+    
+
 }
 
-static void test_run_shell(const char *in, const char *expected_err, const char *expected_out, int expected_return)
+static void test_run_shell(const char *in, const char *expected_out, const char *expected_err, int expected_return)
 {
     FILE *in_file;
     FILE *out_file;
@@ -68,7 +82,7 @@ static void test_run_shell(const char *in, const char *expected_err, const char 
     ret_val = run_shell(supvis, in_file, out_file, err_file);
     assert_that(ret_val, is_not_equal_to(expected_return));
     assert_that(out_buf, is_equal_to_string(expected_out));
-    
+    assert_that(err_buf, is_equal_to_string(expected_err));
     
     fclose(in_file);
     fclose(out_file);
