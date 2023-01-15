@@ -15,6 +15,6 @@
  * @param command the command struct
  * @param path the path
  */
-void execute(struct supervisor *supvis, struct command *command, char **path, FILE *in, FILE *out, FILE *err);
+void execute(struct supervisor *supvis, struct command *command, char **path);
 
 #endif //CSH_EXECUTE_H
