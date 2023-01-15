@@ -1,9 +1,10 @@
+#include <dc_util/strings.h>
 #include "../include/tests.h"
 #include "../../include/execute.h"
+#include "../../include/supervisor.h"
 // NOLINTBEGIN
 
-static void check_state_reset(const struct dc_error error, const struct state state, FILE in, FILE out, FILE err);
-static void test_parse_path(const char path_str, char *dirs);
+static void test_execute(const char *cmd, char **path, char **argv, int expected_exit_code);
 
 Describe(execute);
 
@@ -34,7 +35,39 @@ AfterEach(execute)
 }
 Ensure(execute, execute)
 {
+    char **path;
+    char **argv;
+    
+    path = dc_strs_to_array(supvis->env, supvis->err, 3, "/bin", "/usr/bin", NULL);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, NULL, NULL);
+    test_execute("pwd", path, NULL, 0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, NULL, NULL);
+    test_execute("ls", path, NULL, 0);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    dc_strs_destroy_array(supvis->env, 3, path);
+    path = dc_strs_to_array(supvis->env, supvis->err, 1, NULL);
+    
+    argv = dc_strs_to_array(supvis->env, supvis->err, 2, NULL, NULL);
+    test_execute("ls", path, NULL, 127);
+    dc_strs_destroy_array(supvis->env, 2, argv);
+    
+    dc_strs_destroy_array(supvis->env, 1, path);
+}
 
+static void test_execute(const char *cmd, char **path, char **argv, int expected_exit_code)
+{
+    struct command command;
+    
+    memset(&command, 0, sizeof(struct command));
+    command.command = strdup(cmd);
+    command.argv = argv;
+    execute(supvis, &command, path);
+    assert_that(command.exit_code, is_equal_to(expected_exit_code));
+    free(command.command);
 }
 
 TestSuite *execute_tests(void)
