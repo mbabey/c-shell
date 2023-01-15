@@ -13,6 +13,8 @@ TestSuite *input_tests(void);
 
 TestSuite *shell_impl_tests(void);
 
+TestSuite *shell_tests(void);
+
 TestSuite *util_tests(void);
 
 #endif //CSHELL_TESTS_H
