@@ -2,11 +2,11 @@
 
 int main(int argc, char *argv[])
 {
-    TestSuite *suite;
+    TestSuite    *suite;
     TestReporter *reporter;
-    int suite_result;
+    int          suite_result;
     
-    suite = create_test_suite();
+    suite    = create_test_suite();
     reporter = create_text_reporter();
     
     add_suite(suite, util_tests());

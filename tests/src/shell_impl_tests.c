@@ -466,12 +466,12 @@ Ensure(shell_impl, handle_error)
 static void test_handle_error(const char *current_line, int expected_err_code, int expected_next_state, bool is_fatal,
                               const char *expected_err_message)
 {
-    char out_buf[BUFSIZ];
-    char err_buf[BUFSIZ];
-    FILE *out_file;
-    FILE *err_file;
+    char         out_buf[BUFSIZ];
+    char         err_buf[BUFSIZ];
+    FILE         *out_file;
+    FILE         *err_file;
     struct state state;
-    int next_state;
+    int          next_state;
     
     memset(out_buf, 0, sizeof(out_buf));
     memset(err_buf, 0, sizeof(err_buf));

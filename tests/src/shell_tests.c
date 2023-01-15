@@ -58,7 +58,7 @@ Ensure(shell, run_shell)
     
     sprintf(str, "[%s] $ \n[/] $ \n", dir);
     test_run_shell("cd /\nexit\n", dir, "", 0);
-    
+
 //    test_run_shell("\n", "", "[User/mud/cProjects/projects/cshell/cmake-build-debug/src] $ \n[/] $ ", 0);
 }
 
@@ -69,14 +69,14 @@ static void test_run_shell(const char *in, const char *expected_out, const char 
     FILE *err_file;
     char out_buf[BUFSIZ];
     char err_buf[BUFSIZ];
-    int ret_val;
+    int  ret_val;
     
     memset(out_buf, 0, sizeof(out_buf));
     memset(err_buf, 0, sizeof(err_buf));
-    in_file = fmemopen(in, strlen(in) + 1, "r");
+    in_file  = fmemopen(in, strlen(in) + 1, "r");
     out_file = fmemopen(out_buf, sizeof(out_buf), "w");
     err_file = fmemopen(out_buf, sizeof(err_buf), "w");
-    
+
 //    run_shell(supvis, NULL, NULL, NULL);
     ret_val = run_shell(supvis, in_file, out_file, err_file);
     assert_that(ret_val, is_not_equal_to(expected_return));

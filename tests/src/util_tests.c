@@ -30,7 +30,7 @@ BeforeEach(util)
     
     supvis->env = environ;
     supvis->err = error;
-    supvis->mm = mm;
+    supvis->mm  = mm;
     
     supvis->mm->mm_add(supvis->mm, error);
     supvis->mm->mm_add(supvis->mm, environ);

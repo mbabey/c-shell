@@ -65,7 +65,8 @@ char *get_prompt(struct supervisor *supvis)
 {
     char *prompt;
     
-    if ((prompt = dc_getenv(supvis->env, "PS1")) == NULL)
+    prompt = dc_getenv(supvis->env, "PS1");
+    if (!prompt)
     {
         prompt = strdup("$ ");
     }
@@ -78,7 +79,7 @@ char *get_path(struct supervisor *supvis)
     char *path;
     
     path = dc_getenv(supvis->env, "PATH");
-    if (path == NULL)
+    if (!path)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, ENODATA);
     }
@@ -182,8 +183,8 @@ char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *curre
 {
     *(current_exp_path) += we->we_wordc;
     exp_paths = (char **) mm_realloc(exp_paths, *(current_exp_path) * sizeof(char *),
-                                        supvis->mm,
-                                        __FILE__, __func__, __LINE__);
+                                     supvis->mm,
+                                     __FILE__, __func__, __LINE__);
     
     /* Start at the last expanded path + 1th index and the 0th wordv index
      * Go until all the strings in wordv have been copied into exp_paths. */
@@ -200,11 +201,11 @@ char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *curre
 void do_reset_state(struct supervisor *supvis, struct state *state)
 {
     supvis->mm->mm_free(supvis->mm, state->current_line);
-    state->current_line = NULL;
+    state->current_line        = NULL;
     state->current_line_length = 0;
     do_reset_command(supvis, state->command);
     supvis->mm->mm_free(supvis->mm, state->command);
-    state->fatal_error         = false;
+    state->fatal_error = false;
     
     dc_error_reset(supvis->err);
 }
@@ -215,17 +216,17 @@ void do_reset_command(struct supervisor *supvis, struct command *command)
     command->line = NULL;
     supvis->mm->mm_free(supvis->mm, command->command);
     command->command = NULL;
-    command->argc = 0;
-    command->argv = NULL; // TODO: have to free all of argv (attach NULL to end of argv in implementation)
+    command->argc    = 0;
+    command->argv    = NULL; // TODO: have to free all of argv (attach NULL to end of argv in implementation)
     supvis->mm->mm_free(supvis->mm, command->stdin_file);
     command->stdin_file = NULL;
     supvis->mm->mm_free(supvis->mm, command->stdout_file);
-    command->stdout_file = NULL;
+    command->stdout_file      = NULL;
     command->stdout_overwrite = false;
     supvis->mm->mm_free(supvis->mm, command->stderr_file);
-    command->stderr_file = NULL;
+    command->stderr_file      = NULL;
     command->stderr_overwrite = false;
-    command->exit_code = 0;
+    command->exit_code        = 0;
 }
 
 void display_state(struct supervisor *supvis, const struct state *state, FILE *stream)
