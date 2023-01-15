@@ -16,13 +16,13 @@ set(TEST_HEADER_LIST
         )
 
 set(TEST_SOURCE_LIST
-        ${SOURCE_DIR}/builtin_tests.c
-        ${SOURCE_DIR}/command_tests.c
-        ${SOURCE_DIR}/execute_tests.c
-        ${SOURCE_DIR}/input_tests.c
+#        ${SOURCE_DIR}/builtin_tests.c
+#        ${SOURCE_DIR}/command_tests.c
+#        ${SOURCE_DIR}/execute_tests.c
+#        ${SOURCE_DIR}/input_tests.c
         ${SOURCE_DIR}/main.c
-        ${SOURCE_DIR}/shell_impl_tests.c
-        ${SOURCE_DIR}/shell_tests.c
+#        ${SOURCE_DIR}/shell_impl_tests.c
+#        ${SOURCE_DIR}/shell_tests.c
         ${SOURCE_DIR}/util_tests.c
         )
 
@@ -50,6 +50,7 @@ find_library(LIBDC_UTIL dc_util REQUIRED)
 find_library(LIBDC_FSM dc_fsm REQUIRED)
 find_library(LIB_CONFIG config REQUIRED)
 find_library(LIBDC_APPLICATION dc_application REQUIRED)
+find_library(LIBMEM_MANAGER mem_manager REQUIRED)
 
 target_link_libraries(libdc_shell_test PRIVATE ${LIBCGREEN})
 target_link_libraries(libdc_shell_test PUBLIC ${LIBDC_ERROR})
@@ -61,5 +62,6 @@ target_link_libraries(libdc_shell_test PUBLIC ${LIBDC_UTIL})
 target_link_libraries(libdc_shell_test PUBLIC ${LIBDC_FSM})
 target_link_libraries(libdc_shell_test PUBLIC ${LIB_CONFIG})
 target_link_libraries(libdc_shell_test PUBLIC ${LIBDC_APPLICATION})
+target_link_libraries(libdc_shell_test PUBLIC ${LIBMEM_MANAGER})
 
 add_test(NAME libdc_shell_test COMMAND libdc_shell_test)

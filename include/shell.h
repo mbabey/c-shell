@@ -7,6 +7,7 @@
 
 #include "supervisor.h"
 #include <dc_fsm/fsm.h>
+#include <stdio.h>
 
 /**
  * State

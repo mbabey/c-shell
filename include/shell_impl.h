@@ -30,7 +30,7 @@ int init_state(struct supervisor *supvis, void *arg);
 /**
  * destroy_state
  * <p>
- * Reclaim memory fro the state object and zero it out (NULL, 0, false).
+ * Reclaim memory from the state object and zero it out (NULL, 0, false).
  * This will terminate the shell.
  * </p>
  * @param supvis the supervisor object

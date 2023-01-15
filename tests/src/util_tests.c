@@ -6,6 +6,7 @@
 #include <dc_posix/dc_stdlib.h>
 #include <dc_util/strings.h>
 #include <dc_util/sysexits.h>
+#include <mem_manager/manager.h>
 #include <stdbool.h>
 
 // NOLINTBEGIN
@@ -16,13 +17,14 @@ static void test_parse_path(const char *path_str, char **dirs);
 
 Describe(util);
 
-static struct supervisor     *supvis;
-static struct dc_env         *environ;
-static struct dc_error       *error;
-static struct memory_manager *mm;
+static struct supervisor *supvis;
 
 BeforeEach(util)
 {
+    struct dc_env         *environ;
+    struct dc_error       *error;
+    struct memory_manager *mm;
+    
     supvis  = malloc(sizeof(struct supervisor));
     error   = dc_error_create(false);
     environ = dc_env_create(error, false, NULL);
@@ -48,12 +50,12 @@ Ensure(util, get_prompt)
     
     dc_unsetenv(supvis->env, supvis->err, "PS1");
     prompt = get_prompt(supvis);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(prompt, is_equal_to_string("$ ")); // Test when PS1 not set
     
     dc_setenv(supvis->env, supvis->err, "PS1", "ABC", true);
     prompt = get_prompt(supvis);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(prompt, is_equal_to_string("ABC")); // Test when PS1 set
 }
 
@@ -76,14 +78,14 @@ Ensure(util, get_path)
     dc_unsetenv(supvis->env, supvis->err, "PATH");
 //    env_path = dc_getenv(environ, "PATH");
     env_path = get_path(supvis);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(env_path, is_null); // Test PATH=NULL
     
     for (const char *path = *paths; path != NULL; ++path) // Test PATH=<string>
     {
         dc_setenv(supvis->env, supvis->err, "PATH", path, true);
         env_path = get_path(supvis);
-        assert_false(dc_error_has_no_error(error));
+        assert_false(dc_error_has_no_error(supvis->err));
         assert_that(env_path, is_equal_to_string(path));
     }
 }
@@ -103,7 +105,7 @@ static void test_parse_path(const char *path_str, char **dirs)
     size_t i;
     
     path_dirs = parse_path(supvis, path_str);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     
     for (i = 0; *(dirs + i) && *(path_dirs + i); ++i)
     {
@@ -131,7 +133,7 @@ Ensure(util, do_reset_command)
     
     do_reset_command(supvis, &command);
     
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(command.line, is_null);
     assert_that(command.command, is_null);
     assert_that(command.argc, is_equal_to(0));
@@ -176,7 +178,7 @@ Ensure(util, do_reset_state)
     do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
     
-    DC_ERROR_RAISE_ERRNO(error, E2BIG);
+    DC_ERROR_RAISE_ERRNO(supvis->err, E2BIG);
     do_reset_state(supvis, &state);
     check_state_reset(&state, stdin, stdout, stderr);
     
@@ -189,7 +191,7 @@ Ensure(util, do_reset_state)
 
 static void check_state_reset(const struct state *state, FILE *in, FILE *out, FILE *err)
 {
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     
     assert_that(state->stdin, is_equal_to(in));
     assert_that(state->stdout, is_equal_to(out));
@@ -217,26 +219,26 @@ Ensure(util, state_to_string)
     state.fatal_error         = false;
     
     state_str = state_to_string(supvis, &state);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(state_str, is_equal_to_string("Current line: NULL\nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "";
     state_str = state_to_string(supvis, &state);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(state_str, is_equal_to_string("Current line: \nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "hello";
     state_str = state_to_string(supvis, &state);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(state_str, is_equal_to_string("Current line: hello\nFatal error: false\n"));
     free(state_str);
     
     state.current_line = "world";
     state.fatal_error  = true;
     state_str = state_to_string(supvis, &state);
-    assert_false(dc_error_has_no_error(error));
+    assert_false(dc_error_has_no_error(supvis->err));
     assert_that(state_str, is_equal_to_string("Current line: world\nFatal error: true\n"));
     free(state_str);
     
