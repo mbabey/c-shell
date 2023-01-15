@@ -370,6 +370,8 @@ Ensure(shell_impl, execute_commands)
     test_execute_commands("cd /dev/null", RESET_STATE, "1\n", "cd: /dev/null: is not a directory\n");
     current_working_dir = dc_get_working_dir(supvis->env, supvis->err);
     assert_that(current_working_dir, is_equal_to_string("/"));
+    
+    test_execute_commands("ls", RESET_STATE, "", "");
 }
 
 static void test_execute_commands(const char *command, int expected_next_state, const char *expected_exit_code,
@@ -452,7 +454,7 @@ Ensure(shell_impl, do_exit)
 
 Ensure(shell_impl, handle_error)
 {
-
+    
 }
 
 TestSuite *shell_impl_tests(void)
