@@ -33,8 +33,11 @@ enum State
  * Run the shell FSM.
  * </p>
  * @param supvis the supervisor object
+ * @param in the input stream
+ * @param out the output stream
+ * @param err the error stream
  * @return the exit code of the shell
  */
-int run_shell(struct supervisor *supvis);
+int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err);
 
 #endif //CSH_SHELL_H
