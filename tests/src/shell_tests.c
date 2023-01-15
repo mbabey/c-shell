@@ -58,9 +58,8 @@ Ensure(shell, run_shell)
     
     sprintf(str, "[%s] $ \n[/] $ \n", dir);
     test_run_shell("cd /\nexit\n", dir, "", 0);
-//    test_run_shell("\n", "", "[User/mud/cProjects/projects/cshell/cmake-build-debug/src] $ \n[/] $ ", 0);
     
-
+//    test_run_shell("\n", "", "[User/mud/cProjects/projects/cshell/cmake-build-debug/src] $ \n[/] $ ", 0);
 }
 
 static void test_run_shell(const char *in, const char *expected_out, const char *expected_err, int expected_return)
