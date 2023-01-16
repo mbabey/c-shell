@@ -4,6 +4,9 @@
 #include <dc_c/dc_string.h>
 #include <wordexp.h>
 #include <string.h>
+#include <unistd.h>
+#include <regex.h>
+#include <tclDecls.h>
 
 /**
  * tokenize_path
@@ -196,6 +199,93 @@ char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *curre
     }
     
     return exp_paths;
+}
+
+/**
+ * set_state_regex
+ * <p>
+ * Set the regex patterns in the state object.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ * @return 0 on success, -1 on error
+ */
+int set_state_regex(struct supervisor *supvis, struct state *state);
+
+/**
+ * set_regex
+ * <p>
+ * Set a regex_t to a pattern. If an error occurs, print an error message and return -1.
+ * </p>
+ * @param supvis the supervisor object
+ * @param regex the regex_t to set
+ * @param pattern the regex pattern
+ * @param flags flags to be used
+ * @return 0 on success, -1 on failure.
+ */
+int set_regex(struct supervisor *supvis, regex_t *regex, const char *pattern, int flags);
+
+int set_state_path(struct supervisor *supvis, struct state *state);
+
+struct state *do_init_state(struct supervisor *supvis, struct state *state)
+{
+    state = mm_calloc(1, sizeof(struct state), supvis->mm,
+            __FILE__, __func__, __LINE__);
+    if (state)
+    {
+        state->max_line_length = sysconf(_SC_ARG_MAX);
+        if (set_state_regex(supvis, state) == -1)
+        {
+            return NULL;
+        }
+        if (set_state_path(supvis, state) == -1)
+        {
+            return NULL;
+        }
+    }
+    
+    return state;
+}
+
+int set_state_regex(struct supervisor *supvis, struct state *state)
+{
+    int status;
+    
+    status = set_regex(supvis, state->in_redirect_regex, "[ \\t\\f\\v]<.*", 0);
+    if (status == -1)
+    {
+            return status;
+    }
+    status = set_regex(supvis, state->out_redirect_regex, "[ \\t\\f\\v][1^2]?>[>]?.*", 0);
+    if (status == -1)
+    {
+            return status;
+    }
+    status = set_regex(supvis, state->err_redirect_regex, "[ \\t\\f\\v]2>[>]?.*", 0);
+    if (status == -1)
+    {
+            return status;
+    }
+    
+    return status;
+}
+
+int set_regex(struct supervisor *supvis, regex_t *regex, const char *pattern, int flags)
+{
+    int status;
+    
+    status = regcomp(regex, pattern, flags);
+    if (status != 0)
+    {
+        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+    }
+    
+    return status;
+}
+
+int set_state_path(struct supervisor *supvis, struct state *state)
+{
+
 }
 
 void do_reset_state(struct supervisor *supvis, struct state *state)

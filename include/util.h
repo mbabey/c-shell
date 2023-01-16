@@ -43,6 +43,17 @@ char *get_path(struct supervisor *supvis);
 char **parse_path(struct supervisor *supvis, const char *path_str);
 
 /**
+ * do_init_state
+ * <p>
+ * Initialize the state.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state to initialize
+ * @return the initialized state, or NULL if an error occurs.
+ */
+struct state *do_init_state(struct supervisor *supvis, struct state *state);
+
+/**
  * do_reset_state
  * <p>
  * Reset the state for the next read by freeing dynamically allocated memory
