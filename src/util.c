@@ -126,6 +126,13 @@ struct state *do_init_state(struct supervisor *supvis, struct state *state)
             do_destroy_state(supvis, state);
             return NULL;
         }
+        state->prompt = get_prompt(supvis);
+        if (state->prompt == NULL)
+        {
+            do_destroy_state(supvis, state);
+            return NULL;
+        }
+        do_reset_state(supvis, state);
     }
     
     return state;
@@ -196,7 +203,8 @@ char *get_prompt(struct supervisor *supvis)
     prompt = dc_getenv(supvis->env, "PS1");
     if (!prompt)
     {
-        dc_setenv(supvis->env, "");
+        dc_setenv(supvis->env, supvis->err, "PS1", "$ ", true);
+        prompt = dc_getenv(supvis->env, "PS1");
     }
     
     return prompt;
