@@ -75,6 +75,16 @@ void do_reset_state(struct supervisor *supvis, struct state *state);
 void do_reset_command(struct supervisor *supvis, struct command *command);
 
 /**
+ * do_destroy_state
+ * <p>
+ * Free all memory in a state object, then free the state object.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ */
+void do_destroy_state(struct supervisor *supvis, struct state *state);
+
+/**
  * display_state
  * <p>
  * Display the state values to the parameter stream.
