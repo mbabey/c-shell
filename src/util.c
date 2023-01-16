@@ -47,6 +47,7 @@ int set_state_path(struct supervisor *supvis, struct state *state);
  * tokenize_path
  * <p>
  * Given a path, separate it into individual directory paths based on the ':' character.
+ * Affix a NULL pointer to the end of the list of paths.
  * </p>
  * @param supvis the supervisor object
  * @param path_str_dup the path string
@@ -90,6 +91,15 @@ char **expand_paths(struct supervisor *supvis, char **paths, size_t num_paths);
 char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *current_exp_path, const wordexp_t *we);
 
 /**
+ * free_string_array
+ * <p>
+ * Free all strings in a NULL-terminated array of strings and the array itself.
+ * </p>
+ * @param array the array of strings
+ */
+void free_string_array(char **array);
+
+/**
  * bool_to_string
  * <p>
  * Convert a boolean to a string, either "true" or "false".
@@ -108,10 +118,12 @@ struct state *do_init_state(struct supervisor *supvis, struct state *state)
         state->max_line_length = sysconf(_SC_ARG_MAX);
         if (set_state_regex(supvis, state) == -1)
         {
+            do_destroy_state(supvis, state);
             return NULL;
         }
         if (set_state_path(supvis, state) == -1)
         {
+            do_destroy_state(supvis, state);
             return NULL;
         }
     }
@@ -226,7 +238,7 @@ char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_p
 {
     char **paths;
     
-    paths = mm_malloc(num_paths * sizeof(char *), supvis->mm,
+    paths = mm_malloc((num_paths + 1) * sizeof(char *), supvis->mm,
                       __FILE__, __func__, __LINE__); // mem alloc here
     
     if (errno)
@@ -245,6 +257,8 @@ char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_p
             *(paths + i) = path_str_dup;
         }
     }
+    
+    *(paths + num_paths) = NULL;
     
     return paths;
 }
@@ -359,35 +373,57 @@ void do_destroy_state(struct supervisor *supvis, struct state *state)
     if (state->stdin && state->stdin != stdin)
     {
         fclose(state->stdin);
+        state->stdin = NULL;
     }
     if (state->stdout && state->stdout != stdout)
     {
         fclose(state->stdout);
+        state->stdout = NULL;
     }
     if (state->stderr && state->stderr != stderr)
     {
         fclose(state->stderr);
+        state->stderr = NULL;
     }
     
     if (state->in_redirect_regex)
     {
         regfree(state->in_redirect_regex);
+        state->in_redirect_regex = NULL;
     }
     if (state->out_redirect_regex)
     {
         regfree(state->out_redirect_regex);
+        state->out_redirect_regex = NULL;
     }
     if (state->err_redirect_regex)
     {
         regfree(state->err_redirect_regex);
+        state->err_redirect_regex = NULL;
     }
     
     if (state->path)
     {
-        
+        free_string_array(state->path);
+        state->path = NULL;
     }
     
     do_reset_state(supvis, state);
+}
+
+void free_string_array(char **array)
+{
+    char **head_ptr;
+    
+    head_ptr = array;
+    
+    while (array)
+    {
+        free(*array);
+        ++array;
+    }
+    
+    free(head_ptr);
 }
 
 void display_state(struct supervisor *supvis, const struct state *state, FILE *stream)
