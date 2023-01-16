@@ -25,7 +25,7 @@ static void test_read_commands(const char *test_input, const char *expected_comm
 
 static void test_separate_commands(const char *test_input, const char *expected_command, int read_expected_state);
 
-static void test_parse_commands(const char *test_input, char *expected_command, size_t expected_argc);
+static void test_parse_commands(const char *test_input, const char *expected_command, size_t expected_argc);
 
 static void test_execute_commands(const char *command, int expected_next_state, const char *expected_exit_code,
                                   const char *expected_error_message);
@@ -317,7 +317,7 @@ Ensure(shell_impl, parse_commands)
     test_parse_commands("./a.out a b c\n", "./a.out", 4);
 }
 
-static void test_parse_commands(const char *test_input, char *expected_command, size_t expected_argc)
+static void test_parse_commands(const char *test_input, const char *expected_command, size_t expected_argc)
 {
     struct state state;
     FILE         *in;
