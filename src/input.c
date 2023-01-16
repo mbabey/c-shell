@@ -54,7 +54,11 @@ char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream,
         return NULL;
     }
     
+    
+    
     *line_size = result_len;
     return line;
 }
+
+char *trim_leading_whitespace()
 
