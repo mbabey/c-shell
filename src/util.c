@@ -7,7 +7,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <regex.h>
-#include <tclDecls.h>
 
 /**
  * set_regex
@@ -52,7 +51,7 @@ int set_state_path(struct supervisor *supvis, struct state *state);
  * @param supvis the supervisor object
  * @param path_str_dup the path string
  * @param num_paths the number of paths
- * @return the list of tokenized paths
+ * @return the list of tokenized paths, or NULL if an error occurs
  */
 char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_paths);
 
@@ -185,7 +184,7 @@ char *get_prompt(struct supervisor *supvis)
     prompt = dc_getenv(supvis->env, "PS1");
     if (!prompt)
     {
-        dc_setenv(supvis->env, )
+        dc_setenv(supvis->env, "");
     }
     
     return prompt;
@@ -357,7 +356,38 @@ void do_reset_command(struct supervisor *supvis, struct command *command)
 
 void do_destroy_state(struct supervisor *supvis, struct state *state)
 {
-
+    if (state->stdin && state->stdin != stdin)
+    {
+        fclose(state->stdin);
+    }
+    if (state->stdout && state->stdout != stdout)
+    {
+        fclose(state->stdout);
+    }
+    if (state->stderr && state->stderr != stderr)
+    {
+        fclose(state->stderr);
+    }
+    
+    if (state->in_redirect_regex)
+    {
+        regfree(state->in_redirect_regex);
+    }
+    if (state->out_redirect_regex)
+    {
+        regfree(state->out_redirect_regex);
+    }
+    if (state->err_redirect_regex)
+    {
+        regfree(state->err_redirect_regex);
+    }
+    
+    if (state->path)
+    {
+        
+    }
+    
+    do_reset_state(supvis, state);
 }
 
 void display_state(struct supervisor *supvis, const struct state *state, FILE *stream)

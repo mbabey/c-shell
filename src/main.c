@@ -4,11 +4,11 @@
 
 int main(void)
 {
-    struct supervisor *supvis = init_supervisor();
+//    struct supervisor *supvis = init_supervisor();
 
+    fclose(stdin);
     
-    
-    destroy_supervisor(supvis);
+//    destroy_supervisor(supvis);
 
     return EXIT_SUCCESS;
 }
