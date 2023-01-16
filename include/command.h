@@ -27,6 +27,28 @@ struct command
 };
 
 /**
+ * do_separate_commands
+ * <p>
+ * Given a state object with a filled current line field, construct a command structure in that state.
+ * Then, separate the individual commands in the current_line and store them into the command structure.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ */
+void do_separate_commands(struct supervisor *supvis, struct state *state);
+
+/**
+ * do_parse_commands
+ * <p>
+ * For each command in the state, parse the command->line for the information necessary to execute
+ * the command.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ */
+void do_parse_commands(struct supervisor *supvis, struct state *state);
+
+/**
  * parse_command
  * <p>
  * Parse the command by using the command->line to fill the rest of the command fields.
@@ -37,15 +59,6 @@ struct command
  */
 void parse_command(struct supervisor *supvis, struct state *state, struct command *command);
 
-/**
- * do_separate_commands
- * <p>
- * Given a state object with a filled current line field, construct a command structure in that state.
- * Then, separate the individual commands in the current_line and store them into the command structure.
- * </p>
- * @param supvis the supervisor object
- * @param state the state object
- */
-void do_separate_commands(struct supervisor *supvis, struct state *state);
+
 
 #endif //CSH_COMMAND_H

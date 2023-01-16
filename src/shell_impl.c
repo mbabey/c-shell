@@ -71,5 +71,11 @@ int separate_commands(struct supervisor *supvis, void *arg)
 
 int parse_commands(struct supervisor *supvis, void *arg)
 {
-
+    int ret_val;
+    
+    do_parse_commands(supvis, arg);
+    
+    ret_val = (dc_error_has_no_error(supvis->err)) ? EXECUTE_COMMANDS : ERROR;
+    
+    return ret_val;
 }

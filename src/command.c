@@ -7,30 +7,30 @@
  * <p>
  * Expand all cmds from their condensed forms
  * </p>
- * @param cmds the cmds to expand
+ * @param line the cmds to expand
  */
-char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds);
+char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc);
 
 /**
- * save_exp_cmds
+ * save_wordv_to_argv
  * <p>
  * Duplicate expanded path names from a wordexp_t into a char * array for use
  * elsewhere.
  * </p>
  * @param supvis the supervisor object
- * @param exp_cmds the list into which expanded path names shall be saved
+ * @param argv the list into which expanded path names shall be saved
  * @param exp_cmd_index the current number of saved expanded path names
- * @param we the wordexp_t temporarily storing expanded path names
+ * @param wordv the wordexp_t temporarily storing expanded path names
  * @return the updated list of expanded path names
  */
-char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *exp_cmd_index, const wordexp_t *we);
+char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, size_t argc);
 
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
     struct command *command;
     
     command = mm_calloc(1, sizeof(struct command), supvis->mm,
-            __FILE__, __func__, __LINE__);
+                        __FILE__, __func__, __LINE__);
     
     if (!command)
     {
@@ -44,60 +44,52 @@ void do_separate_commands(struct supervisor *supvis, struct state *state)
     state->command = command;
 }
 
-char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds)
+void do_parse_commands(struct supervisor *supvis, struct state *state)
 {
-    char      **exp_cmds;
-    size_t    exp_cmd_index;
+    // call parse_command for each command (there is only one in the current implementation.
+    parse_command(supvis, state, state->command);
+}
+
+void parse_command(struct supervisor *supvis, struct state *state, struct command *command)
+{
+    command->argv = expand_cmds(supvis, command->line, &command->argc);
+}
+
+char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc)
+{
+    char      **argv;
     wordexp_t we;
     
-    exp_cmds = (char **) mm_malloc(1 * sizeof(char *), supvis->mm,
-                                   __FILE__, __func__, __LINE__);
-    
-    exp_cmd_index = 0;
-    for (size_t i = 0; i < num_cmds; ++i)
+    switch (wordexp(line, &we, 0))
     {
-        switch (wordexp(*(cmds + i), &we, 0))
-        {
-            case 0:
-            {
-                break;
-            }
-            default:
-            {
-                DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-            }
-        }
-        if (dc_error_has_error(supvis->err))
+        case 0:
         {
             break;
         }
-        exp_cmds = save_exp_cmds(supvis, exp_cmds, &exp_cmd_index, &we);
+        default:
+        {
+            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+            return NULL;
+        }
     }
+    
+    *argc = we.we_wordc;
+    argv = (char **) mm_malloc(*argc * sizeof(char *), supvis->mm,
+                               __FILE__, __func__, __LINE__);
+    
+    argv = save_wordv_to_argv(supvis, we.we_wordv, argv, *argc);
     
     wordfree(&we);
-    supvis->mm->mm_free(supvis->mm, cmds);
     
-    return exp_cmds;
+    return argv;
 }
 
-char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *exp_cmd_index, const wordexp_t *we)
+char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, size_t argc)
 {
-    *(exp_cmd_index) += we->we_wordc;
-    exp_cmds = (char **) mm_realloc(exp_cmds, *(exp_cmd_index) * sizeof(char *), supvis->mm,
-                                    __FILE__, __func__, __LINE__);
-    if (errno)
+    for (size_t arg_index = 0; arg_index < argc; ++arg_index)
     {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        *(argv + arg_index) = strdup(*(wordv + arg_index));
     }
     
-    /* Start at the last expanded path + 1th index and the 0th wordv index
-     * Go until all the strings in wordv have been copied into exp_cmds. */
-    for (size_t path_index = (*(exp_cmd_index) - we->we_wordc), wordv_index = 0;
-         path_index < *(exp_cmd_index) && wordv_index < we->we_wordc; // These two values will be the same
-         ++path_index, ++wordv_index)
-    {
-        *(exp_cmds + path_index) = strdup(*(we->we_wordv + wordv_index));
-    }
-    
-    return exp_cmds;
+    return argv;
 }
