@@ -25,6 +25,8 @@ size_t do_read_commands(struct supervisor *supvis, struct state *state)
     {
         state->fatal_error = true;
     }
+    
+    return state->current_line_length;
 }
 
 void display_prompt(struct supervisor *supvis, struct state *state)
