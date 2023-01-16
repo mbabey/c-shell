@@ -68,3 +68,8 @@ int separate_commands(struct supervisor *supvis, void *arg)
     
     return ret_val;
 }
+
+int parse_commands(struct supervisor *supvis, void *arg)
+{
+
+}

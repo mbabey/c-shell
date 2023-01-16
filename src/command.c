@@ -35,7 +35,7 @@ void do_separate_commands(struct supervisor *supvis, struct state *state)
     if (!command)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-        state->fatal_error = true;
+        state->fatal_error = true; // A memory allocation failure is a fatal error.
         return;
     }
     
@@ -83,16 +83,15 @@ char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds)
 char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *exp_cmd_index, const wordexp_t *we)
 {
     *(exp_cmd_index) += we->we_wordc;
-    exp_cmds = (char **) mm_realloc(exp_cmds, *(exp_cmd_index) * sizeof(char *),
-                                    supvis->mm,
+    exp_cmds = (char **) mm_realloc(exp_cmds, *(exp_cmd_index) * sizeof(char *), supvis->mm,
                                     __FILE__, __func__, __LINE__);
-    
-    /* Start at the last expanded path + 1th index and the 0th wordv index
-     * Go until all the strings in wordv have been copied into exp_cmds. */
     if (errno)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
     }
+    
+    /* Start at the last expanded path + 1th index and the 0th wordv index
+     * Go until all the strings in wordv have been copied into exp_cmds. */
     for (size_t path_index = (*(exp_cmd_index) - we->we_wordc), wordv_index = 0;
          path_index < *(exp_cmd_index) && wordv_index < we->we_wordc; // These two values will be the same
          ++path_index, ++wordv_index)
