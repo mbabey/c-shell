@@ -28,8 +28,6 @@ char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *current
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
     // do the fancy word expansions
-    
-    
 }
 
 char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds)
@@ -39,7 +37,7 @@ char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds)
     wordexp_t we;
     
     exp_cmds = (char **) mm_malloc(1 * sizeof(char *), supvis->mm,
-                                    __FILE__, __func__, __LINE__);
+                                   __FILE__, __func__, __LINE__);
     
     current_exp_path = 0;
     for (size_t i = 0; i < num_cmds; ++i)
@@ -72,8 +70,8 @@ char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *current
 {
     *(current_exp_path) += we->we_wordc;
     exp_cmds = (char **) mm_realloc(exp_cmds, *(current_exp_path) * sizeof(char *),
-                                     supvis->mm,
-                                     __FILE__, __func__, __LINE__);
+                                    supvis->mm,
+                                    __FILE__, __func__, __LINE__);
     
     /* Start at the last expanded path + 1th index and the 0th wordv index
      * Go until all the strings in wordv have been copied into exp_cmds. */
