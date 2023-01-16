@@ -25,11 +25,12 @@ char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream,
 /**
  * do_read_commands
  * <p>
- * Read from the state stdin into the state command line.
+ * Print the prompt onto state->stdout. Read from the state->stdin into the state->command_line.
  * </p>
  * @param supvis the supervisor object
  * @param state the state object
+ * @return the size of the state->command_line
  */
-void do_read_commands(struct supervisor *supvis, struct state *state);
+size_t do_read_commands(struct supervisor *supvis, struct state *state);
 
 #endif //CSH_INPUT_H

@@ -39,11 +39,21 @@ int reset_state(struct supervisor *supvis, void *arg)
 
 int read_commands(struct supervisor *supvis, void *arg)
 {
-    int ret_val;
+    int    ret_val;
+    size_t line_size;
     
-    do_read_commands(supvis, arg);
+    line_size = do_read_commands(supvis, arg);
     
-    ret_val = (dc_error_has_no_error(supvis->err)) ? SEPARATE_COMMANDS : ERROR;
+    if (dc_error_has_error(supvis->err))
+    {
+        ret_val = ERROR;
+    } else if (line_size == 1)
+    {
+        ret_val = RESET_STATE;
+    } else
+    {
+        ret_val = SEPARATE_COMMANDS;
+    }
     
     return ret_val;
 }

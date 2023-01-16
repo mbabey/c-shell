@@ -13,11 +13,18 @@
  */
 void display_prompt(struct supervisor *supvis, struct state *state);
 
-void do_read_commands(struct supervisor *supvis, struct state *state)
+size_t do_read_commands(struct supervisor *supvis, struct state *state)
 {
+    display_prompt(supvis, state);
+    
     state->current_line_length = state->max_line_length;
     state->current_line        = read_command_line(supvis, state->stdin, NULL,
                                                    &state->current_line_length);
+    
+    if (!state->current_line)
+    {
+        state->fatal_error = true;
+    }
 }
 
 void display_prompt(struct supervisor *supvis, struct state *state)
@@ -26,7 +33,7 @@ void display_prompt(struct supervisor *supvis, struct state *state)
     
     cwd = dc_get_working_dir(supvis->env, supvis->err);
     
-    
+    fprintf(state->stdout, "[%s] %s", cwd, state->prompt);
 }
 
 char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream, size_t *line_size)
