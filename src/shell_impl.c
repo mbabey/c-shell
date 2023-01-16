@@ -4,7 +4,7 @@
 
 int init_state(struct supervisor *supvis, void *arg)
 {
-    
+    arg = do_init_state(supvis);
 }
 
 int destroy_state(struct supervisor *supvis, void *arg)
