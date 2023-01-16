@@ -35,7 +35,17 @@ struct command
  * @param state the state object
  * @param command the command object
  */
-void parse_command(struct supervisor *supvis,
-        struct state *state, struct command *command);
+void parse_command(struct supervisor *supvis, struct state *state, struct command *command);
+
+/**
+ * do_separate_commands
+ * <p>
+ * Given a state object with a filled current line field, construct a command structure in that state
+ * with argc and argv based on the current line.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ */
+void do_separate_commands(struct supervisor *supvis, struct state *state);
 
 #endif //CSH_COMMAND_H

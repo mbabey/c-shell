@@ -3,7 +3,6 @@
 #include <dc_c/dc_stdlib.h>
 #include <dc_c/dc_string.h>
 #include <dc_posix/dc_stdlib.h>
-#include <wordexp.h>
 #include <string.h>
 #include <unistd.h>
 #include <regex.h>
@@ -66,29 +65,6 @@ char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_p
  * @return the number of occurrences of c in str
  */
 size_t count_char_in_string(char c, char *str);
-
-/**
- * expand_paths
- * <p>
- * Expand all paths from their condensed forms
- * </p>
- * @param paths the paths to expand
- */
-char **expand_paths(struct supervisor *supvis, char **paths, size_t num_paths);
-
-/**
- * save_exp_paths
- * <p>
- * Duplicate expanded path names from a wordexp_t into a char * array for use
- * elsewhere.
- * </p>
- * @param supvis the supervisor object
- * @param exp_paths the list into which expanded path names shall be saved
- * @param current_exp_path the current number of saved expanded path names
- * @param we the wordexp_t temporarily storing expanded path names
- * @return the updated list of expanded path names
- */
-char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *current_exp_path, const wordexp_t *we);
 
 /**
  * free_string_array
@@ -235,9 +211,6 @@ char **parse_path(struct supervisor *supvis, const char *path_str)
     // tokenize the path string
     paths = tokenize_path(supvis, path_str_dup, num_paths);
     
-    // expand each path string
-//    paths = expand_paths(supvis, paths, num_paths);
-    
     // return a pointer to the first item in the list of tokens
     return paths;
 }
@@ -284,65 +257,6 @@ size_t count_char_in_string(char c, char *str)
         }
     }
     return occurrences;
-}
-
-char **expand_paths(struct supervisor *supvis, char **paths, size_t num_paths)
-{
-    char      **exp_paths;
-    size_t    current_exp_path;
-    wordexp_t we;
-    
-    exp_paths = (char **) mm_malloc(1 * sizeof(char *), supvis->mm,
-                                    __FILE__, __func__, __LINE__);
-    
-    current_exp_path = 0;
-    for (size_t i = 0; i < num_paths; ++i)
-    {
-        switch (wordexp(*(paths + i), &we, 0))
-        {
-            case 0:
-            {
-                break;
-            }
-            default:
-            {
-                DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-            }
-        }
-        if (dc_error_has_error(supvis->err))
-        {
-            break;
-        }
-        exp_paths = save_exp_paths(supvis, exp_paths, &current_exp_path, &we);
-    }
-    
-    wordfree(&we);
-    supvis->mm->mm_free(supvis->mm, paths);
-    
-    return exp_paths;
-}
-
-char **save_exp_paths(struct supervisor *supvis, char **exp_paths, size_t *current_exp_path, const wordexp_t *we)
-{
-    *(current_exp_path) += we->we_wordc;
-    exp_paths = (char **) mm_realloc(exp_paths, *(current_exp_path) * sizeof(char *),
-                                     supvis->mm,
-                                     __FILE__, __func__, __LINE__);
-    
-    /* Start at the last expanded path + 1th index and the 0th wordv index
-     * Go until all the strings in wordv have been copied into exp_paths. */
-    if (errno)
-    {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-    }
-    for (size_t path_index = (*(current_exp_path) - we->we_wordc), wordv_index = 0;
-         path_index < *(current_exp_path) && wordv_index < we->we_wordc; // These two values will be the same
-         ++path_index, ++wordv_index)
-    {
-        *(exp_paths + path_index) = strdup(*(we->we_wordv + wordv_index));
-    }
-    
-    return exp_paths;
 }
 
 void do_reset_state(struct supervisor *supvis, struct state *state)

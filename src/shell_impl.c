@@ -2,6 +2,7 @@
 #include "../include/shell_impl.h"
 #include "../include/util.h"
 #include "../include/input.h"
+#include "../include/command.h"
 
 int init_state(struct supervisor *supvis, void *arg)
 {
@@ -43,6 +44,17 @@ int read_commands(struct supervisor *supvis, void *arg)
     do_read_commands(supvis, arg);
     
     ret_val = (dc_error_has_no_error(supvis->err)) ? SEPARATE_COMMANDS : ERROR;
+    
+    return ret_val;
+}
+
+int separate_commands(struct supervisor *supvis, void *arg)
+{
+    int ret_val;
+    
+    do_separate_commands(supvis, arg);
+    
+    ret_val = (dc_error_has_no_error(supvis->err)) ? PARSE_COMMANDS : ERROR;
     
     return ret_val;
 }
