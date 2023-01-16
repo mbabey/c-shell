@@ -51,7 +51,7 @@ char **parse_path(struct supervisor *supvis, const char *path_str);
  * @param state the state to initialize
  * @return the initialized state, or NULL if an error occurs.
  */
-struct state *do_init_state(struct supervisor *supvis);
+struct state *do_init_state(struct supervisor *supvis, struct state *state);
 
 /**
  * do_reset_state
