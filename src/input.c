@@ -27,6 +27,4 @@ void do_read_commands(struct supervisor *supvis, struct state *state)
     state->current_line_length = state->max_line_length;
     state->current_line        = read_command_line(supvis, state->stdin, state->stdout,
                                                    &state->current_line_length);
-    
-    
 }

@@ -35,7 +35,7 @@ int init_state(struct supervisor *supvis, void *arg);
  * </p>
  * @param supvis the supervisor object
  * @param arg the current struct state
- * @return EXIT
+ * @return EXIT or ERROR
  */
 int destroy_state(struct supervisor *supvis, void *arg);
 
@@ -46,7 +46,7 @@ int destroy_state(struct supervisor *supvis, void *arg);
  * </p>
  * @param supvis the supervisor object
  * @param arg the current struct state
- * @return READ_COMMANDS
+ * @return READ_COMMANDS or ERROR
  */
 int reset_state(struct supervisor *supvis, void *arg);
 
@@ -58,15 +58,14 @@ int reset_state(struct supervisor *supvis, void *arg);
  * </p>
  * @param supvis the supervisor object
  * @param arg the current struct state
- * @return SEPARATE_COMMANDS
+ * @return SEPARATE_COMMANDS or ERROR
  */
 int read_commands(struct supervisor *supvis, void *arg);
 
 /**
  * separate_commands
  * <p>
- * Separate the commands. In the current implementation there is only one
- * command. Sets state->command
+ * Separate the commands. Sets state->command fields based on the
  * </p>
  * @param supvis the supervisor object
  * @param arg the current struct state
