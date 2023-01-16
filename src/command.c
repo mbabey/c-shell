@@ -19,27 +19,41 @@ char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds);
  * </p>
  * @param supvis the supervisor object
  * @param exp_cmds the list into which expanded path names shall be saved
- * @param current_exp_path the current number of saved expanded path names
+ * @param exp_cmd_index the current number of saved expanded path names
  * @param we the wordexp_t temporarily storing expanded path names
  * @return the updated list of expanded path names
  */
-char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *current_exp_path, const wordexp_t *we);
+char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *exp_cmd_index, const wordexp_t *we);
 
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
-    // do the fancy word expansions
+    struct command *command;
+    
+    command = mm_calloc(1, sizeof(struct command), supvis->mm,
+            __FILE__, __func__, __LINE__);
+    
+    if (!command)
+    {
+        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        state->fatal_error = true;
+        return;
+    }
+    
+    command->line = strdup(state->current_line);
+    
+    state->command = command;
 }
 
 char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds)
 {
     char      **exp_cmds;
-    size_t    current_exp_path;
+    size_t    exp_cmd_index;
     wordexp_t we;
     
     exp_cmds = (char **) mm_malloc(1 * sizeof(char *), supvis->mm,
                                    __FILE__, __func__, __LINE__);
     
-    current_exp_path = 0;
+    exp_cmd_index = 0;
     for (size_t i = 0; i < num_cmds; ++i)
     {
         switch (wordexp(*(cmds + i), &we, 0))
@@ -57,7 +71,7 @@ char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds)
         {
             break;
         }
-        exp_cmds = save_exp_cmds(supvis, exp_cmds, &current_exp_path, &we);
+        exp_cmds = save_exp_cmds(supvis, exp_cmds, &exp_cmd_index, &we);
     }
     
     wordfree(&we);
@@ -66,10 +80,10 @@ char **expand_cmds(struct supervisor *supvis, char **cmds, size_t num_cmds)
     return exp_cmds;
 }
 
-char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *current_exp_path, const wordexp_t *we)
+char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *exp_cmd_index, const wordexp_t *we)
 {
-    *(current_exp_path) += we->we_wordc;
-    exp_cmds = (char **) mm_realloc(exp_cmds, *(current_exp_path) * sizeof(char *),
+    *(exp_cmd_index) += we->we_wordc;
+    exp_cmds = (char **) mm_realloc(exp_cmds, *(exp_cmd_index) * sizeof(char *),
                                     supvis->mm,
                                     __FILE__, __func__, __LINE__);
     
@@ -79,8 +93,8 @@ char **save_exp_cmds(struct supervisor *supvis, char **exp_cmds, size_t *current
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
     }
-    for (size_t path_index = (*(current_exp_path) - we->we_wordc), wordv_index = 0;
-         path_index < *(current_exp_path) && wordv_index < we->we_wordc; // These two values will be the same
+    for (size_t path_index = (*(exp_cmd_index) - we->we_wordc), wordv_index = 0;
+         path_index < *(exp_cmd_index) && wordv_index < we->we_wordc; // These two values will be the same
          ++path_index, ++wordv_index)
     {
         *(exp_cmds + path_index) = strdup(*(we->we_wordv + wordv_index));
