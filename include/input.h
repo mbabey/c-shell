@@ -6,6 +6,7 @@
 #define CSH_INPUT_H
 
 #include "supervisor.h"
+#include "state.h"
 #include <stdio.h>
 
 /**
@@ -20,5 +21,15 @@
  * @return the command line that the user entered
  */
 char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream, size_t *line_size);
+
+/**
+ * do_read_commands
+ * <p>
+ * Read from the state stdin into the state command line.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ */
+void do_read_commands(struct supervisor *supvis, struct state *state);
 
 #endif //CSH_INPUT_H

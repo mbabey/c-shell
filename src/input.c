@@ -1,13 +1,32 @@
+#include "../include/supervisor.h"
 #include "../include/input.h"
+#include "../include/command.h"
 
 char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream, size_t *line_size)
 {
-    char *in_buf;
+    char   *line;
+    size_t len;
+    ssize_t result_len;
     
-    in_buf = (char *) mm_calloc(*line_size, sizeof(char), supvis->mm, __FILE__, __func__, __LINE__);
+    line = NULL;
+    len = (*line_size + 1);
     
-    istream = fmemopen(in_buf, *line_size, "w");
+    result_len = getline(&line, &len, istream);
+    if (result_len == -1)
+    {
+        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        return NULL;
+    }
     
+    *line_size = result_len;
+    return line;
+}
+
+void do_read_commands(struct supervisor *supvis, struct state *state)
+{
+    state->current_line_length = state->max_line_length;
+    state->current_line        = read_command_line(supvis, state->stdin, state->stdout,
+                                                   &state->current_line_length);
     
     
 }
