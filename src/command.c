@@ -114,28 +114,44 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
 char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite)
 {
     char       *filename;
+    char       *line_dup;
     regmatch_t regmatch[2];
     int        status;
     
     filename = NULL;
+    line_dup = strdup(line);
+    supvis->mm->mm_add(supvis->mm, line_dup);
     
     status = regexec(regex, line, 2, regmatch, 0);
     switch (status)
     {
         case 0: // success code
         {
-            // if < or > or >> or 2> or 2>>, parse filename
             size_t len;
             size_t st_substr;
             size_t en_substr;
+            size_t indicator_count;
+            char   io_indicator;
             
-            st_substr = regmatch[1].rm_so;
-            en_substr = regmatch[1].rm_eo;
+            st_substr    = regmatch[1].rm_so;
+            en_substr    = regmatch[1].rm_eo;
+            io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr);
+            
+            // Get the number of > or < symbols; if more than 2, error: not a valid command
+            indicator_count = 1;
+            while ((*(line + ++st_substr) == io_indicator) && indicator_count <= 2)
+            {
+                indicator_count++;
+            }
+            
+            if (indicator_count > 2)
+            {
+//              print error: not a valid command
+                break;
+            }
             
             
-            // parse from regmatch[1].rm_so forward
-            // 
-            
+
 //            len = regmatch[1].rm_eo - regmatch[1].rm_so + 1;
 //            filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
 //            filename = substr(filename, line, regmatch[1].rm_so, regmatch[1].rm_eo);
@@ -151,12 +167,13 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
         default:
         {
             // other error code
+            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         }
     }
     
+    supvis->mm->mm_free(supvis->mm, line_dup);
     
-    return
-            filename;
+    return filename;
 }
 
 char *substr(char *dest, const char *src, size_t st, size_t en)
