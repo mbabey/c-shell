@@ -1,6 +1,7 @@
 #include "../include/command.h"
 #include <wordexp.h>
 #include <string.h>
+#include <ctype.h>
 
 /**
  * remove_io_from_line
@@ -134,23 +135,28 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
             char   io_indicator;
             
             st_substr    = regmatch[1].rm_so;
-            en_substr    = regmatch[1].rm_eo;
             io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr);
             
-            // Get the number of > or < symbols; if more than 2, error: not a valid command
+            // Get the number of > or < symbols
             indicator_count = 1;
             while ((*(line + ++st_substr) == io_indicator) && indicator_count <= 2)
             {
                 indicator_count++;
             }
             
+            // if command looks like ">>> ..." or "<< ...", it is invalid.
             if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
             {
 //              print error: not a valid command
                 break;
             }
             
+            // move the start pointer forward to the first non-whitespace character
+            while (isspace(*(line + ++st_substr)));
             
+            // set the end pointer to the start pointer, and move forward to the first whitespace character
+            en_substr = st_substr;
+            while (!isspace(*(line + ++en_substr)));
 
 //            len = regmatch[1].rm_eo - regmatch[1].rm_so + 1;
 //            filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
