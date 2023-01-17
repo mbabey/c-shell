@@ -4,18 +4,6 @@
 #include <ctype.h>
 
 /**
- * remove_io_from_line
- * <p>
- * Using regex, remove the IO (ie. >, >>, <, 2> ,2>>) from a command->line.
- * </p>
- * @param supvis the supervisor object
- * @param line the line to clean
- * @return the clean line
- */
-char *remove_io_from_line(struct supervisor *supvis, char *line);
-
-
-/**
  * get_io_filename
  * <p>
  * Get the filename for the IO file and whether the file should be overwritten.
@@ -83,13 +71,24 @@ char *substr(char *dest, const char *src, size_t st, size_t en);
 void expand_filename(struct supervisor *supvis, char **filename);
 
 /**
+ * get_cmd_from_line
+ * <p>
+ * Get the command out of a line.
+ * </p>
+ * @param supvis the supervisor object
+ * @param line the line from which to parse a command
+ * @return the command parsed from the line, or NULL on failure.
+ */
+char *get_cmd_from_line(struct supervisor *supvis, const char *line);
+
+/**
  * expand_cmds
  * <p>
  * Expand all cmds from their condensed forms
  * </p>
  * @param line the cmds to expand
  */
-char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc);
+char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc);
 
 /**
  * save_wordv_to_argv
@@ -161,13 +160,13 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
             {
                 break;
             }
-    
+            
             filename = get_filename(supvis, line, st_substr);
             if (!filename)
             {
-                break;
+                DC_ERROR_RAISE_ERRNO(supvis->err, errno);
             }
-    
+            
             break;
         }
         case REG_NOMATCH:
@@ -218,7 +217,7 @@ size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
 
 char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr)
 {
-    char *filename;
+    char   *filename;
     size_t en_substr;
     size_t len;
     
@@ -232,9 +231,12 @@ char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr
     // Get the filename substring.
     len      = en_substr - st_substr + 1;
     filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
-    filename = substr(filename, line, st_substr, en_substr);
     
-    expand_filename(supvis, &filename);
+    if (filename)
+    {
+        filename = substr(filename, line, st_substr, en_substr);
+        expand_filename(supvis, &filename);
+    }
     
     return filename;
 }
@@ -269,33 +271,46 @@ void expand_filename(struct supervisor *supvis, char **filename)
     wordfree(&we);
 }
 
-char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc)
+char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
 {
     char      **argv;
+    char      *cmd;
     wordexp_t we;
+    int       status;
     
-    switch (wordexp(line, &we, 0))
+    // first, trim the input to remove io stuff
+    cmd = get_cmd_from_line(supvis, line);
+    // error: the io stuff is at the start of the command
+    // error: the io stuff does not include a filename
+    
+    status = wordexp(line, &we, 0);
+    if (status)
     {
-        case 0:
-        {
-            break;
-        }
-        default:
-        {
-            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-            return NULL;
-        }
+        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        wordfree(&we);
+        return NULL;
     }
     
     *argc = we.we_wordc;
     argv = (char **) mm_malloc(*argc * sizeof(char *), supvis->mm,
                                __FILE__, __func__, __LINE__);
-    
-    argv = save_wordv_to_argv(we.we_wordv, argv, *argc);
+    if (argv)
+    {
+        argv = save_wordv_to_argv(we.we_wordv, argv, *argc);
+    }
     
     wordfree(&we);
     
     return argv;
+}
+
+char *get_cmd_from_line(struct supervisor *supvis, const char *line)
+{
+    char *cmd;
+    
+    cmd = NULL;
+    
+    return cmd;
 }
 
 char **save_wordv_to_argv(char **wordv, char **argv, size_t argc)
