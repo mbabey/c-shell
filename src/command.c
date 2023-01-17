@@ -29,6 +29,17 @@ char *remove_io_from_line(struct supervisor *supvis, char *line);
 char *substr(char *dest, const char *src, size_t st, size_t en);
 
 /**
+ * expand_filename
+ * <p>
+ * Expand a single path to an absolute path.
+ * </p>
+ * @param supvis the supervisor
+ * @param path the path to expand
+ * @return the expanded path
+ */
+void expand_filename(struct supervisor *supvis, char **path);
+
+/**
  * expand_cmds
  * <p>
  * Expand all cmds from their condensed forms
@@ -115,22 +126,19 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
 char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite)
 {
     char       *filename;
-    char       *line_dup;
     regmatch_t regmatch[2];
     int        status;
     
     filename = NULL;
-    line_dup = strdup(line);
-    supvis->mm->mm_add(supvis->mm, line_dup);
     
     status = regexec(regex, line, 2, regmatch, 0);
     switch (status)
     {
         case 0: // success code
         {
-            size_t len;
             size_t st_substr;
             size_t en_substr;
+            
             size_t indicator_count;
             char   io_indicator;
             
@@ -148,8 +156,10 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
             if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
             {
 //              print error: not a valid command
-                break;
+//                break;
             }
+    
+            size_t len;
             
             // move the start pointer forward to the first non-whitespace character
             while (isspace(*(line + ++st_substr)));
@@ -157,12 +167,14 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
             // set the end pointer to the start pointer, and move forward to the first whitespace character
             en_substr = st_substr;
             while (!isspace(*(line + ++en_substr)));
-
-//            len = regmatch[1].rm_eo - regmatch[1].rm_so + 1;
-//            filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
-//            filename = substr(filename, line, regmatch[1].rm_so, regmatch[1].rm_eo);
             
-            // otherwise, print error message: not a valid command
+            // Get the filename substring.
+            len      = en_substr - st_substr + 1;
+            filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
+            filename = substr(filename, line, st_substr, en_substr);
+    
+            expand_filename(supvis, &filename);
+            
             break;
         }
         case REG_NOMATCH:
@@ -177,8 +189,6 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
         }
     }
     
-    supvis->mm->mm_free(supvis->mm, line_dup);
-    
     return filename;
 }
 
@@ -189,6 +199,27 @@ char *substr(char *dest, const char *src, size_t st, size_t en)
     *(dest + en - st) = '\0';
     
     return dest;
+}
+
+void expand_filename(struct supervisor *supvis, char **path)
+{
+    wordexp_t we;
+    
+    switch (wordexp(*path, &we, 0))
+    {
+        case 0:
+        {
+            *path = *we.we_wordv;
+            break;
+        }
+        default:
+        {
+            *path = NULL;
+            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        }
+    }
+    
+    wordfree(&we);
 }
 
 char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc)
