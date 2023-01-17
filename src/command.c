@@ -14,6 +14,49 @@
  */
 char *remove_io_from_line(struct supervisor *supvis, char *line);
 
+
+/**
+ * get_io_filename
+ * <p>
+ * Get the filename for the IO file and whether the file should be overwritten.
+ * </p>
+ * @param supvis the supervisor object
+ * @param regex the regex to compare against the line
+ * @param line the line
+ * @param overwrite whether to overwrite the contents of the file
+ * @return the name of the IO file
+ */
+char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite);
+
+/**
+ * check_io_valid
+ * <p>
+ * Check whether the io command is valid. An io command is valid if it takes the form
+ * "<", ">", "2>", ">>", or "2>>". In the case the io command takes the form ">>" or "2>>",
+ * set the overwrite boolean to true.
+ * </p>
+ * @param line the line from which to read
+ * @param rm_so the index at which to begin parsing the io command
+ * @param overwrite whether the io command is an overwrite command
+ * @return the index of the character immediately following the last '<' or '>', or 0 on a failure.
+ */
+size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite);
+
+/**
+ * get_filename
+ * <p>
+ * Parse the filename from the given line. Increment the start pointer until a non-whitespace character.
+ * Then, increment the end pointer from the start pointer until a whitespace character. Generate and
+ * store a substring between those two characters as the filename. Expand the filename to an absolute
+ * path.
+ * </p>
+ * @param supvis the supervisor object
+ * @param line the line to parse
+ * @param st_substr the start pointer
+ * @return the substring containing the filename
+ */
+char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr);
+
 /**
  * substr
  * <p>
@@ -31,13 +74,13 @@ char *substr(char *dest, const char *src, size_t st, size_t en);
 /**
  * expand_filename
  * <p>
- * Expand a single path to an absolute path.
+ * Expand a single filename to an absolute filename.
  * </p>
  * @param supvis the supervisor
- * @param path the path to expand
- * @return the expanded path
+ * @param filename the filename to expand
+ * @return the expanded filename
  */
-void expand_filename(struct supervisor *supvis, char **path);
+void expand_filename(struct supervisor *supvis, char **filename);
 
 /**
  * expand_cmds
@@ -62,23 +105,6 @@ char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc);
  */
 char **save_wordv_to_argv(char **wordv, char **argv, size_t argc);
 
-/**
- * get_io_filename
- * <p>
- * Get the filename for the IO file and whether the file should be overwritten.
- * </p>
- * @param supvis the supervisor object
- * @param regex the regex to compare against the line
- * @param line the line
- * @param overwrite whether to overwrite the contents of the file
- * @return the name of the IO file
- */
-char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite);
-
-size_t check_io_valid(const char *line, const regmatch_t *regmatch, bool **overwrite);
-
-char *get_filename(struct supervisor *supvis, const char *line, char *filename, size_t st_substr);
-
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
     struct command *command;
@@ -97,18 +123,6 @@ void do_separate_commands(struct supervisor *supvis, struct state *state)
     supvis->mm->mm_add(supvis->mm, command->line);
     
     state->command = command;
-}
-
-char *remove_io_from_line(struct supervisor *supvis, char *line)
-{
-    regex_t    regex_cmd;
-    regmatch_t regmatch[2];
-    int        status;
-    
-    status = regcomp(&regex_cmd, "([^<>]*).*", REG_EXTENDED);
-    
-    
-    return line;
 }
 
 void do_parse_commands(struct supervisor *supvis, struct state *state)
@@ -142,13 +156,13 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
         {
             size_t st_substr;
             
-            st_substr = check_io_valid(line, regmatch, &overwrite);
+            st_substr = check_io_valid(line, regmatch[1].rm_so, &overwrite);
             if (!st_substr)
             {
                 break;
             }
     
-            filename = get_filename(supvis, line, filename, st_substr);
+            filename = get_filename(supvis, line, st_substr);
             if (!filename)
             {
                 break;
@@ -171,13 +185,13 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
     return filename;
 }
 
-size_t check_io_valid(const char *line, const regmatch_t *regmatch, bool **overwrite)
+size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
 {
     size_t st_substr;
     size_t indicator_count;
     char   io_indicator;
     
-    st_substr    = regmatch[1].rm_so;
+    st_substr    = rm_so;
     io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr);
     
     // Get the number of > or < symbols
@@ -202,8 +216,9 @@ size_t check_io_valid(const char *line, const regmatch_t *regmatch, bool **overw
     return st_substr;
 }
 
-char *get_filename(struct supervisor *supvis, const char *line, char *filename, size_t st_substr)
+char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr)
 {
+    char *filename;
     size_t en_substr;
     size_t len;
     
@@ -233,20 +248,20 @@ char *substr(char *dest, const char *src, size_t st, size_t en)
     return dest;
 }
 
-void expand_filename(struct supervisor *supvis, char **path)
+void expand_filename(struct supervisor *supvis, char **filename)
 {
     wordexp_t we;
     
-    switch (wordexp(*path, &we, 0))
+    switch (wordexp(*filename, &we, 0))
     {
         case 0:
         {
-            *path = *we.we_wordv;
+            *filename = *we.we_wordv;
             break;
         }
         default:
         {
-            *path = NULL;
+            *filename = NULL;
             DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         }
     }
