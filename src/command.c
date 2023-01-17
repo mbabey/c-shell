@@ -75,6 +75,10 @@ char **save_wordv_to_argv(char **wordv, char **argv, size_t argc);
  */
 char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite);
 
+size_t check_io_valid(const char *line, const regmatch_t *regmatch, bool **overwrite);
+
+char *get_filename(struct supervisor *supvis, const char *line, char *filename, size_t st_substr);
+
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
     struct command *command;
@@ -137,44 +141,19 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
         case 0: // success code
         {
             size_t st_substr;
-            size_t en_substr;
             
-            size_t indicator_count;
-            char   io_indicator;
-            
-            st_substr    = regmatch[1].rm_so;
-            io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr);
-            
-            // Get the number of > or < symbols
-            indicator_count = 1;
-            while ((*(line + ++st_substr) == io_indicator) && indicator_count <= 2)
+            st_substr = check_io_valid(line, regmatch, &overwrite);
+            if (!st_substr)
             {
-                indicator_count++;
-            }
-            
-            // if command looks like ">>> ..." or "<< ...", it is invalid.
-            if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
-            {
-//              print error: not a valid command
-//                break;
+                break;
             }
     
-            size_t len;
-            
-            // move the start pointer forward to the first non-whitespace character
-            while (isspace(*(line + ++st_substr)));
-            
-            // set the end pointer to the start pointer, and move forward to the first whitespace character
-            en_substr = st_substr;
-            while (!isspace(*(line + ++en_substr)));
-            
-            // Get the filename substring.
-            len      = en_substr - st_substr + 1;
-            filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
-            filename = substr(filename, line, st_substr, en_substr);
+            filename = get_filename(supvis, line, filename, st_substr);
+            if (!filename)
+            {
+                break;
+            }
     
-            expand_filename(supvis, &filename);
-            
             break;
         }
         case REG_NOMATCH:
@@ -188,6 +167,59 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
             DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         }
     }
+    
+    return filename;
+}
+
+size_t check_io_valid(const char *line, const regmatch_t *regmatch, bool **overwrite)
+{
+    size_t st_substr;
+    size_t indicator_count;
+    char   io_indicator;
+    
+    st_substr    = regmatch[1].rm_so;
+    io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr);
+    
+    // Get the number of > or < symbols
+    indicator_count = 1;
+    while ((*(line + ++st_substr) == io_indicator) && indicator_count <= 2)
+    {
+        indicator_count++;
+    }
+    
+    // if command looks like ">>> ..." or "<< ...", it is invalid.
+    if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
+    {
+        // print error: not a valid command
+        return 0;
+    }
+    
+    if (io_indicator == '>' && indicator_count == 2)
+    {
+        **overwrite = true;
+    }
+    
+    return st_substr;
+}
+
+char *get_filename(struct supervisor *supvis, const char *line, char *filename, size_t st_substr)
+{
+    size_t en_substr;
+    size_t len;
+    
+    // move the start pointer forward to the first non-whitespace character
+    while (isspace(*(line + ++st_substr)));
+    
+    // set the end pointer to the start pointer, and move forward to the first whitespace character
+    en_substr = st_substr;
+    while (!isspace(*(line + ++en_substr)));
+    
+    // Get the filename substring.
+    len      = en_substr - st_substr + 1;
+    filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
+    filename = substr(filename, line, st_substr, en_substr);
+    
+    expand_filename(supvis, &filename);
     
     return filename;
 }
