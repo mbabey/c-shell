@@ -94,18 +94,18 @@ struct state *do_init_state(struct supervisor *supvis, struct state *state)
         state->max_line_length = sysconf(_SC_ARG_MAX);
         if (set_state_regex(supvis, state) == -1)
         {
-            do_destroy_state(supvis, state);
+            state->fatal_error = true;
             return NULL;
         }
         if (set_state_path(supvis, state) == -1)
         {
-            do_destroy_state(supvis, state);
+            state->fatal_error = true;
             return NULL;
         }
         state->prompt = get_prompt(supvis);
         if (state->prompt == NULL)
         {
-            do_destroy_state(supvis, state);
+            state->fatal_error = true;
             return NULL;
         }
         do_reset_state(supvis, state);
@@ -208,10 +208,8 @@ char **parse_path(struct supervisor *supvis, const char *path_str)
     path_str_dup = strdup(path_str); // mem alloc here
     num_paths    = count_char_in_string(':', path_str_dup) + 1;
     
-    // tokenize the path string
     paths = tokenize_path(supvis, path_str_dup, num_paths);
     
-    // return a pointer to the first item in the list of tokens
     return paths;
 }
 

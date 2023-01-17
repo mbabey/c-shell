@@ -3,6 +3,17 @@
 #include <string.h>
 
 /**
+ * remove_io_from_line
+ * <p>
+ * Using regex, remove the IO (ie. >, >>, <, 2> ,2>>) from a command->line.
+ * </p>
+ * @param supvis the supervisor object
+ * @param line the line to clean
+ * @return the clean line
+ */
+char *remove_io_from_line(struct supervisor *supvis, char *line);
+
+/**
  * expand_cmds
  * <p>
  * Expand all cmds from their condensed forms
@@ -23,7 +34,20 @@ char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc);
  * @param wordv the wordexp_t temporarily storing expanded path names
  * @return the updated list of expanded path names
  */
-char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, size_t argc);
+char **save_wordv_to_argv(char **wordv, char **argv, size_t argc);
+
+/**
+ * get_io_filename
+ * <p>
+ * Get the filename for the IO file and whether the file should be overwritten.
+ * </p>
+ * @param supvis the supervisor object
+ * @param regex the regex to compare against the line
+ * @param line the line
+ * @param overwrite whether to overwrite the contents of the file
+ * @return the name of the IO file
+ */
+char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite);
 
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
@@ -35,24 +59,50 @@ void do_separate_commands(struct supervisor *supvis, struct state *state)
     if (!command)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-        state->fatal_error = true; // A memory allocation failure is a fatal error.
+        state->fatal_error = true;
         return;
     }
     
     command->line = strdup(state->current_line);
+    supvis->mm->mm_add(supvis->mm, command->line);
     
     state->command = command;
 }
 
+char *remove_io_from_line(struct supervisor *supvis, char *line)
+{
+    regex_t    regex_cmd;
+    regmatch_t regmatch[2];
+    int        status;
+    
+    status = regcomp(&regex_cmd, "([^<>]*).*", REG_EXTENDED);
+    
+    
+    
+    return line;
+}
+
 void do_parse_commands(struct supervisor *supvis, struct state *state)
 {
-    // call parse_command for each command (there is only one in the current implementation.
+    // call parse_command for each command (there is only one in the current implementation).
     parse_command(supvis, state, state->command);
 }
 
 void parse_command(struct supervisor *supvis, struct state *state, struct command *command)
 {
-    command->argv = expand_cmds(supvis, command->line, &command->argc);
+    command->argv        = expand_cmds(supvis, command->line, &command->argc);
+    command->stdin_file  = get_io_filename(supvis, state->in_redirect_regex, command->line, NULL);
+    command->stdout_file = get_io_filename(supvis, state->out_redirect_regex, command->line,
+                                           &command->stdout_overwrite);
+    command->stderr_file = get_io_filename(supvis, state->err_redirect_regex, command->line,
+                                           &command->stderr_overwrite);
+}
+
+char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite)
+{
+    char *filename;
+    
+    
 }
 
 char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc)
@@ -77,14 +127,14 @@ char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc)
     argv = (char **) mm_malloc(*argc * sizeof(char *), supvis->mm,
                                __FILE__, __func__, __LINE__);
     
-    argv = save_wordv_to_argv(supvis, we.we_wordv, argv, *argc);
+    argv = save_wordv_to_argv(we.we_wordv, argv, *argc);
     
     wordfree(&we);
     
     return argv;
 }
 
-char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, size_t argc)
+char **save_wordv_to_argv(char **wordv, char **argv, size_t argc)
 {
     for (size_t arg_index = 0; arg_index < argc; ++arg_index)
     {
