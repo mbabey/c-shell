@@ -144,7 +144,7 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
                 indicator_count++;
             }
             
-            if (indicator_count > 2)
+            if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
             {
 //              print error: not a valid command
                 break;
