@@ -56,17 +56,6 @@ int set_state_path(struct supervisor *supvis, struct state *state);
 char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_paths);
 
 /**
- * count_char_in_string
- * <p>
- * Count the number of occurrences of a character in a string.
- * </p>
- * @param c the char of which to find occurrences
- * @param str the string in which to find occurrences
- * @return the number of occurrences of c in str
- */
-size_t count_char_in_string(char c, char *str);
-
-/**
  * free_string_array
  * <p>
  * Free all strings in a NULL-terminated array of strings and the array itself.
@@ -118,18 +107,18 @@ int set_state_regex(struct supervisor *supvis, struct state *state)
 {
     int status;
     
-    status = set_regex(supvis, state->in_redirect_regex, "[ \t\f\v]<.*", 0);
+    status = set_regex(supvis, state->in_redirect_regex, "([ \t\f\v]<.*)", 0);
     if (status == -1)
     {
         return status;
     }
-    status = set_regex(supvis, state->out_redirect_regex, "[ \t\f\v][1^2]?>[>]?.*", 0);
+    status = set_regex(supvis, state->out_redirect_regex, "([ \t\f\v][1^2]?>[>]?.*)", 0);
     if (status == -1)
     {
         regfree(state->in_redirect_regex);
         return status;
     }
-    status = set_regex(supvis, state->err_redirect_regex, "[ \t\f\v]2>[>]?.*", 0);
+    status = set_regex(supvis, state->err_redirect_regex, "([ \t\f\v]2>[>]?.*)", 0);
     if (status == -1)
     {
         regfree(state->in_redirect_regex);

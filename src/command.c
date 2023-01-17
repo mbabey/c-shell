@@ -14,6 +14,20 @@
 char *remove_io_from_line(struct supervisor *supvis, char *line);
 
 /**
+ * substr
+ * <p>
+ * Get a substring from a string. Copy the characters from dest into src, starting from the
+ * character at index st and ending at the character at index en.
+ * </p>
+ * @param dest the destination string
+ * @param src the source string
+ * @param st the start index
+ * @param en the end index
+ * @return the substring
+ */
+char *substr(char *dest, const char *src, size_t st, size_t en);
+
+/**
  * expand_cmds
  * <p>
  * Expand all cmds from their condensed forms
@@ -78,7 +92,6 @@ char *remove_io_from_line(struct supervisor *supvis, char *line)
     status = regcomp(&regex_cmd, "([^<>]*).*", REG_EXTENDED);
     
     
-    
     return line;
 }
 
@@ -100,9 +113,59 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
 
 char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite)
 {
-    char *filename;
+    char       *filename;
+    regmatch_t regmatch[2];
+    int        status;
+    
+    filename = NULL;
+    
+    status = regexec(regex, line, 2, regmatch, 0);
+    switch (status)
+    {
+        case 0: // success code
+        {
+            // if < or > or >> or 2> or 2>>, parse filename
+            size_t len;
+            size_t st_substr;
+            size_t en_substr;
+            
+            st_substr = regmatch[1].rm_so;
+            en_substr = regmatch[1].rm_eo;
+            
+            
+            // parse from regmatch[1].rm_so forward
+            // 
+            
+//            len = regmatch[1].rm_eo - regmatch[1].rm_so + 1;
+//            filename = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
+//            filename = substr(filename, line, regmatch[1].rm_so, regmatch[1].rm_eo);
+            
+            // otherwise, print error message: not a valid command
+            break;
+        }
+        case REG_NOMATCH:
+        {
+            // No match code
+            break;
+        }
+        default:
+        {
+            // other error code
+        }
+    }
     
     
+    return
+            filename;
+}
+
+char *substr(char *dest, const char *src, size_t st, size_t en)
+{
+    strncpy(dest, src + st, en - st);
+    
+    *(dest + en - st) = '\0';
+    
+    return dest;
 }
 
 char **expand_cmds(struct supervisor *supvis, char *line, size_t *argc)

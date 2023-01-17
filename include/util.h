@@ -106,4 +106,15 @@ void display_state(struct supervisor *supvis, const struct state *state, FILE *s
  */
 char *state_to_string(struct supervisor *supvis, const struct state *state);
 
+/**
+ * count_char_in_string
+ * <p>
+ * Count the number of occurrences of a character in a string.
+ * </p>
+ * @param c the char of which to find occurrences
+ * @param str the string in which to find occurrences
+ * @return the number of occurrences of c in str
+ */
+size_t count_char_in_string(char c, char *str);
+
 #endif //CSHELL_TESTS_UTIL_H
