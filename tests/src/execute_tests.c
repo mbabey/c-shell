@@ -99,7 +99,7 @@ test_execute(const char *cmd, char **path, size_t argc, char **argv, bool check_
         command.stderr_file = strdup(err_file_name);
     }
     
-    execute(supvis, &command, path);
+    execute(supvis, NULL, &command, path);
     
     if (expected_exit_code)
     {

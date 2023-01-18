@@ -12,7 +12,7 @@
  * @param supvis the supervisor object
  * @param state the state object
  */
-void do_execute_commands(struct supervisor *supvis, struct state *state);
+int do_execute_commands(struct supervisor *supvis, struct state *state);
 
 /**
  * execute
@@ -25,6 +25,6 @@ void do_execute_commands(struct supervisor *supvis, struct state *state);
  * @param command the command struct
  * @param path the path
  */
-void execute(struct supervisor *supvis, struct command *command, char **path);
+int execute(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 #endif //CSH_EXECUTE_H
