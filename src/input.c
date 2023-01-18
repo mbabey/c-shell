@@ -18,8 +18,8 @@ size_t do_read_commands(struct supervisor *supvis, struct state *state)
     display_prompt(supvis, state);
     
     state->current_line_length = state->max_line_length;
-    state->current_line        = read_command_line(supvis, state->stdin, NULL,
-                                                   &state->current_line_length);
+    
+    state->current_line = read_command_line(supvis, state->stdin, NULL, &state->current_line_length);
     
     if (!state->current_line)
     {
@@ -40,12 +40,12 @@ void display_prompt(struct supervisor *supvis, struct state *state)
 
 char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream, size_t *line_size)
 {
-    char   *line;
-    size_t len;
+    char    *line;
+    size_t  len;
     ssize_t result_len;
     
     line = NULL;
-    len = (*line_size + 1);
+    len  = (*line_size + 1);
     
     result_len = getline(&line, &len, istream);
     if (result_len == -1)
@@ -54,11 +54,6 @@ char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream,
         return NULL;
     }
     
-    
-    
     *line_size = result_len;
     return line;
 }
-
-char *trim_leading_whitespace()
-

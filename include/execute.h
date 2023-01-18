@@ -5,6 +5,16 @@
 #include "supervisor.h"
 
 /**
+ * do_execute_commands
+ * <p>
+ * Run the execute function.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ */
+void do_execute_commands(struct supervisor *supvis, struct state *state);
+
+/**
  * execute
  * <p>
  * Create a child process, exec the command with any redirection, and set the exit code.

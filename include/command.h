@@ -59,6 +59,4 @@ void do_parse_commands(struct supervisor *supvis, struct state *state);
  */
 void parse_command(struct supervisor *supvis, struct state *state, struct command *command);
 
-
-
 #endif //CSH_COMMAND_H
