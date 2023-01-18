@@ -124,6 +124,8 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
     command->command     = get_regex_substring(supvis, state->command_regex, command->line,
                                                NULL, false);
     command->argv        = expand_cmds(supvis, command->command, &command->argc);
+    command->command = *command->argv;
+    
     command->stdin_file  = get_regex_substring(supvis, state->in_redirect_regex, command->line,
                                                NULL, true);
     command->stdout_file = get_regex_substring(supvis, state->out_redirect_regex, command->line,
