@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 /**
- * get_io_filename
+ * get_regex_substring
  * <p>
  * Get the filename for the IO file and whether the file should be overwritten.
  * </p>
@@ -14,7 +14,7 @@
  * @param overwrite whether to overwrite the contents of the file
  * @return the name of the IO file
  */
-char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite);
+char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite, bool is_io);
 
 /**
  * check_io_valid
@@ -31,7 +31,7 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
 size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite);
 
 /**
- * get_filename
+ * get_substring
  * <p>
  * Parse the filename from the given line. Increment the start pointer until a non-whitespace character.
  * Then, increment the end pointer from the start pointer until a whitespace character. Generate and
@@ -43,7 +43,7 @@ size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite);
  * @param st_substr the start pointer
  * @return the substring containing the filename
  */
-char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr);
+char *get_substring(struct supervisor *supvis, const char *line, size_t st_substr);
 
 /**
  * substr
@@ -69,17 +69,6 @@ char *substr(char *dest, const char *src, size_t st, size_t en);
  * @return the expanded filename
  */
 void expand_filename(struct supervisor *supvis, char **filename);
-
-/**
- * get_cmd_from_line
- * <p>
- * Get the command out of a line.
- * </p>
- * @param supvis the supervisor object
- * @param line the line from which to parse a command
- * @return the command parsed from the line, or NULL on failure.
- */
-char *get_cmd_from_line(struct supervisor *supvis, const char *line);
 
 /**
  * expand_cmds
@@ -132,21 +121,24 @@ void do_parse_commands(struct supervisor *supvis, struct state *state)
 
 void parse_command(struct supervisor *supvis, struct state *state, struct command *command)
 {
-    command->argv        = expand_cmds(supvis, command->line, &command->argc);
-    command->stdin_file  = get_io_filename(supvis, state->in_redirect_regex, command->line, NULL);
-    command->stdout_file = get_io_filename(supvis, state->out_redirect_regex, command->line,
-                                           &command->stdout_overwrite);
-    command->stderr_file = get_io_filename(supvis, state->err_redirect_regex, command->line,
-                                           &command->stderr_overwrite);
+    command->command     = get_regex_substring(supvis, state->command_regex, command->line,
+                                               NULL, false);
+    command->argv        = expand_cmds(supvis, command->command, &command->argc);
+    command->stdin_file  = get_regex_substring(supvis, state->in_redirect_regex, command->line,
+                                               NULL, true);
+    command->stdout_file = get_regex_substring(supvis, state->out_redirect_regex, command->line,
+                                               &command->stdout_overwrite, true);
+    command->stderr_file = get_regex_substring(supvis, state->err_redirect_regex, command->line,
+                                               &command->stderr_overwrite, true);
 }
 
-char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite)
+char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite, bool is_io)
 {
-    char       *filename;
+    char       *substring;
     regmatch_t regmatch[2];
     int        status;
     
-    filename = NULL;
+    substring = NULL;
     
     status = regexec(regex, line, 2, regmatch, 0);
     switch (status)
@@ -155,14 +147,21 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
         {
             size_t st_substr;
             
-            st_substr = check_io_valid(line, regmatch[1].rm_so, &overwrite);
-            if (!st_substr)
+            if (is_io)
             {
-                break;
+                st_substr = check_io_valid(line, regmatch[1].rm_so, &overwrite);
+                if (!st_substr)
+                {
+                    // Command is invalid
+                    break;
+                }
+            } else
+            {
+                st_substr = regmatch[1].rm_so;
             }
             
-            filename = get_filename(supvis, line, st_substr);
-            if (!filename)
+            substring = get_substring(supvis, line, st_substr);
+            if (!substring)
             {
                 DC_ERROR_RAISE_ERRNO(supvis->err, errno);
             }
@@ -181,7 +180,7 @@ char *get_io_filename(struct supervisor *supvis, regex_t *regex, const char *lin
         }
     }
     
-    return filename;
+    return substring;
 }
 
 size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
@@ -215,7 +214,7 @@ size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
     return st_substr;
 }
 
-char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr)
+char *get_substring(struct supervisor *supvis, const char *line, size_t st_substr)
 {
     char   *filename;
     size_t en_substr;
@@ -274,14 +273,8 @@ void expand_filename(struct supervisor *supvis, char **filename)
 char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
 {
     char      **argv;
-    char      *cmd;
     wordexp_t we;
     int       status;
-    
-    // first, trim the input to remove io stuff
-    cmd = get_cmd_from_line(supvis, line);
-    // error: the io stuff is at the start of the command
-    // error: the io stuff does not include a filename
     
     status = wordexp(line, &we, 0);
     if (status)
@@ -302,17 +295,6 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
     wordfree(&we);
     
     return argv;
-}
-
-char *get_cmd_from_line(struct supervisor *supvis, const char *line)
-{
-    char *cmd;
-    
-    
-    
-    cmd = NULL;
-    
-    return cmd;
 }
 
 char **save_wordv_to_argv(char **wordv, char **argv, size_t argc)
