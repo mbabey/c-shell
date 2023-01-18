@@ -308,6 +308,8 @@ char *get_cmd_from_line(struct supervisor *supvis, const char *line)
 {
     char *cmd;
     
+    
+    
     cmd = NULL;
     
     return cmd;

@@ -7,6 +7,11 @@
 #include <unistd.h>
 #include <regex.h>
 
+#define IN_DIRECT_REGEX "([ \t\f\v]<.*)"
+#define OUT_DIRECT_REGEX "([ \t\f\v][1^2]?>[>]?.*)"
+#define ERR_DIRECT_REGEX "([ \t\f\v]2>[>]?.*)"
+#define CMD_REGEX "([^<>]*).*"
+
 /**
  * set_regex
  * <p>
@@ -107,22 +112,30 @@ int set_state_regex(struct supervisor *supvis, struct state *state)
 {
     int status;
     
-    status = set_regex(supvis, state->in_redirect_regex, "([ \t\f\v]<.*)", 0);
+    status = set_regex(supvis, state->in_redirect_regex, IN_DIRECT_REGEX, 0);
     if (status == -1)
     {
         return status;
     }
-    status = set_regex(supvis, state->out_redirect_regex, "([ \t\f\v][1^2]?>[>]?.*)", 0);
+    status = set_regex(supvis, state->out_redirect_regex, OUT_DIRECT_REGEX, 0);
     if (status == -1)
     {
         regfree(state->in_redirect_regex);
         return status;
     }
-    status = set_regex(supvis, state->err_redirect_regex, "([ \t\f\v]2>[>]?.*)", 0);
+    status = set_regex(supvis, state->err_redirect_regex, ERR_DIRECT_REGEX, 0);
     if (status == -1)
     {
         regfree(state->in_redirect_regex);
         regfree(state->out_redirect_regex);
+        return status;
+    }
+    status = set_regex (state->command_regex, CMD_REGEX, 0);
+    if (status == -1)
+    {
+        regfree(state->in_redirect_regex);
+        regfree(state->out_redirect_regex);
+        regfree(state->err_redirect_regex);
         return status;
     }
     
