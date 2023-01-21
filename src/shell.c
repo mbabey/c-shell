@@ -2,6 +2,7 @@
 #include "../include/supervisor.h"
 #include "../include/shell_impl.h"
 #include "../include/state.h"
+#include "../include/command.h"
 
 /**
  * run_shell
@@ -19,32 +20,38 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err);
 int run(void)
 {
     struct supervisor *supvis;
+    int               exit_status;
     
     supvis = init_supervisor();
     
-    run_shell(supvis, stdin, stdout, stderr);
+    exit_status = run_shell(supvis, stdin, stdout, stderr);
     
     destroy_supervisor(supvis);
+    
+    return exit_status;
 }
 
 int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
 {
     struct state state;
     int          next_state;
+    int          exit_status;
     int          run;
-    int exit_status;
     
     state.stdin  = in;
     state.stdout = out;
     state.stderr = err;
-    
-    next_state = init_state(supvis, &state);
     
     run = 1;
     while (run)
     {
         switch (next_state)
         {
+            case INIT_STATE:
+            {
+                next_state = init_state(supvis, &state);
+                break;
+            }
             case READ_COMMANDS:
             {
                 next_state = read_commands(supvis, &state);
@@ -70,13 +77,6 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
                 next_state = reset_state(supvis, &state);
                 break;
             }
-            case DESTROY_STATE:
-            {
-                
-                next_state = destroy_state(supvis, &state);
-                run        = 0;
-                break;
-            }
             case ERROR:
             {
                 next_state = handle_error(supvis, &state);
@@ -85,7 +85,13 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
             case EXIT:
             {
                 next_state = do_exit(supvis, &state);
-
+                break;
+            }
+            case DESTROY_STATE:
+            {
+                exit_status = state.command->exit_code;
+                next_state = destroy_state(supvis, &state);
+                run        = 0;
                 break;
             }
             default:
@@ -96,6 +102,6 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
         }
     }
     
-    
+    return exit_status;
 }
 
