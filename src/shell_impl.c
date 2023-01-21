@@ -16,22 +16,6 @@ int init_state(struct supervisor *supvis, void *arg)
     return ret_val;
 }
 
-void destroy_state(struct supervisor *supvis, void *arg)
-{
-    do_destroy_state(supvis, arg);
-}
-
-int reset_state(struct supervisor *supvis, void *arg)
-{
-    int ret_val;
-    
-    do_reset_state(supvis, arg);
-    
-    ret_val = (dc_error_has_no_error(supvis->err)) ? READ_COMMANDS : ERROR;
-    
-    return ret_val;
-}
-
 int read_commands(struct supervisor *supvis, void *arg)
 {
     int    ret_val;
@@ -84,7 +68,24 @@ int execute_commands(struct supervisor *supvis, void *arg)
     return ret_val;
 }
 
+int reset_state(struct supervisor *supvis, void *arg)
+{
+    int ret_val;
+    
+    do_reset_state(supvis, arg);
+    
+    ret_val = (dc_error_has_no_error(supvis->err)) ? READ_COMMANDS : ERROR;
+    
+    return ret_val;
+}
+
 int handle_error(struct supervisor *supvis, void *arg)
 {
+    // if a fatal error has ocurred,
     return 0;
+}
+
+void destroy_state(struct supervisor *supvis, void *arg)
+{
+    do_destroy_state(supvis, arg);
 }

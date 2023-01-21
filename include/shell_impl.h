@@ -28,29 +28,6 @@
 int init_state(struct supervisor *supvis, void *arg);
 
 /**
- * destroy_state
- * <p>
- * Reclaim memory from the state object and zero it out (NULL, 0, false).
- * This will terminate the shell.
- * </p>
- * @param supvis the supervisor object
- * @param arg the current struct state
- * @return EXIT or ERROR
- */
-void destroy_state(struct supervisor *supvis, void *arg);
-
-/**
- * reset_state
- * <p>
- * Reset the state for the next read.
- * </p>
- * @param supvis the supervisor object
- * @param arg the current struct state
- * @return READ_COMMANDS or ERROR
- */
-int reset_state(struct supervisor *supvis, void *arg);
-
-/**
  * read_commands
  * <p>
  * Prompt the user and read the command line. Sets state->current_line and
@@ -98,6 +75,17 @@ int parse_commands(struct supervisor *supvis, void *arg);
 int execute_commands(struct supervisor *supvis, void *arg);
 
 /**
+ * reset_state
+ * <p>
+ * Reset the state for the next read.
+ * </p>
+ * @param supvis the supervisor object
+ * @param arg the current struct state
+ * @return READ_COMMANDS or ERROR
+ */
+int reset_state(struct supervisor *supvis, void *arg);
+
+/**
  * handle_error
  * <p>
  * Print the err->message to stderr and reset the err (see dc_err_reset)
@@ -107,5 +95,16 @@ int execute_commands(struct supervisor *supvis, void *arg);
  * @return RESET_STATE or DESTROY_STATE (if state->fatal_error)
  */
 int handle_error(struct supervisor *supvis, void *arg);
+
+/**
+ * destroy_state
+ * <p>
+ * Reclaim memory from the state object and zero it out (NULL, 0, false).
+ * This will terminate the shell.
+ * </p>
+ * @param supvis the supervisor object
+ * @param arg the current struct state
+ */
+void destroy_state(struct supervisor *supvis, void *arg);
 
 #endif //CSH_SHELL_IMPL_H
