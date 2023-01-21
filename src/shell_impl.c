@@ -91,3 +91,13 @@ int execute_commands(struct supervisor *supvis, void *arg)
     
     return ret_val;
 }
+
+int do_exit(struct supervisor *supvis, void *arg)
+{
+    return 0;
+}
+
+int handle_error(struct supervisor *supvis, void *arg)
+{
+    return 0;
+}

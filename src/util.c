@@ -81,8 +81,11 @@ inline const char *bool_to_string(bool boolean);
 
 struct state *do_init_state(struct supervisor *supvis, struct state *state)
 {
-    state = mm_calloc(1, sizeof(struct state), supvis->mm,
-                      __FILE__, __func__, __LINE__);
+//    state = mm_calloc(1, sizeof(struct state), supvis->mm,
+//                      __FILE__, __func__, __LINE__);
+
+    memset(state, 0, sizeof(struct state));
+
     if (state)
     {
         state->stdin           = stdin;
