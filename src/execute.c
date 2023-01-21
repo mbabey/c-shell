@@ -6,6 +6,8 @@
 
 int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len, int status);
 
+void fork_and_exec(const struct supervisor *supvis, struct state *state, struct command *command, char **path);
+
 int do_execute_commands(struct supervisor *supvis, struct state *state)
 {
     int ret_val;
@@ -28,21 +30,47 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
         ret_val = EXIT;
     } else
     {
+        fork_and_exec(supvis, state, command, path);
+    
+        ret_val = (state->fatal_error) ? ERROR : RESET_STATE;
+    }
+    
+    return ret_val;
+}
+
+void fork_and_exec(const struct supervisor *supvis, struct state *state, struct command *command, char **path)
+{
+    pid_t pid;
+    pid_t wait_ret;
+    
+    pid = fork();
+    
+    if (pid < 0)
+    {
+        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+    } else if (pid == 0)
+    {
         size_t cmd_len;
         int    status;
-        
+
         cmd_len = strlen(command->command);
-        
+
         status = 1;
         for (; *path || status == 0; ++path)
         {
             status = do_execute(state, command, path, cmd_len, status);
         }
-        
-        ret_val = (state->fatal_error) ? ERROR : RESET_STATE;
+    } else
+    {
+        wait_ret = waitpid(pid, &command->exit_code, 0);
+        if (wait_ret == -1)
+        {
+            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        } else if (WIFEXITED(command->exit_code))
+        {
+            fprintf(state->stdout, "%s exited with status %d\n", command->command, WEXITSTATUS(command->exit_code));
+        }
     }
-    
-    return ret_val;
 }
 
 int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len, int status)
@@ -50,9 +78,10 @@ int do_execute(struct state *state, struct command *command, char *const *path, 
     size_t len;
     char   *path_and_cmd;
     
-    len          = strlen(*path) + cmd_len + 1;
+    len          = strlen(*path) + cmd_len + 2;
     path_and_cmd = (char *) malloc(len);
     strcpy(path_and_cmd, *path);
+    strcat(path_and_cmd, "/");
     strcat(path_and_cmd, command->command);
     
     status = execv(path_and_cmd, command->argv);
