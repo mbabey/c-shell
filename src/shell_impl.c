@@ -9,7 +9,7 @@ int init_state(struct supervisor *supvis, void *arg)
 {
     int ret_val;
     
-    arg = do_init_state(supvis, arg);
+    do_init_state(supvis, arg);
     
     ret_val = (dc_error_has_no_error(supvis->err)) ? READ_COMMANDS : ERROR;
     
@@ -79,13 +79,11 @@ int reset_state(struct supervisor *supvis, void *arg)
     return ret_val;
 }
 
-int handle_error(struct supervisor *supvis, void *arg)
+int handle_error(void *arg)
 {
     int ret_val;
-    // if a fatal error has occurred, go to destroy state.
-    // if a non-fatal error has occurred, go to reset_state.
-    // Error message printing should be here; not all tings will be in da child process my guy
-    ret_val = do_handle_error(supvis, arg);
+    
+    ret_val = do_handle_error(arg);
     
     return ret_val;
 }

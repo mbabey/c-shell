@@ -488,7 +488,7 @@ static void test_handle_error(const char *current_line, int expected_err_code, i
     
     state.fatal_error = is_fatal;
     
-    next_state = handle_error(supvis, &state);
+    next_state = handle_error(&state);
     assert_that(next_state, is_equal_to(expected_next_state));
     assert_that(out_buf, is_equal_to_string(""));
 //    assert_that(err_buf, is_equal_to_string(expected_err_message)); // Cannot test for implementation of dc_error

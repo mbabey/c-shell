@@ -101,15 +101,14 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     if (strcmp(command->command, "cd") == 0)
     {
         builtin_cd(supvis, command, state->stderr);
-        ret_val = (state->fatal_error) ? ERROR : RESET_STATE;
+        ret_val = (state->command->exit_code) ? ERROR : RESET_STATE;
     } else if (strcmp(command->command, "exit") == 0)
     {
         ret_val = DESTROY_STATE;
     } else
     {
         fork_and_exec(supvis, state, command, path);
-        
-        ret_val = (state->fatal_error) ? ERROR : RESET_STATE;
+        ret_val = (state->command->exit_code) ? ERROR : RESET_STATE;
     }
     
     return ret_val;
@@ -254,7 +253,7 @@ void parent_wait(const struct supervisor *supvis, struct state *state, struct co
     }
 }
 
-int do_handle_error(struct supervisor *supvis, struct state *state)
+int do_handle_error(struct state *state)
 {
     int ret_val;
     

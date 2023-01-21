@@ -80,7 +80,7 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
             }
             case ERROR:
             {
-                next_state = handle_error(supvis, &state);
+                next_state = handle_error(&state);
                 break;
             }
             case DESTROY_STATE:

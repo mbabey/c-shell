@@ -94,7 +94,7 @@ int reset_state(struct supervisor *supvis, void *arg);
  * @param arg the current struct state
  * @return RESET_STATE or DESTROY_STATE (if state->fatal_error)
  */
-int handle_error(struct supervisor *supvis, void *arg);
+int handle_error(void *arg);
 
 /**
  * destroy_state
