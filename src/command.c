@@ -200,7 +200,19 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
 
 char *get_command_name(struct supervisor *supvis, const char *line, regoff_t st_substr, regoff_t en_substr)
 {
-
+    char *substring;
+    size_t len;
+    
+    len = en_substr - st_substr;
+    
+    substring = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
+    
+    if (substring)
+    {
+        substring = substr(substring, line, st_substr, en_substr);
+    }
+    
+    return substring;
 }
 
 size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
@@ -273,7 +285,7 @@ char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr
 
 char *substr(char *dest, const char *src, size_t st, size_t en)
 {
-    strncpy(dest, src + st, en - st);
+    dest = strncpy(dest, src + st, en - st);
     
     *(dest + en - st) = '\0';
     
