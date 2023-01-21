@@ -17,6 +17,19 @@
 char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite, bool is_io);
 
 /**
+ * get_command_name
+ * <p>
+ * Get the command name and its arguments as a substring from the line.
+ * </p>
+ * @param supvis the supervisor object
+ * @param line the line to parse
+ * @param st_substr the start of the command substring
+ * @param en_substr the end of the command substring
+ * @return the command substring
+ */
+char *get_command_name(struct supervisor *supvis, const char *line, regoff_t st_substr, regoff_t en_substr);
+
+/**
  * check_io_valid
  * <p>
  * Check whether the io command is valid. An io command is valid if it takes the form
@@ -157,7 +170,6 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
                     break;
                 }
                 substring = get_filename(supvis, line, st_substr);
-
             } else
             {
                 substring = get_command_name(supvis, line, regmatch[1].rm_so, regmatch[1].rm_eo);
@@ -184,6 +196,11 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
     }
 
     return substring;
+}
+
+char *get_command_name(struct supervisor *supvis, const char *line, regoff_t st_substr, regoff_t en_substr)
+{
+
 }
 
 size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
