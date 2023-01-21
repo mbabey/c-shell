@@ -81,8 +81,13 @@ int reset_state(struct supervisor *supvis, void *arg)
 
 int handle_error(struct supervisor *supvis, void *arg)
 {
-    // if a fatal error has ocurred,
-    return 0;
+    int ret_val;
+    // if a fatal error has occurred, go to destroy state.
+    // if a non-fatal error has occurred, go to reset_state.
+    // Error message printing should be here; not all tings will be in da child process my guy
+    ret_val = do_handle_error(supvis, arg);
+    
+    return ret_val;
 }
 
 void destroy_state(struct supervisor *supvis, void *arg)

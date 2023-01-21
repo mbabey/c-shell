@@ -28,4 +28,16 @@ int do_execute_commands(struct supervisor *supvis, struct state *state);
  */
 int execute(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
+/**
+ * do_handle_error
+ * <p>
+ * Handle an error produced by executing a command; print a relevant error message and clean the
+ * error struct. If state->fatal_error is set, return DESTROY_STATE. Otherwise, return RESET_STATE.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ * @return RESET_STATE or DESTROY_STATE
+ */
+int do_handle_error(struct supervisor *supvis, struct state *state);
+
 #endif //CSH_EXECUTE_H
