@@ -149,13 +149,15 @@ int exec_command(struct state *state, struct command *command, char *const *path
 void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command, pid_t pid)
 {
     pid_t wait_ret;
+    int ret_val;
     
-    wait_ret = waitpid(pid, &command->exit_code, 0);
+    wait_ret = waitpid(pid, &ret_val, 0);
     if (wait_ret == -1)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-    } else if (WIFEXITED(command->exit_code))
+    } else if (WIFEXITED(ret_val))
     {
-        fprintf(state->stdout, "%s exited with status %d\n", command->command, WEXITSTATUS(command->exit_code));
+        command->exit_code = WEXITSTATUS(ret_val);
+        fprintf(state->stdout, "%s exited with status %d\n", command->command, command->exit_code);
     }
 }
