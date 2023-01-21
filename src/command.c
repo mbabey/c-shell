@@ -106,9 +106,24 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc);
  */
 char **save_wordv_to_argv(char **wordv, char **argv, size_t argc);
 
-char *
-get_substring(struct supervisor *supvis, char *substring, const char *line, size_t st_substr, size_t en_substr,
-              bool **overwrite, bool is_io);
+/**
+ * get_substring
+ * <p>
+ * Get a substring from the line. If is_io, parse as an filename; otherwise,
+ * parse as a command.
+ * </p>
+ * @param supvis the supervisor object
+ * @param substring the substring to be allocated
+ * @param line the line to parse
+ * @param st_substr the start of the substring
+ * @param en_substr the end of the substring
+ * @param overwrite whether, if is_io, to overwrite the contents of a file.
+ * @param is_io whether to parse as io
+ * @return the allocated substring, or NULL if the command is invalid.
+ */
+char *get_substring(struct supervisor *supvis, char *substring, const char *line,
+                    size_t st_substr, size_t en_substr,
+                    bool **overwrite, bool is_io);
 
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
@@ -144,8 +159,8 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
     supvis->mm->mm_free(supvis->mm, command->command);
     command->command = *command->argv;
     
-    command->stdin_file  = get_regex_substring(supvis, state->in_redirect_regex, command->line,
-                                               NULL, true);
+    command->stdin_file = get_regex_substring(supvis, state->in_redirect_regex, command->line,
+                                              NULL, true);
     supvis->mm->mm_add(supvis->mm, command->stdin_file);
     
     command->stdout_file = get_regex_substring(supvis, state->out_redirect_regex, command->line,
@@ -339,8 +354,8 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
     char      **argv;
     wordexp_t we;
     int       status;
-    char *line_no_newline;
-    char *newline_ptr;
+    char      *line_no_newline;
+    char      *newline_ptr;
     
     line_no_newline = strdup(line);
     supvis->mm->mm_add(supvis->mm, line_no_newline);
