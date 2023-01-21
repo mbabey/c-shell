@@ -22,6 +22,7 @@ int do_execute_commands(struct supervisor *supvis, struct state *state);
  * If the command cannot be found set command->exit_code to 127.
  * </p>
  * @param supvis the supervisor object
+ * @param state the state struct
  * @param command the command struct
  * @param path the path
  */

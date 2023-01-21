@@ -17,7 +17,7 @@ set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCE_LIST
-#        ${SOURCE_DIR}/builtins.c
+        ${SOURCE_DIR}/builtins.c
         ${SOURCE_DIR}/command.c
         ${SOURCE_DIR}/execute.c
         ${SOURCE_DIR}/input.c

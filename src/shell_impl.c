@@ -3,6 +3,7 @@
 #include "../include/util.h"
 #include "../include/input.h"
 #include "../include/command.h"
+#include "../include/execute.h"
 
 int init_state(struct supervisor *supvis, void *arg)
 {
