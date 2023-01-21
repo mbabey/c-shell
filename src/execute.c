@@ -41,6 +41,15 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 /**
+ * get_exit_code
+ * <p>
+ * Get an exit code for the child process based on the result of running execv.
+ * </p>
+ * @return the exit code
+ */
+int get_exit_code(void);
+
+/**
  * parent_wait
  * <p>
  * Wait for the child process to terminate. Store the return value in the state object.
@@ -104,6 +113,7 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
 {
     size_t cmd_len;
     int    status;
+    int exit_code;
     
     cmd_len = strlen(command->command);
     
@@ -116,7 +126,29 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     supvis->mm->mm_free_all(supvis->mm);
     free(supvis);
     
-    exit(69);
+    exit_code = get_exit_code();
+    
+    exit(exit_code);
+}
+
+#define EXNOTFOUND 127
+
+int get_exit_code(void)
+{
+    int exit_code;
+    
+    switch (errno)
+    {
+        case ENOENT:
+        {
+            exit_code = EXNOTFOUND;
+            break;
+        }
+        default:
+        {
+            exit_code =
+        }
+    }
 }
 
 int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len)
@@ -134,10 +166,7 @@ int exec_command(struct state *state, struct command *command, char *const *path
     printf("%s\n", path_and_cmd);
     
     status = execv(path_and_cmd, command->argv);
-    if (status == -1 && errno == ENOENT)
-    {
-        errno = 0;
-    } else if (status == -1)
+    if (status == -1 && errno != ENOENT)
     {
         state->fatal_error = true;
     }
