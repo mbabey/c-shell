@@ -282,10 +282,9 @@ void do_reset_command(struct supervisor *supvis, struct command *command)
 {
     supvis->mm->mm_free(supvis->mm, command->line);
     command->line = NULL;
-    supvis->mm->mm_free(supvis->mm, command->command);
     command->command = NULL;
     command->argc    = 0;
-    command->argv    = NULL; // TODO: have to free all of argv (attach NULL to end of argv in implementation)
+    free_string_array(command->argv);
     supvis->mm->mm_free(supvis->mm, command->stdin_file);
     command->stdin_file = NULL;
     supvis->mm->mm_free(supvis->mm, command->stdout_file);
@@ -296,6 +295,7 @@ void do_reset_command(struct supervisor *supvis, struct command *command)
     command->stderr_overwrite = false;
     command->exit_code        = 0;
 }
+
 
 void do_destroy_state(struct supervisor *supvis, struct state *state)
 {
@@ -346,7 +346,7 @@ void free_string_array(char **array)
     
     head_ptr = array;
     
-    while (array)
+    while (*array)
     {
         free(*array);
         ++array;

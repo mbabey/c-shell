@@ -141,14 +141,20 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
     command->command = get_regex_substring(supvis, state->command_regex, command->line,
                                            NULL, false);
     command->argv    = expand_cmds(supvis, command->command, &command->argc);
+    supvis->mm->mm_free(supvis->mm, command->command);
     command->command = *command->argv;
     
     command->stdin_file  = get_regex_substring(supvis, state->in_redirect_regex, command->line,
                                                NULL, true);
+    supvis->mm->mm_add(supvis->mm, command->stdin_file);
+    
     command->stdout_file = get_regex_substring(supvis, state->out_redirect_regex, command->line,
                                                &command->stdout_overwrite, true);
+    supvis->mm->mm_add(supvis->mm, command->stdout_file);
+    
     command->stderr_file = get_regex_substring(supvis, state->err_redirect_regex, command->line,
                                                &command->stderr_overwrite, true);
+    supvis->mm->mm_add(supvis->mm, command->stderr_file);
 }
 
 char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite, bool is_io)
@@ -355,7 +361,7 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
     supvis->mm->mm_free(supvis->mm, line_no_newline);
     
     *argc = we.we_wordc;
-    argv = (char **) mm_malloc(*argc * sizeof(char *), supvis->mm,
+    argv = (char **) mm_malloc((*argc + 1) * sizeof(char *), supvis->mm,
                                __FILE__, __func__, __LINE__);
     if (argv)
     {
@@ -373,6 +379,8 @@ char **save_wordv_to_argv(char **wordv, char **argv, size_t argc)
     {
         *(argv + arg_index) = strdup(*(wordv + arg_index));
     }
+    
+    *(argv + argc) = NULL;
     
     return argv;
 }

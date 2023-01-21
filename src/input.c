@@ -24,6 +24,9 @@ size_t do_read_commands(struct supervisor *supvis, struct state *state)
     if (!state->current_line)
     {
         state->fatal_error = true;
+    } else
+    {
+        supvis->mm->mm_add(supvis->mm, state->current_line);
     }
     
     return state->current_line_length;
