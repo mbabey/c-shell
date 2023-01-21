@@ -23,7 +23,7 @@
  * @param flags flags to be used
  * @return 0 on success, -1 on failure.
  */
-int set_regex(struct supervisor *supvis, regex_t *regex, const char *pattern, int flags);
+int set_regex(struct supervisor *supvis, regex_t **regex, const char *pattern, int flags);
 
 /**
  * set_state_regex
@@ -85,6 +85,9 @@ struct state *do_init_state(struct supervisor *supvis, struct state *state)
                       __FILE__, __func__, __LINE__);
     if (state)
     {
+        state->stdin           = stdin;
+        state->stdout          = stdout;
+        state->stderr          = stderr;
         state->max_line_length = sysconf(_SC_ARG_MAX);
         if (set_state_regex(supvis, state) == -1)
         {
@@ -96,13 +99,12 @@ struct state *do_init_state(struct supervisor *supvis, struct state *state)
             state->fatal_error = true;
             return NULL;
         }
-        state->prompt = get_prompt(supvis);
+        state->prompt          = get_prompt(supvis);
         if (state->prompt == NULL)
         {
             state->fatal_error = true;
             return NULL;
         }
-        do_reset_state(supvis, state);
     }
     
     return state;
@@ -112,25 +114,25 @@ int set_state_regex(struct supervisor *supvis, struct state *state)
 {
     int status;
     
-    status = set_regex(supvis, state->in_redirect_regex, IN_DIRECT_REGEX, REG_EXTENDED);
+    status = set_regex(supvis, &state->in_redirect_regex, IN_DIRECT_REGEX, REG_EXTENDED);
     if (status == -1)
     {
         return status;
     }
-    status = set_regex(supvis, state->out_redirect_regex, OUT_DIRECT_REGEX, REG_EXTENDED);
+    status = set_regex(supvis, &state->out_redirect_regex, OUT_DIRECT_REGEX, REG_EXTENDED);
     if (status == -1)
     {
         regfree(state->in_redirect_regex);
         return status;
     }
-    status = set_regex(supvis, state->err_redirect_regex, ERR_DIRECT_REGEX, REG_EXTENDED);
+    status = set_regex(supvis, &state->err_redirect_regex, ERR_DIRECT_REGEX, REG_EXTENDED);
     if (status == -1)
     {
         regfree(state->in_redirect_regex);
         regfree(state->out_redirect_regex);
         return status;
     }
-    status = set_regex(supvis, state->command_regex, CMD_REGEX, REG_EXTENDED);
+    status = set_regex(supvis, &state->command_regex, CMD_REGEX, REG_EXTENDED);
     if (status == -1)
     {
         regfree(state->in_redirect_regex);
@@ -142,11 +144,13 @@ int set_state_regex(struct supervisor *supvis, struct state *state)
     return status;
 }
 
-int set_regex(struct supervisor *supvis, regex_t *regex, const char *pattern, int flags)
+int set_regex(struct supervisor *supvis, regex_t **regex, const char *pattern, int flags)
 {
     int status;
     
-    status = regcomp(regex, pattern, flags);
+    *regex = (regex_t *) mm_malloc(sizeof(regex_t), supvis->mm, __FILE__, __func__, __LINE__);
+    
+    status = regcomp(*regex, pattern, flags);
     if (status != 0)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
