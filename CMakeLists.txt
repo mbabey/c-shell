@@ -21,7 +21,7 @@ set(SOURCE_LIST
         ${SOURCE_DIR}/command.c
         ${SOURCE_DIR}/execute.c
         ${SOURCE_DIR}/input.c
-#        ${SOURCE_DIR}/shell.c
+        ${SOURCE_DIR}/shell.c
         ${SOURCE_DIR}/shell_impl.c
         ${SOURCE_DIR}/util.c
         ${SOURCE_DIR}/supervisor.c
