@@ -83,15 +83,10 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
                 next_state = handle_error(supvis, &state);
                 break;
             }
-            case EXIT:
-            {
-                next_state = do_exit(supvis, &state);
-                break;
-            }
             case DESTROY_STATE:
             {
                 exit_status = state.command->exit_code;
-                next_state = destroy_state(supvis, &state);
+                destroy_state(supvis, &state);
                 run        = 0;
                 break;
             }

@@ -37,7 +37,7 @@ int init_state(struct supervisor *supvis, void *arg);
  * @param arg the current struct state
  * @return EXIT or ERROR
  */
-int destroy_state(struct supervisor *supvis, void *arg);
+void destroy_state(struct supervisor *supvis, void *arg);
 
 /**
  * reset_state
@@ -96,17 +96,6 @@ int parse_commands(struct supervisor *supvis, void *arg);
  * @return EXECUTE_COMMANDS or ERROR
  */
 int execute_commands(struct supervisor *supvis, void *arg);
-
-/**
- * do_exit
- * <p>
- * Handle the exit command (see do_reset_state)
- * </p>
- * @param supvis the supervisor object
- * @param arg the current struct state
- * @return DESTROY_STATE
- */
-int do_exit(struct supervisor *supvis, void *arg);
 
 /**
  * handle_error

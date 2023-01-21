@@ -12,6 +12,7 @@
 #define EXIT_ENAMETOOLONG 9
 #define EXIT_ENOEXEC 10
 #define EXIT_E2BIG 69
+#define EXIT_UNDEFINED 113
 #define EXIT_ENOENT 127
 
 /**
@@ -91,7 +92,7 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
         ret_val = (state->fatal_error) ? ERROR : RESET_STATE;
     } else if (strcmp(command->command, "exit") == 0)
     {
-        ret_val = EXIT;
+        ret_val = DESTROY_STATE;
     } else
     {
         fork_and_exec(supvis, state, command, path);
@@ -204,7 +205,7 @@ int get_exit_code(const char *command, FILE *out)
         }
         default:
         {
-            exit_code = EXIT_FAILURE;
+            exit_code = EXIT_UNDEFINED;
             fprintf(out, "csh: undefined error: %s\n", command);
             break;
         }

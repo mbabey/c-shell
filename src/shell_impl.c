@@ -16,15 +16,9 @@ int init_state(struct supervisor *supvis, void *arg)
     return ret_val;
 }
 
-int destroy_state(struct supervisor *supvis, void *arg)
+void destroy_state(struct supervisor *supvis, void *arg)
 {
-    int ret_val;
-    
     do_destroy_state(supvis, arg);
-    
-    ret_val = (dc_error_has_no_error(supvis->err)) ? EXIT : ERROR;
-    
-    return ret_val;
 }
 
 int reset_state(struct supervisor *supvis, void *arg)
@@ -88,11 +82,6 @@ int execute_commands(struct supervisor *supvis, void *arg)
     ret_val = do_execute_commands(supvis, arg);
     
     return ret_val;
-}
-
-int do_exit(struct supervisor *supvis, void *arg)
-{
-    return 0;
 }
 
 int handle_error(struct supervisor *supvis, void *arg)

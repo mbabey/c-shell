@@ -81,9 +81,6 @@ inline const char *bool_to_string(bool boolean);
 
 struct state *do_init_state(struct supervisor *supvis, struct state *state)
 {
-//    state = mm_calloc(1, sizeof(struct state), supvis->mm,
-//                      __FILE__, __func__, __LINE__);
-
     memset(state, 0, sizeof(struct state));
 
     if (state)
@@ -214,8 +211,9 @@ char **parse_path(struct supervisor *supvis, const char *path_str)
     char   *path_str_dup;
     size_t num_paths;
     
-    path_str_dup = strdup(path_str); // mem alloc here
+    path_str_dup = strdup(path_str);
     num_paths    = count_char_in_string(':', path_str_dup) + 1;
+    
     
     paths = tokenize_path(supvis, path_str_dup, num_paths);
     
@@ -296,7 +294,6 @@ void do_reset_command(struct supervisor *supvis, struct command *command)
     command->exit_code        = 0;
 }
 
-
 void do_destroy_state(struct supervisor *supvis, struct state *state)
 {
     if (state->stdin && state->stdin != stdin)
@@ -333,8 +330,15 @@ void do_destroy_state(struct supervisor *supvis, struct state *state)
     
     if (state->path)
     {
-        free_string_array(state->path);
+        supvis->mm->mm_free(supvis->mm, *state->path);
+        *state->path = NULL;
+        supvis->mm->mm_free(supvis->mm, state->path);
         state->path = NULL;
+    }
+    if (state->prompt)
+    {
+        supvis->mm->mm_free(supvis->mm, state->prompt);
+        state->prompt = NULL;
     }
     
     do_reset_state(supvis, state);
