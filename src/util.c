@@ -67,7 +67,7 @@ char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_p
  * </p>
  * @param array the array of strings
  */
-void free_string_array(char **array);
+void free_string_array(struct supervisor *supvis, char **array);
 
 /**
  * bool_to_string
@@ -82,24 +82,28 @@ inline const char *bool_to_string(bool boolean);
 struct state *do_init_state(struct supervisor *supvis, struct state *state)
 {
     memset(state, 0, sizeof(struct state));
-
+    
     if (state)
     {
-        state->stdin           = stdin;
-        state->stdout          = stdout;
-        state->stderr          = stderr;
+        state->stdin  = stdin;
+        state->stdout = stdout;
+        state->stderr = stderr;
+        
         state->max_line_length = sysconf(_SC_ARG_MAX);
+        
         if (set_state_regex(supvis, state) == -1)
         {
             state->fatal_error = true;
             return NULL;
         }
+        
         if (set_state_path(supvis, state) == -1)
         {
             state->fatal_error = true;
             return NULL;
         }
-        state->prompt          = get_prompt(supvis);
+        
+        state->prompt = get_prompt(supvis);
         if (state->prompt == NULL)
         {
             state->fatal_error = true;
@@ -212,8 +216,9 @@ char **parse_path(struct supervisor *supvis, const char *path_str)
     size_t num_paths;
     
     path_str_dup = strdup(path_str);
-    num_paths    = count_char_in_string(':', path_str_dup) + 1;
+    supvis->mm->mm_add(supvis->mm, path_str_dup);
     
+    num_paths = count_char_in_string(':', path_str_dup) + 1;
     
     paths = tokenize_path(supvis, path_str_dup, num_paths);
     
@@ -279,10 +284,10 @@ void do_reset_state(struct supervisor *supvis, struct state *state)
 void do_reset_command(struct supervisor *supvis, struct command *command)
 {
     supvis->mm->mm_free(supvis->mm, command->line);
-    command->line = NULL;
+    command->line    = NULL;
     command->command = NULL;
     command->argc    = 0;
-    free_string_array(command->argv);
+    free_string_array(supvis, command->argv);
     supvis->mm->mm_free(supvis->mm, command->stdin_file);
     command->stdin_file = NULL;
     supvis->mm->mm_free(supvis->mm, command->stdout_file);
@@ -337,14 +342,13 @@ void do_destroy_state(struct supervisor *supvis, struct state *state)
     }
     if (state->prompt)
     {
-        supvis->mm->mm_free(supvis->mm, state->prompt);
         state->prompt = NULL;
     }
     
     do_reset_state(supvis, state);
 }
 
-void free_string_array(char **array)
+void free_string_array(struct supervisor *supvis, char **array)
 {
     char **head_ptr;
     
@@ -352,11 +356,11 @@ void free_string_array(char **array)
     
     while (*array)
     {
-        free(*array);
+        supvis->mm->mm_free(supvis->mm, *array);
         ++array;
     }
     
-    free(head_ptr);
+    supvis->mm->mm_free(supvis->mm, head_ptr);
 }
 
 void display_state(struct supervisor *supvis, const struct state *state, FILE *stream)

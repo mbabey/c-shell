@@ -104,7 +104,7 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc);
  * @param wordv the wordexp_t temporarily storing expanded path names
  * @return the updated list of expanded path names
  */
-char **save_wordv_to_argv(char **wordv, char **argv, size_t argc);
+char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, size_t argc);
 
 /**
  * get_substring
@@ -380,7 +380,7 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
                                __FILE__, __func__, __LINE__);
     if (argv)
     {
-        argv = save_wordv_to_argv(we.we_wordv, argv, *argc);
+        argv = save_wordv_to_argv(supvis, we.we_wordv, argv, *argc);
     }
     
     wordfree(&we);
@@ -388,11 +388,12 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
     return argv;
 }
 
-char **save_wordv_to_argv(char **wordv, char **argv, size_t argc)
+char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, size_t argc)
 {
     for (size_t arg_index = 0; arg_index < argc; ++arg_index)
     {
         *(argv + arg_index) = strdup(*(wordv + arg_index));
+        supvis->mm->mm_add(supvis->mm, *(argv + arg_index));
     }
     
     *(argv + argc) = NULL;
