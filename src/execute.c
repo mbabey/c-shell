@@ -4,9 +4,13 @@
 #include <string.h>
 #include <unistd.h>
 
-int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len, int status);
+int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len);
 
 void fork_and_exec(const struct supervisor *supvis, struct state *state, struct command *command, char **path);
+
+void child_parse_path_exec(struct state *state, struct command *command, char **path);
+
+void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command, pid_t pid);
 
 int do_execute_commands(struct supervisor *supvis, struct state *state)
 {
@@ -41,7 +45,6 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
 void fork_and_exec(const struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
     pid_t pid;
-    pid_t wait_ret;
     
     pid = fork();
     
@@ -50,33 +53,32 @@ void fork_and_exec(const struct supervisor *supvis, struct state *state, struct 
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
     } else if (pid == 0)
     {
-        size_t cmd_len;
-        int    status;
-
-        cmd_len = strlen(command->command);
-
-        status = 1;
-        for (; *path || status == 0; ++path)
-        {
-            status = do_execute(state, command, path, cmd_len, status);
-        }
+        child_parse_path_exec(state, command, path);
     } else
     {
-        wait_ret = waitpid(pid, &command->exit_code, 0);
-        if (wait_ret == -1)
-        {
-            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-        } else if (WIFEXITED(command->exit_code))
-        {
-            fprintf(state->stdout, "%s exited with status %d\n", command->command, WEXITSTATUS(command->exit_code));
-        }
+        parent_wait(supvis, state, command, pid);
     }
 }
 
-int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len, int status)
+void child_parse_path_exec(struct state *state, struct command *command, char **path)
+{
+    size_t cmd_len;
+    int    status;
+    
+    cmd_len = strlen(command->command);
+    
+    status = 1;
+    for (; *path || status == 0; ++path)
+    {
+        status = do_execute(state, command, path, cmd_len);
+    }
+}
+
+int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len)
 {
     size_t len;
     char   *path_and_cmd;
+    int status;
     
     len          = strlen(*path) + cmd_len + 2;
     path_and_cmd = (char *) malloc(len);
@@ -95,4 +97,18 @@ int do_execute(struct state *state, struct command *command, char *const *path, 
     
     free(path_and_cmd);
     return status;
+}
+
+void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command, pid_t pid)
+{
+    pid_t wait_ret;
+    
+    wait_ret = waitpid(pid, &command->exit_code, 0);
+    if (wait_ret == -1)
+    {
+        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+    } else if (WIFEXITED(command->exit_code))
+    {
+        fprintf(state->stdout, "%s exited with status %d\n", command->command, WEXITSTATUS(command->exit_code));
+    }
 }
