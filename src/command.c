@@ -27,7 +27,7 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
  * @param en_substr the end of the command substring
  * @return the command substring
  */
-char *get_command_name(struct supervisor *supvis, const char *line, regoff_t st_substr, regoff_t en_substr);
+char *get_command_name(struct supervisor *supvis, const char *line, size_t st_substr, size_t en_substr);
 
 /**
  * check_io_valid
@@ -41,7 +41,7 @@ char *get_command_name(struct supervisor *supvis, const char *line, regoff_t st_
  * @param overwrite whether the io command is an overwrite command
  * @return the index of the character immediately following the last '<' or '>', or 0 on a failure.
  */
-size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite);
+size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite);
 
 /**
  * get_filename
@@ -106,6 +106,10 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc);
  */
 char **save_wordv_to_argv(char **wordv, char **argv, size_t argc);
 
+char *
+get_substring(struct supervisor *supvis, char *substring, const char *line, size_t st_substr, size_t en_substr,
+              bool **overwrite, bool is_io);
+
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
     struct command *command;
@@ -134,9 +138,9 @@ void do_parse_commands(struct supervisor *supvis, struct state *state)
 
 void parse_command(struct supervisor *supvis, struct state *state, struct command *command)
 {
-    command->command     = get_regex_substring(supvis, state->command_regex, command->line,
-                                               NULL, false);
-    command->argv        = expand_cmds(supvis, command->command, &command->argc);
+    command->command = get_regex_substring(supvis, state->command_regex, command->line,
+                                           NULL, false);
+    command->argv    = expand_cmds(supvis, command->command, &command->argc);
     command->command = *command->argv;
     
     command->stdin_file  = get_regex_substring(supvis, state->in_redirect_regex, command->line,
@@ -158,49 +162,51 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
     status = regexec(regex, line, 2, regmatch, 0);
     switch (status)
     {
-        case 0: // success code
+        case 0: // success
         {
-            if (is_io)
-            {
-                size_t st_substr;
-                st_substr = check_io_valid(line, regmatch[1].rm_so, &overwrite);
-                if (!st_substr)
-                {
-                    // Command is invalid
-                    break;
-                }
-                substring = get_filename(supvis, line, st_substr);
-            } else
-            {
-                substring = get_command_name(supvis, line, regmatch[1].rm_so, regmatch[1].rm_eo);
-                
-            }
-            
-            if (!substring)
-            {
-                DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-            }
-            
+            substring = get_substring(supvis, substring, line, regmatch[1].rm_so, regmatch[1].rm_eo, &overwrite, is_io);
             break;
         }
-        case REG_NOMATCH:
+        case REG_NOMATCH: // No match
         {
-            // No match code
             break;
         }
-        default:
+        default: // other error
         {
-            // other error code
             DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         }
     }
-
+    
     return substring;
 }
 
-char *get_command_name(struct supervisor *supvis, const char *line, regoff_t st_substr, regoff_t en_substr)
+char *get_substring(struct supervisor *supvis, char *substring, const char *line,
+                    size_t st_substr, size_t en_substr,
+                    bool **overwrite, bool is_io)
 {
-    char *substring;
+    if (is_io)
+    {
+        st_substr = check_io_valid(line, st_substr, overwrite);
+        if (!st_substr)
+        {
+            return NULL; // Command is invalid
+        }
+        substring = get_filename(supvis, line, st_substr);
+    } else
+    {
+        substring = get_command_name(supvis, line, st_substr, en_substr);
+    }
+    
+    if (!substring)
+    {
+        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+    }
+    return substring;
+}
+
+char *get_command_name(struct supervisor *supvis, const char *line, size_t st_substr, size_t en_substr)
+{
+    char   *substring;
     size_t len;
     
     len = en_substr - st_substr;
@@ -215,7 +221,7 @@ char *get_command_name(struct supervisor *supvis, const char *line, regoff_t st_
     return substring;
 }
 
-size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
+size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite)
 {
     size_t st_substr;
     size_t indicator_count;
