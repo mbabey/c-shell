@@ -333,13 +333,26 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
     char      **argv;
     wordexp_t we;
     int       status;
+    char *line_no_newline;
+    char *newline_ptr;
     
-    status = wordexp(line, &we, 0);
+    line_no_newline = strdup(line);
+    supvis->mm->mm_add(supvis->mm, line_no_newline);
+    
+    newline_ptr = strchr(line_no_newline, '\n');
+    if (newline_ptr)
+    {
+        *newline_ptr = '\0';
+    }
+    
+    status = wordexp(line_no_newline, &we, 0);
     if (status)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         return NULL;
     }
+    
+    supvis->mm->mm_free(supvis->mm, line_no_newline);
     
     *argc = we.we_wordc;
     argv = (char **) mm_malloc(*argc * sizeof(char *), supvis->mm,
