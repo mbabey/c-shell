@@ -43,6 +43,7 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
     state.stderr = err;
     
     run = 1;
+    next_state = INIT_STATE;
     while (run)
     {
         switch (next_state)

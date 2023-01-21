@@ -31,7 +31,7 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
 size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite);
 
 /**
- * get_substring
+ * get_filename
  * <p>
  * Parse the filename from the given line. Increment the start pointer until a non-whitespace character.
  * Then, increment the end pointer from the start pointer until a whitespace character. Generate and
@@ -43,7 +43,7 @@ size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite);
  * @param st_substr the start pointer
  * @return the substring containing the filename
  */
-char *get_substring(struct supervisor *supvis, const char *line, size_t st_substr);
+char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr);
 
 /**
  * substr
@@ -147,22 +147,23 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
     {
         case 0: // success code
         {
-            size_t st_substr;
-            
             if (is_io)
             {
+                size_t st_substr;
                 st_substr = check_io_valid(line, regmatch[1].rm_so, &overwrite);
                 if (!st_substr)
                 {
                     // Command is invalid
                     break;
                 }
+                substring = get_filename(supvis, line, st_substr);
+
             } else
             {
-                st_substr = regmatch[1].rm_so;
+                substring = get_command_name(supvis, line, regmatch[1].rm_so, regmatch[1].rm_eo);
+                
             }
             
-            substring = get_substring(supvis, line, st_substr);
             if (!substring)
             {
                 DC_ERROR_RAISE_ERRNO(supvis->err, errno);
@@ -181,7 +182,7 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
             DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         }
     }
-    
+
     return substring;
 }
 
@@ -216,14 +217,25 @@ size_t check_io_valid(const char *line, regoff_t rm_so, bool **overwrite)
     return st_substr;
 }
 
-char *get_substring(struct supervisor *supvis, const char *line, size_t st_substr)
+char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr)
 {
     char   *filename;
     size_t en_substr;
     size_t len;
     
-    // move the start pointer forward to the first non-whitespace character
-    while (isspace(*(line + ++st_substr)));
+    // if first char is whitespace, move the start pointer forward to the first non-whitespace character
+    switch (isspace(*line))
+    {
+        case true:
+        {
+            while (isspace(*(line + ++st_substr)));
+            break;
+        }
+        default:
+        {
+            // do nothing
+        }
+    }
     
     // set the end pointer to the start pointer, and move forward to the first whitespace character
     en_substr = st_substr;
