@@ -4,12 +4,52 @@
 #include <string.h>
 #include <unistd.h>
 
-int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len);
+/**
+ * exec_command
+ * <p>
+ * Attempt to execute a command.
+ * </p>
+ * @param state the state object
+ * @param command the command object; contains the command to execute
+ * @param path the path upon which to search for the executable
+ * @param cmd_len the length of the command field
+ * @return 0 if process found and executed.
+ */
+int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len);
 
+/**
+ * fork_and_exec
+ * <p>
+ * Fork the process and replace the child with the command process if found.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ * @param command the command object
+ * @param path the path upon which to find the object
+ */
 void fork_and_exec(const struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
+/**
+ * child_parse_path_and_exec
+ * <p>
+ * Parse the path to find the executable and execute the executable.
+ * </p>
+ * @param state the state object
+ * @param command the command object
+ * @param path the path upon which to find the object
+ */
 void child_parse_path_exec(struct state *state, struct command *command, char **path);
 
+/**
+ * parent_wait
+ * <p>
+ * Wait for the child process to terminate. Store the return value in the state object.
+ * </p>
+ * @param supvis the supervisor object
+ * @param state the state object
+ * @param command the command object
+ * @param pid the pid of the child process
+ */
 void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command, pid_t pid);
 
 int do_execute_commands(struct supervisor *supvis, struct state *state)
@@ -70,11 +110,11 @@ void child_parse_path_exec(struct state *state, struct command *command, char **
     status = 1;
     for (; *path || status == 0; ++path)
     {
-        status = do_execute(state, command, path, cmd_len);
+        status = exec_command(state, command, path, cmd_len);
     }
 }
 
-int do_execute(struct state *state, struct command *command, char *const *path, size_t cmd_len)
+int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len)
 {
     size_t len;
     char   *path_and_cmd;
