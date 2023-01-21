@@ -1,6 +1,6 @@
 #include "../include/execute.h"
-#include "builtins.h"
-#include "shell.h"
+#include "../include/builtins.h"
+#include "../include/shell.h"
 #include <string.h>
 #include <unistd.h>
 
