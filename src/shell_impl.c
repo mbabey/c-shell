@@ -85,9 +85,7 @@ int execute_commands(struct supervisor *supvis, void *arg)
 {
     int ret_val;
     
-    do_execute_commands(supvis, arg);
-    
-    ret_val = (dc_error_has_no_error(supvis->err)) ? RESET_STATE : ERROR;
+    ret_val = do_execute_commands(supvis, arg);
     
     return ret_val;
 }

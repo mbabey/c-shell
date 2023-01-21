@@ -21,7 +21,8 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     
     if (strcmp(command->command, "cd") == 0)
     {
-        ret_val = builtin_cd(supvis, command, state->stderr);
+        builtin_cd(supvis, command, state->stderr);
+        ret_val = (state->fatal_error) ? ERROR : RESET_STATE;
     } else if (strcmp(command->command, "exit") == 0)
     {
         ret_val = EXIT;
