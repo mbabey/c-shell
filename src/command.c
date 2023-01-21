@@ -209,7 +209,12 @@ char *get_command_name(struct supervisor *supvis, const char *line, size_t st_su
     char   *substring;
     size_t len;
     
-    len = en_substr - st_substr;
+    if (*(line + en_substr - 1) == '2') // If an error io redirect, the regex will not capture the 2.
+    {
+        --en_substr;
+    }
+    
+    len = en_substr - st_substr + 1;
     
     substring = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
     
@@ -227,7 +232,8 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite)
     size_t indicator_count;
     char   io_indicator;
     
-    st_substr    = rm_so;
+    // Regex matches the space character as the first character; adding one will get the first io character.
+    st_substr    = rm_so + 1;
     io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr);
     
     // Get the number of > or < symbols
@@ -259,7 +265,7 @@ char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr
     size_t len;
     
     // if first char is whitespace, move the start pointer forward to the first non-whitespace character
-    switch (isspace(*line))
+    switch (isspace(*(line + st_substr)))
     {
         case true:
         {
@@ -268,7 +274,7 @@ char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr
         }
         default:
         {
-            // do nothing
+            // do nothing haha
         }
     }
     
@@ -306,11 +312,14 @@ void expand_filename(struct supervisor *supvis, char **filename)
     {
         case 0:
         {
-            *filename = *we.we_wordv;
+            supvis->mm->mm_free(supvis->mm, *filename);
+            *filename = strdup(*we.we_wordv);
+            supvis->mm->mm_add(supvis->mm, *filename);
             break;
         }
         default:
         {
+            supvis->mm->mm_free(supvis->mm, *filename);
             *filename = NULL;
             DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         }
@@ -329,7 +338,6 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
     if (status)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-        wordfree(&we);
         return NULL;
     }
     

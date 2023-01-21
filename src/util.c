@@ -8,7 +8,7 @@
 #include <regex.h>
 
 #define IN_DIRECT_REGEX "([ \t\f\v]<.*)"
-#define OUT_DIRECT_REGEX "([ \t\f\v][1^2]?>[>]?.*)"
+#define OUT_DIRECT_REGEX "([ \t\f\v][1]?>[>]?.*)"
 #define ERR_DIRECT_REGEX "([ \t\f\v]2>[>]?.*)"
 #define CMD_REGEX "([^<>]*).*"
 
