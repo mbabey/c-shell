@@ -27,7 +27,7 @@ int exec_command(struct state *state, struct command *command, char *const *path
  * @param command the command object
  * @param path the path upon which to find the object
  */
-void fork_and_exec(const struct supervisor *supvis, struct state *state, struct command *command, char **path);
+void fork_and_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 /**
  * child_parse_path_and_exec
@@ -38,7 +38,7 @@ void fork_and_exec(const struct supervisor *supvis, struct state *state, struct 
  * @param command the command object
  * @param path the path upon which to find the object
  */
-void child_parse_path_exec(struct state *state, struct command *command, char **path);
+void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 /**
  * parent_wait
@@ -82,7 +82,7 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     return ret_val;
 }
 
-void fork_and_exec(const struct supervisor *supvis, struct state *state, struct command *command, char **path)
+void fork_and_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
     pid_t pid;
     
@@ -93,14 +93,14 @@ void fork_and_exec(const struct supervisor *supvis, struct state *state, struct 
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
     } else if (pid == 0)
     {
-        child_parse_path_exec(state, command, path);
+        child_parse_path_exec(supvis, state, command, path);
     } else
     {
         parent_wait(supvis, state, command, pid);
     }
 }
 
-void child_parse_path_exec(struct state *state, struct command *command, char **path)
+void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
     size_t cmd_len;
     int    status;
@@ -112,6 +112,11 @@ void child_parse_path_exec(struct state *state, struct command *command, char **
     {
         status = exec_command(state, command, path, cmd_len);
     }
+    
+    supvis->mm->mm_free_all(supvis->mm);
+    free(supvis);
+    
+    exit(69);
 }
 
 int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len)
@@ -125,6 +130,8 @@ int exec_command(struct state *state, struct command *command, char *const *path
     strcpy(path_and_cmd, *path);
     strcat(path_and_cmd, "/");
     strcat(path_and_cmd, command->command);
+    
+    printf("%s\n", path_and_cmd);
     
     status = execv(path_and_cmd, command->argv);
     if (status == -1 && errno == ENOENT)
