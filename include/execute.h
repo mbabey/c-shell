@@ -37,7 +37,7 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
  * @param err_code the errno
  * @return the exit code
  */
-int get_exit_code(int err_code, const char *command, FILE *ostream);
+int get_exit_code(int err_code);
 
 /**
  * do_handle_error

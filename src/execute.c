@@ -152,8 +152,8 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
         status = exec_command(state, command, path, cmd_len);
     }
     
-    exit_code = get_exit_code(errno, NULL, NULL);
-    print_err_message(state->command->exit_code, state->command->command, state->stdout);
+    exit_code = get_exit_code(errno);
+    print_err_message(exit_code, state->command->command, state->stdout);
     
     supvis->mm->mm_free_all(supvis->mm);
     free(supvis);
@@ -221,7 +221,7 @@ int do_handle_error(struct state *state)
     return ret_val;
 }
 
-int get_exit_code(int err_code, const char *command, FILE *ostream)
+int get_exit_code(int err_code)
 {
     int exit_code;
     

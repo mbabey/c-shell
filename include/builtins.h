@@ -17,9 +17,9 @@
  * </p>
  * @param supvis the supervisor object
  * @param command the command structure
- * @param errstream the steam onto which errors shall be printed
+ * @param ostream the steam onto which errors shall be printed
  */
-int builtin_cd(struct supervisor *supvis, struct command *command, FILE *errstream);
+int builtin_cd(struct supervisor *supvis, struct command *command, FILE *ostream);
 // TODO: call chdir
 // TODO: check the errno: what is the error? print an appropriate message
 
