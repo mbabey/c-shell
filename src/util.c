@@ -359,6 +359,11 @@ void do_destroy_state(struct supervisor *supvis, struct state *state)
 
 void free_string_array(struct supervisor *supvis, char **array)
 {
+    if (!array)
+    {
+        return;
+    }
+    
     char **head_ptr;
     
     head_ptr = array;

@@ -91,7 +91,7 @@ void expand_filename(struct supervisor *supvis, char **filename);
  * </p>
  * @param line the cmds to expand
  */
-char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc);
+char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FILE *out);
 
 /**
  * save_wordv_to_argv
@@ -148,7 +148,6 @@ void do_separate_commands(struct supervisor *supvis, struct state *state)
 
 void do_parse_commands(struct supervisor *supvis, struct state *state)
 {
-    // call parse_command for each command (there is only one in the current implementation).
     parse_command(supvis, state, state->command);
 }
 
@@ -156,9 +155,13 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
 {
     command->command = get_regex_substring(supvis, state->command_regex, command->line,
                                            NULL, false);
-    command->argv    = expand_cmds(supvis, command->command, &command->argc);
+    command->argv    = expand_cmds(supvis, command->command, &command->argc, state->stdout);
     supvis->mm->mm_free(supvis->mm, command->command);
-    command->command = *command->argv;
+    
+    if (command->argv)
+    {
+        command->command = *command->argv;
+    }
     
     command->stdin_file = get_regex_substring(supvis, state->in_redirect_regex, command->line,
                                               NULL, true);
@@ -350,7 +353,7 @@ void expand_filename(struct supervisor *supvis, char **filename)
     wordfree(&we);
 }
 
-char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
+char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FILE *out)
 {
     char      **argv;
     wordexp_t we;
@@ -370,7 +373,8 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc)
     status = wordexp(line_no_newline, &we, 0);
     if (status)
     {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        fprintf(out, "csh: parse error in command: \'%s\'\n", line);
+        errno = 1;
         return NULL;
     }
     
