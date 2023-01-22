@@ -61,16 +61,6 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 /**
- * get_exit_code
- * <p>
- * Get an exit code for the child process based on the result of running execv.
- * </p>
- * @param err_code the errno
- * @return the exit code
- */
-int get_exit_code(int err_code);
-
-/**
  * parent_wait
  * <p>
  * Wait for the child process to terminate. Store the return value in the state object.
@@ -118,7 +108,7 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     
     if (strcmp(command->command, "cd") == 0)
     {
-        builtin_cd(supvis, command, state->stderr);
+        state->command->exit_code = builtin_cd(supvis, command, state->stderr);
         ret_val = (state->command->exit_code) ? ERROR : RESET_STATE;
     } else if (strcmp(command->command, "exit") == 0)
     {
@@ -162,7 +152,8 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
         status = exec_command(state, command, path, cmd_len);
     }
     
-    exit_code = get_exit_code(errno);
+    exit_code = get_exit_code(errno, NULL, NULL);
+    print_err_message(state->command->exit_code, state->command->command, state->stdout);
     
     supvis->mm->mm_free_all(supvis->mm);
     free(supvis);
@@ -190,67 +181,6 @@ int exec_command(struct state *state, struct command *command, char *const *path
     
     free(path_and_cmd);
     return status;
-}
-
-int get_exit_code(int err_code)
-{
-    int exit_code;
-    
-    switch (err_code)
-    {
-        case ENOENT:
-        {
-            exit_code = EXIT_ENOENT;
-            break;
-        }
-        case EACCES:
-        {
-            exit_code = EXIT_EACCES;
-            break;
-        }
-        case EFAULT:
-        {
-            exit_code = EXIT_EFAULT;
-            break;
-        }
-        case EINVAL:
-        {
-            exit_code = EXIT_EINVAL;
-            break;
-        }
-        case ENOTDIR:
-        {
-            exit_code = EXIT_ENOTDIR;
-            break;
-        }
-        case ELOOP:
-        {
-            exit_code = EXIT_ELOOP;
-            break;
-        }
-        case ENAMETOOLONG:
-        {
-            exit_code = EXIT_ENAMETOOLONG;
-            break;
-        }
-        case ENOEXEC:
-        {
-            exit_code = EXIT_ENOEXEC;
-            break;
-        }
-        case E2BIG:
-        {
-            exit_code = EXIT_E2BIG;
-            break;
-        }
-        default:
-        {
-            exit_code = EXIT_UNDEFINED;
-            break;
-        }
-    }
-    
-    return exit_code;
 }
 
 void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command)
@@ -282,71 +212,140 @@ int do_handle_error(struct state *state)
     
     if (state->fatal_error)
     {
-        print_err_message(state->command->exit_code, state->command->command, state->stderr);
         ret_val = DESTROY_STATE;
     } else
     {
-        print_err_message(state->command->exit_code, state->command->command, state->stdout);
         ret_val = RESET_STATE;
     }
     
     return ret_val;
 }
 
-void print_err_message(int exit_code, const char *command, FILE *ostream)
+int get_exit_code(int err_code, const char *command, FILE *ostream)
 {
-    switch (exit_code)
+    int exit_code;
+    
+    switch (err_code)
     {
-        case EXIT_ENOENT:
+        case ENOENT:
         {
+            exit_code = EXIT_ENOENT;
             fprintf(ostream, "csh: command not found: %s\n", command);
             break;
         }
-        case EXIT_EACCES:
+        case EACCES:
         {
+            exit_code = EXIT_EACCES;
             fprintf(ostream, "csh: permission denied: %s\n", command);
             break;
         }
-        case EXIT_EFAULT:
+        case EFAULT:
         {
-            fprintf(ostream, "csh: arguments outside address space: %s\n", command);
+            exit_code = EXIT_EFAULT;
+            fprintf(ostream, "csh: bad address: %s\n", command);
             break;
         }
-        case EXIT_EINVAL:
+        case EINVAL:
         {
-            fprintf(ostream, "csh: execution not supported by this system: %s\n", command);
+            exit_code = EXIT_EINVAL;
+            fprintf(ostream, "csh: invalid argument: %s\n", command);
             break;
         }
-        case EXIT_ENOTDIR:
+        case ENOTDIR:
         {
-            fprintf(ostream, "csh: no such file or directory: %s\n", command);
+            exit_code = EXIT_ENOTDIR;
+            fprintf(ostream, "csh: not a directory: %s\n", command);
             break;
         }
-        case EXIT_ELOOP:
+        case ELOOP:
         {
-            fprintf(ostream, "csh: symbolic loop detected: %s\n", command);
+            exit_code = EXIT_ELOOP;
+            fprintf(ostream, "csh: too many levels of symbolic links: %s\n", command);
             break;
         }
-        case EXIT_ENAMETOOLONG:
+        case ENAMETOOLONG:
         {
-            fprintf(ostream, "csh: argument name too long: %s\n", command);
+            exit_code = EXIT_ENAMETOOLONG;
+            fprintf(ostream, "csh: file name too long: %s\n", command);
             break;
         }
-        case EXIT_ENOEXEC:
+        case ENOEXEC:
         {
-            fprintf(ostream, "csh: unrecognized format: %s\n", command);
+            exit_code = EXIT_ENOEXEC;
+            fprintf(ostream, "csh: exec format error: %s\n", command);
             break;
         }
-        case EXIT_E2BIG:
+        case E2BIG:
         {
-            fprintf(ostream, "csh: too many arguments and/or environment variables: %s\n", command);
+            exit_code = EXIT_E2BIG;
+            fprintf(ostream, "csh: argument list too long: %s\n", command);
             break;
         }
         default:
         {
+            exit_code = EXIT_UNDEFINED;
             fprintf(ostream, "csh: undefined error: %s\n", command);
             break;
         }
     }
+    
+    return exit_code;
 }
+
+//void print_err_message(int exit_code, const char *command, FILE *ostream)
+//{
+//    switch (exit_code)
+//    {
+//        case EXIT_ENOENT:
+//        {
+//            fprintf(ostream, "csh: command not found: %s\n", command);
+//            break;
+//        }
+//        case EXIT_EACCES:
+//        {
+//            fprintf(ostream, "csh: permission denied: %s\n", command);
+//            break;
+//        }
+//        case EXIT_EFAULT:
+//        {
+//            fprintf(ostream, "csh: bad address: %s\n", command);
+//            break;
+//        }
+//        case EXIT_EINVAL:
+//        {
+//            fprintf(ostream, "csh: invalid argument: %s\n", command);
+//            break;
+//        }
+//        case EXIT_ENOTDIR:
+//        {
+//            fprintf(ostream, "csh: not a directory: %s\n", command);
+//            break;
+//        }
+//        case EXIT_ELOOP:
+//        {
+//            fprintf(ostream, "csh: too many levels of symbolic links: %s\n", command);
+//            break;
+//        }
+//        case EXIT_ENAMETOOLONG:
+//        {
+//            fprintf(ostream, "csh: file name too long: %s\n", command);
+//            break;
+//        }
+//        case EXIT_ENOEXEC:
+//        {
+//            fprintf(ostream, "csh: exec format error: %s\n", command);
+//            break;
+//        }
+//        case EXIT_E2BIG:
+//        {
+//            fprintf(ostream, "csh: argument list too long: %s\n", command);
+//            break;
+//        }
+//        default:
+//        {
+//            fprintf(ostream, "csh: undefined error: %s\n", command);
+//            break;
+//        }
+//    }
+//}
 

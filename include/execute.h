@@ -30,6 +30,16 @@ int do_execute_commands(struct supervisor *supvis, struct state *state);
 int execute(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 /**
+ * get_exit_code
+ * <p>
+ * Get an exit code for the child process based on the result of running execv.
+ * </p>
+ * @param err_code the errno
+ * @return the exit code
+ */
+int get_exit_code(int err_code, const char *command, FILE *ostream);
+
+/**
  * do_handle_error
  * <p>
  * Handle an error produced by executing a command; print a relevant error message and clean the
