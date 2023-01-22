@@ -2,6 +2,14 @@
 
 #include <unistd.h>
 
+/**
+ * cd_error_message
+ * <p>
+ * Print an error message based on the value of errno passed to this function.
+ * </p>
+ * @param err_code the errno passed
+ * @param ostream the stream on which to print the message
+ */
 void cd_error_message(int err_code, FILE *ostream);
 
 int builtin_cd(struct command *command, FILE *ostream)

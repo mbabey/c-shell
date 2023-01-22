@@ -11,7 +11,7 @@ int init_state(struct supervisor *supvis, void *arg)
     
     do_init_state(supvis, arg);
     
-    ret_val = (dc_error_has_no_error(supvis->err)) ? READ_COMMANDS : ERROR;
+    ret_val = (errno) ? READ_COMMANDS : ERROR;
     
     return ret_val;
 }
@@ -23,7 +23,7 @@ int read_commands(struct supervisor *supvis, void *arg)
     
     line_size = do_read_commands(supvis, arg);
     
-    if (dc_error_has_error(supvis->err))
+    if (errno)
     {
         ret_val = ERROR;
     } else if (line_size == 1)
@@ -43,7 +43,7 @@ int separate_commands(struct supervisor *supvis, void *arg)
     
     do_separate_commands(supvis, arg);
     
-    ret_val = (dc_error_has_no_error(supvis->err)) ? PARSE_COMMANDS : ERROR;
+    ret_val = (errno) ? ERROR : PARSE_COMMANDS;
     
     return ret_val;
 }
@@ -54,7 +54,7 @@ int parse_commands(struct supervisor *supvis, void *arg)
     
     do_parse_commands(supvis, arg);
     
-    ret_val = (dc_error_has_no_error(supvis->err)) ? EXECUTE_COMMANDS : ERROR;
+    ret_val = (errno) ? ERROR : EXECUTE_COMMANDS;
     
     return ret_val;
 }
@@ -74,7 +74,7 @@ int reset_state(struct supervisor *supvis, void *arg)
     
     do_reset_state(supvis, arg);
     
-    ret_val = (dc_error_has_no_error(supvis->err)) ? READ_COMMANDS : ERROR;
+    ret_val = (errno) ? ERROR : READ_COMMANDS;
     
     return ret_val;
 }

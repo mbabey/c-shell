@@ -214,6 +214,8 @@ int do_handle_error(struct state *state)
 {
     int ret_val;
     
+    errno = 0;
+    
     if (state->fatal_error)
     {
         ret_val = DESTROY_STATE;

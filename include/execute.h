@@ -42,8 +42,8 @@ int get_exit_code(int err_code);
 /**
  * do_handle_error
  * <p>
- * Handle an error produced by executing a command; print a relevant error message and clean the
- * error struct. If state->fatal_error is set, return DESTROY_STATE. Otherwise, return RESET_STATE.
+ * Handle an error produced by executing a command. Set errno to 0.
+ * If state->fatal_error is set, return DESTROY_STATE. Otherwise, return RESET_STATE.
  * </p>
  * @param state the state object
  * @return RESET_STATE or DESTROY_STATE
