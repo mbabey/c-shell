@@ -143,7 +143,7 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     int    status;
     int    exit_code;
     
-    signal(SIGINT, child_handler);
+//    signal(SIGINT, child_handler);
     
     cmd_len = strlen(command->command);
     
@@ -249,14 +249,14 @@ int get_exit_code(int err_code)
     return exit_code;
 }
 
-void signal_handler(int signal);
+void parent_handler(int signal);
 
 void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command)
 {
     pid_t wait_ret;
     int   ret_val;
     
-    signal(SIGINT, signal_handler);
+    signal(SIGINT, parent_handler);
     
     wait_ret = waitpid(pid_global, &ret_val, 0);
     if (wait_ret == -1)
@@ -269,7 +269,7 @@ void parent_wait(const struct supervisor *supvis, struct state *state, struct co
     }
 }
 
-void signal_handler(int signal)
+void parent_handler(int signal)
 {
     kill(pid_global, SIGKILL);
 }
