@@ -230,61 +230,51 @@ int get_exit_code(int err_code, const char *command, FILE *ostream)
         case ENOENT:
         {
             exit_code = EXIT_ENOENT;
-            fprintf(ostream, "csh: command not found: %s\n", command);
             break;
         }
         case EACCES:
         {
             exit_code = EXIT_EACCES;
-            fprintf(ostream, "csh: permission denied: %s\n", command);
             break;
         }
         case EFAULT:
         {
             exit_code = EXIT_EFAULT;
-            fprintf(ostream, "csh: bad address: %s\n", command);
             break;
         }
         case EINVAL:
         {
             exit_code = EXIT_EINVAL;
-            fprintf(ostream, "csh: invalid argument: %s\n", command);
             break;
         }
         case ENOTDIR:
         {
             exit_code = EXIT_ENOTDIR;
-            fprintf(ostream, "csh: not a directory: %s\n", command);
             break;
         }
         case ELOOP:
         {
             exit_code = EXIT_ELOOP;
-            fprintf(ostream, "csh: too many levels of symbolic links: %s\n", command);
             break;
         }
         case ENAMETOOLONG:
         {
             exit_code = EXIT_ENAMETOOLONG;
-            fprintf(ostream, "csh: file name too long: %s\n", command);
             break;
         }
         case ENOEXEC:
         {
             exit_code = EXIT_ENOEXEC;
-            fprintf(ostream, "csh: exec format error: %s\n", command);
             break;
         }
         case E2BIG:
         {
             exit_code = EXIT_E2BIG;
-            fprintf(ostream, "csh: argument list too long: %s\n", command);
             break;
         }
         default:
         {
             exit_code = EXIT_UNDEFINED;
-            fprintf(ostream, "csh: undefined error: %s\n", command);
             break;
         }
     }
@@ -292,60 +282,60 @@ int get_exit_code(int err_code, const char *command, FILE *ostream)
     return exit_code;
 }
 
-//void print_err_message(int exit_code, const char *command, FILE *ostream)
-//{
-//    switch (exit_code)
-//    {
-//        case EXIT_ENOENT:
-//        {
-//            fprintf(ostream, "csh: command not found: %s\n", command);
-//            break;
-//        }
-//        case EXIT_EACCES:
-//        {
-//            fprintf(ostream, "csh: permission denied: %s\n", command);
-//            break;
-//        }
-//        case EXIT_EFAULT:
-//        {
-//            fprintf(ostream, "csh: bad address: %s\n", command);
-//            break;
-//        }
-//        case EXIT_EINVAL:
-//        {
-//            fprintf(ostream, "csh: invalid argument: %s\n", command);
-//            break;
-//        }
-//        case EXIT_ENOTDIR:
-//        {
-//            fprintf(ostream, "csh: not a directory: %s\n", command);
-//            break;
-//        }
-//        case EXIT_ELOOP:
-//        {
-//            fprintf(ostream, "csh: too many levels of symbolic links: %s\n", command);
-//            break;
-//        }
-//        case EXIT_ENAMETOOLONG:
-//        {
-//            fprintf(ostream, "csh: file name too long: %s\n", command);
-//            break;
-//        }
-//        case EXIT_ENOEXEC:
-//        {
-//            fprintf(ostream, "csh: exec format error: %s\n", command);
-//            break;
-//        }
-//        case EXIT_E2BIG:
-//        {
-//            fprintf(ostream, "csh: argument list too long: %s\n", command);
-//            break;
-//        }
-//        default:
-//        {
-//            fprintf(ostream, "csh: undefined error: %s\n", command);
-//            break;
-//        }
-//    }
-//}
+void print_err_message(int exit_code, const char *command, FILE *ostream)
+{
+    switch (exit_code)
+    {
+        case EXIT_ENOENT:
+        {
+            fprintf(ostream, "csh: command not found: %s\n", command);
+            break;
+        }
+        case EXIT_EACCES:
+        {
+            fprintf(ostream, "csh: permission denied: %s\n", command);
+            break;
+        }
+        case EXIT_EFAULT:
+        {
+            fprintf(ostream, "csh: bad address: %s\n", command);
+            break;
+        }
+        case EXIT_EINVAL:
+        {
+            fprintf(ostream, "csh: invalid argument: %s\n", command);
+            break;
+        }
+        case EXIT_ENOTDIR:
+        {
+            fprintf(ostream, "csh: not a directory: %s\n", command);
+            break;
+        }
+        case EXIT_ELOOP:
+        {
+            fprintf(ostream, "csh: too many levels of symbolic links: %s\n", command);
+            break;
+        }
+        case EXIT_ENAMETOOLONG:
+        {
+            fprintf(ostream, "csh: file name too long: %s\n", command);
+            break;
+        }
+        case EXIT_ENOEXEC:
+        {
+            fprintf(ostream, "csh: exec format error: %s\n", command);
+            break;
+        }
+        case EXIT_E2BIG:
+        {
+            fprintf(ostream, "csh: argument list too long: %s\n", command);
+            break;
+        }
+        default:
+        {
+            fprintf(ostream, "csh: undefined error: %s\n", command);
+            break;
+        }
+    }
+}
 

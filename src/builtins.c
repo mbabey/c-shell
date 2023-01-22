@@ -6,11 +6,9 @@ int builtin_cd(struct supervisor *supvis, struct command *command, FILE *errstre
 {
     int exit_code;
     
-    chdir(*(command->argv + 1));
+    exit_code = chdir(*(command->argv + 1));
     fprintf(stderr, "%d ", errno);
     perror("chdir");
-    
-    exit_code = get_exit_code(errno, NULL, NULL);
     
     return exit_code;
 }
