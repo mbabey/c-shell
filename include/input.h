@@ -20,7 +20,7 @@
  * @param line_size the maximum characters to read
  * @return the command line that the user entered
  */
-char *read_command_line(struct supervisor *supvis, FILE *istream, FILE *ostream, size_t *line_size);
+char *read_command_line(struct supervisor *supvis, FILE *istream, size_t *line_size);
 
 /**
  * do_read_commands

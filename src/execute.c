@@ -70,7 +70,7 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
  * @param command the command object
  * @param pid the pid_global of the child process
  */
-void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command);
+void parent_wait(const struct supervisor *supvis, struct command *command);
 
 /**
  * kill_child_handler
@@ -108,7 +108,7 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     
     if (strcmp(command->command, "cd") == 0)
     {
-        state->command->exit_code = builtin_cd(supvis, command, state->stdout);
+        state->command->exit_code = builtin_cd(command, state->stdout);
         ret_val = (state->command->exit_code) ? ERROR : RESET_STATE;
     } else if (strcmp(command->command, "exit") == 0)
     {
@@ -134,7 +134,7 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
         child_parse_path_exec(supvis, state, command, path);
     } else
     {
-        parent_wait(supvis, state, command);
+        parent_wait(supvis, command);
     }
 }
 
@@ -183,7 +183,7 @@ int exec_command(struct state *state, struct command *command, char *const *path
     return status;
 }
 
-void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command)
+void parent_wait(const struct supervisor *supvis, struct command *command)
 {
     pid_t wait_ret;
     int   ret_val;
@@ -200,10 +200,14 @@ void parent_wait(const struct supervisor *supvis, struct state *state, struct co
     }
 }
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 void kill_child_handler(int signal)
 {
     kill(pid_global, SIGKILL);
 }
+#pragma GCC diagnostic pop
 
 int do_handle_error(struct state *state)
 {

@@ -1,10 +1,9 @@
 #include "../include/builtins.h"
-#include "../include/execute.h"
 #include <unistd.h>
 
 void cd_error_message(int err_code, FILE *ostream);
 
-int builtin_cd(struct supervisor *supvis, struct command *command, FILE *ostream)
+int builtin_cd(struct command *command, FILE *ostream)
 {
     int exit_code;
     

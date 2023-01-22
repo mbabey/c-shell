@@ -19,7 +19,7 @@
  * @param command the command structure
  * @param ostream the steam onto which errors shall be printed
  */
-int builtin_cd(struct supervisor *supvis, struct command *command, FILE *ostream);
+int builtin_cd(struct command *command, FILE *ostream);
 // TODO: call chdir
 // TODO: check the errno: what is the error? print an appropriate message
 
