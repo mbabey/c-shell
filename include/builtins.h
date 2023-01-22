@@ -1,7 +1,3 @@
-//
-// Created by Maxwell Babey on 1/8/23.
-//
-
 #ifndef CSH_BUILTINS_H
 #define CSH_BUILTINS_H
 

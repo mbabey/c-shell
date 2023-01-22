@@ -1,8 +1,6 @@
 #include "../include/command.h"
 #include "../include/shell.h"
 #include "../include/shell_impl.h"
-#include "../include/state.h"
-#include "../include/supervisor.h"
 
 /**
  * run_shell

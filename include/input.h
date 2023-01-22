@@ -1,7 +1,3 @@
-//
-// Created by Maxwell Babey on 1/8/23.
-//
-
 #ifndef CSH_INPUT_H
 #define CSH_INPUT_H
 

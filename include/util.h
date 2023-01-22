@@ -1,7 +1,3 @@
-//
-// Created by Maxwell Babey on 1/6/23.
-//
-
 #ifndef CSHELL_TESTS_UTIL_H
 #define CSHELL_TESTS_UTIL_H
 
