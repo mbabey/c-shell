@@ -8,9 +8,17 @@ int builtin_cd(struct supervisor *supvis, struct command *command, FILE *ostream
 {
     int exit_code;
     
-    
-    
-    exit_code = chdir(*(command->argv + 1));
+    if (*(command->argv + 1))
+    {
+        exit_code = chdir(*(command->argv + 1));
+    } else
+    {
+        char *home;
+        
+        home = getenv("HOME");
+        
+        exit_code = (home) ? chdir(home) : -1;
+    }
     
     cd_error_message(errno, ostream);
     
@@ -49,6 +57,16 @@ void cd_error_message(int err_code, FILE *ostream)
         case EBUSY:
         {
             fprintf(ostream, "cd: device / resource busy\n");
+            break;
+        }
+        case EINVAL:
+        {
+            fprintf(ostream, "cd: HOME environment variable is undefined\n");
+            break;
+        }
+        case ENOMEM:
+        {
+            fprintf(ostream, "cd: unable to allocate memory for the environment\n");
             break;
         }
         default:
