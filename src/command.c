@@ -158,10 +158,7 @@ void parse_command(struct supervisor *supvis, struct state *state, struct comman
     command->argv    = expand_cmds(supvis, command->command, &command->argc, state->stdout);
     supvis->mm->mm_free(supvis->mm, command->command);
     
-    if (command->argv)
-    {
-        command->command = *command->argv;
-    }
+    command->command = (command->argv) ? *command->argv : NULL;
     
     command->stdin_file = get_regex_substring(supvis, state->in_redirect_regex, command->line,
                                               NULL, true);
@@ -373,7 +370,7 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FI
     status = wordexp(line_no_newline, &we, 0);
     if (status)
     {
-        fprintf(out, "csh: parse error in command: \'%s\'\n", line);
+        fprintf(out, "csh: parse error in command: \'%s\'\n", line_no_newline);
         errno = 1;
         return NULL;
     }
