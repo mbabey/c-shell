@@ -1,7 +1,8 @@
 #include "../include/command.h"
-#include <wordexp.h>
-#include <string.h>
+
 #include <ctype.h>
+#include <string.h>
+#include <wordexp.h>
 
 /**
  * get_regex_substring

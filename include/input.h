@@ -5,8 +5,9 @@
 #ifndef CSH_INPUT_H
 #define CSH_INPUT_H
 
-#include "supervisor.h"
 #include "state.h"
+#include "supervisor.h"
+
 #include <stdio.h>
 
 /**

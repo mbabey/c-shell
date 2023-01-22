@@ -20,7 +20,5 @@
  * @param ostream the steam onto which errors shall be printed
  */
 int builtin_cd(struct command *command, FILE *ostream);
-// TODO: call chdir
-// TODO: check the errno: what is the error? print an appropriate message
 
 #endif //CSH_BUILTINS_H

@@ -1,11 +1,13 @@
-#include "../include/util.h"
 #include "../include/command.h"
+#include "../include/util.h"
+
 #include <dc_c/dc_stdlib.h>
 #include <dc_c/dc_string.h>
 #include <dc_posix/dc_stdlib.h>
+
 #include <string.h>
-#include <unistd.h>
 #include <regex.h>
+#include <unistd.h>
 
 #define IN_DIRECT_REGEX "([ \t\f\v]<.*)"
 #define OUT_DIRECT_REGEX "([ \t\f\v][1]?>[>]?.*)"

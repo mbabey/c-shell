@@ -1,6 +1,7 @@
-#include "../include/supervisor.h"
-#include "../include/input.h"
 #include "../include/command.h"
+#include "../include/input.h"
+#include "../include/supervisor.h"
+
 #include <dc_util/filesystem.h>
 
 /**

@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "../include/shell.h"
 
 int main(void)
