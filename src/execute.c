@@ -3,6 +3,7 @@
 #include "../include/shell.h"
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #define EXIT_EACCES 4
 #define EXIT_EFAULT 5
@@ -69,9 +70,9 @@ int get_exit_code(int err_code);
  * @param supvis the supervisor object
  * @param state the state object
  * @param command the command object
- * @param pid the pid of the child process
+ * @param pid the pid_global of the child process
  */
-void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command, pid_t pid);
+void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command);
 
 /**
  * print_err_message
@@ -114,29 +115,35 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     return ret_val;
 }
 
+pid_t pid_global;
+
 void fork_and_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
     pid_t pid;
     
-    pid = fork();
+    pid_global = fork();
     
-    if (pid < 0)
+    if (pid_global < 0)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-    } else if (pid == 0)
+    } else if (pid_global == 0)
     {
         child_parse_path_exec(supvis, state, command, path);
     } else
     {
-        parent_wait(supvis, state, command, pid);
+        parent_wait(supvis, state, command);
     }
 }
+
+void child_handler(int signal);
 
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
     size_t cmd_len;
     int    status;
     int    exit_code;
+    
+    signal(SIGINT, child_handler);
     
     cmd_len = strlen(command->command);
     
@@ -152,6 +159,33 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     free(supvis);
     
     exit(exit_code);
+}
+
+void child_handler(int signal)
+{
+    printf("Received signal %d\n", signal);
+}
+
+int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len)
+{
+    size_t len;
+    char   *path_and_cmd;
+    int    status;
+    
+    len          = strlen(*path) + cmd_len + 2;
+    path_and_cmd = (char *) malloc(len);
+    strcpy(path_and_cmd, *path);
+    strcat(path_and_cmd, "/");
+    strcat(path_and_cmd, command->command);
+    
+    status = execv(path_and_cmd, command->argv);
+    if (status == -1 && errno != ENOENT)
+    {
+        state->fatal_error = true;
+    }
+    
+    free(path_and_cmd);
+    return status;
 }
 
 int get_exit_code(int err_code)
@@ -215,34 +249,16 @@ int get_exit_code(int err_code)
     return exit_code;
 }
 
-int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len)
-{
-    size_t len;
-    char   *path_and_cmd;
-    int    status;
-    
-    len          = strlen(*path) + cmd_len + 2;
-    path_and_cmd = (char *) malloc(len);
-    strcpy(path_and_cmd, *path);
-    strcat(path_and_cmd, "/");
-    strcat(path_and_cmd, command->command);
-    
-    status = execv(path_and_cmd, command->argv);
-    if (status == -1 && errno != ENOENT)
-    {
-        state->fatal_error = true;
-    }
-    
-    free(path_and_cmd);
-    return status;
-}
+void signal_handler(int signal);
 
-void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command, pid_t pid)
+void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command)
 {
     pid_t wait_ret;
     int   ret_val;
     
-    wait_ret = waitpid(pid, &ret_val, 0);
+    signal(SIGINT, signal_handler);
+    
+    wait_ret = waitpid(pid_global, &ret_val, 0);
     if (wait_ret == -1)
     {
         DC_ERROR_RAISE_ERRNO(supvis->err, errno);
@@ -251,6 +267,11 @@ void parent_wait(const struct supervisor *supvis, struct state *state, struct co
         command->exit_code = WEXITSTATUS(ret_val);
         fprintf(state->stdout, "%s exited with status %d\n", command->command, command->exit_code);
     }
+}
+
+void signal_handler(int signal)
+{
+    kill(pid_global, SIGKILL);
 }
 
 int do_handle_error(struct state *state)

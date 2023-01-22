@@ -1,0 +1,47 @@
+[
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/main.c.o -c /Users/mud/cProjects/projects/cshell/src/main.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/main.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/builtins.c.o -c /Users/mud/cProjects/projects/cshell/src/builtins.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/builtins.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/command.c.o -c /Users/mud/cProjects/projects/cshell/src/command.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/command.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/execute.c.o -c /Users/mud/cProjects/projects/cshell/src/execute.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/execute.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/input.c.o -c /Users/mud/cProjects/projects/cshell/src/input.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/input.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/shell.c.o -c /Users/mud/cProjects/projects/cshell/src/shell.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/shell.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/shell_impl.c.o -c /Users/mud/cProjects/projects/cshell/src/shell_impl.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/shell_impl.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/util.c.o -c /Users/mud/cProjects/projects/cshell/src/util.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/util.c"
+},
+{
+  "directory": "/Users/mud/cProjects/projects/cshell/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -D_DARWIN_C_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/Users/mud/cProjects/projects/cshell/include -I/usr/local/include  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wall -Wextra -Wpedantic -Wshadow -Wstrict-overflow=4 -Wswitch-default -Wswitch-enum -Wunused -Wunused-macros -Wdate-time -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wmissing-prototypes -Wstrict-prototypes -Wundef -Wnull-dereference -Wstack-protector -Wdouble-promotion -Wvla -Walloca -Woverlength-strings -Wdisabled-optimization -Winline -Wcast-qual -Wfloat-equal -Wformat=2 -Wfree-nonheap-object -Wshift-overflow -Wwrite-strings -o CMakeFiles/csh.dir/src/supervisor.c.o -c /Users/mud/cProjects/projects/cshell/src/supervisor.c",
+  "file": "/Users/mud/cProjects/projects/cshell/src/supervisor.c"
+}
+]

@@ -90,7 +90,6 @@ int reset_state(struct supervisor *supvis, void *arg);
  * <p>
  * Print the err->message to stderr and reset the err (see dc_err_reset)
  * </p>
- * @param supvis the supervisor object
  * @param arg the current struct state
  * @return RESET_STATE or DESTROY_STATE (if state->fatal_error)
  */

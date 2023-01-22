@@ -1,0 +1,8 @@
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/doxygen.dir
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/csh.dir
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/edit_cache.dir
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/rebuild_cache.dir
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/list_install_components.dir
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/install.dir
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/install/local.dir
+/Users/mud/cProjects/projects/cshell/build/CMakeFiles/install/strip.dir

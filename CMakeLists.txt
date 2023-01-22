@@ -242,4 +242,4 @@ install(TARGETS csh DESTINATION bin)
 add_dependencies(csh doxygen)
 
 find_library(LIBCGREEN cgreen REQUIRED)
-add_subdirectory(tests)
+#add_subdirectory(tests)

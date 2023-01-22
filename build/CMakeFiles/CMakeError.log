@@ -1,0 +1,176 @@
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: /Library/Developer/CommandLineTools/usr/bin/cc 
+Build flags: 
+Id flags:  
+
+The output was:
+1
+ld: library not found for -lSystem
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wunsuffixedfloatconstants failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_27698/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_27698.dir/build.make CMakeFiles/cmTC_27698.dir/build
+Building C object CMakeFiles/cmTC_27698.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wunsuffixedfloatconstants  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wunsuffixed-float-constants -MD -MT CMakeFiles/cmTC_27698.dir/src.c.o -MF CMakeFiles/cmTC_27698.dir/src.c.o.d -o CMakeFiles/cmTC_27698.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wunsuffixed-float-constants' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_27698
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_27698.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_27698.dir/src.c.o -o cmTC_27698 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Warithconversion failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_ecaf3/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_ecaf3.dir/build.make CMakeFiles/cmTC_ecaf3.dir/build
+Building C object CMakeFiles/cmTC_ecaf3.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Warithconversion  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Warith-conversion -MD -MT CMakeFiles/cmTC_ecaf3.dir/src.c.o -MF CMakeFiles/cmTC_ecaf3.dir/src.c.o.d -o CMakeFiles/cmTC_ecaf3.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Warith-conversion' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_ecaf3
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ecaf3.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_ecaf3.dir/src.c.o -o cmTC_ecaf3 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wunsafeloopoptimizations failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_5556a/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_5556a.dir/build.make CMakeFiles/cmTC_5556a.dir/build
+Building C object CMakeFiles/cmTC_5556a.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wunsafeloopoptimizations  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wunsafe-loop-optimizations -MD -MT CMakeFiles/cmTC_5556a.dir/src.c.o -MF CMakeFiles/cmTC_5556a.dir/src.c.o.d -o CMakeFiles/cmTC_5556a.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wunsafe-loop-optimizations' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_5556a
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5556a.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_5556a.dir/src.c.o -o cmTC_5556a 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wvectoroperationperformance failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_96fd9/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_96fd9.dir/build.make CMakeFiles/cmTC_96fd9.dir/build
+Building C object CMakeFiles/cmTC_96fd9.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wvectoroperationperformance  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wvector-operation-performance -MD -MT CMakeFiles/cmTC_96fd9.dir/src.c.o -MF CMakeFiles/cmTC_96fd9.dir/src.c.o.d -o CMakeFiles/cmTC_96fd9.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wvector-operation-performance' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_96fd9
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_96fd9.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_96fd9.dir/src.c.o -o cmTC_96fd9 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Walloczero failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_89a71/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_89a71.dir/build.make CMakeFiles/cmTC_89a71.dir/build
+Building C object CMakeFiles/cmTC_89a71.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Walloczero  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Walloc-zero -MD -MT CMakeFiles/cmTC_89a71.dir/src.c.o -MF CMakeFiles/cmTC_89a71.dir/src.c.o.d -o CMakeFiles/cmTC_89a71.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Walloc-zero'; did you mean '-Walloca'? [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_89a71
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_89a71.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_89a71.dir/src.c.o -o cmTC_89a71 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wtrampolines failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_0e8a9/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_0e8a9.dir/build.make CMakeFiles/cmTC_0e8a9.dir/build
+Building C object CMakeFiles/cmTC_0e8a9.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wtrampolines  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wtrampolines -MD -MT CMakeFiles/cmTC_0e8a9.dir/src.c.o -MF CMakeFiles/cmTC_0e8a9.dir/src.c.o.d -o CMakeFiles/cmTC_0e8a9.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wtrampolines' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_0e8a9
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0e8a9.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_0e8a9.dir/src.c.o -o cmTC_0e8a9 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wtsan failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_baeba/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_baeba.dir/build.make CMakeFiles/cmTC_baeba.dir/build
+Building C object CMakeFiles/cmTC_baeba.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wtsan  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wtsan -MD -MT CMakeFiles/cmTC_baeba.dir/src.c.o -MF CMakeFiles/cmTC_baeba.dir/src.c.o.d -o CMakeFiles/cmTC_baeba.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wtsan' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_baeba
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_baeba.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_baeba.dir/src.c.o -o cmTC_baeba 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wformatoverflow=2 failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_b424b/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_b424b.dir/build.make CMakeFiles/cmTC_b424b.dir/build
+Building C object CMakeFiles/cmTC_b424b.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wformatoverflow=2  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wformat-overflow=2 -MD -MT CMakeFiles/cmTC_b424b.dir/src.c.o -MF CMakeFiles/cmTC_b424b.dir/src.c.o.d -o CMakeFiles/cmTC_b424b.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wformat-overflow=2'; did you mean '-Wshift-overflow'? [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_b424b
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b424b.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_b424b.dir/src.c.o -o cmTC_b424b 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wformatsignedness failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_2a418/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_2a418.dir/build.make CMakeFiles/cmTC_2a418.dir/build
+Building C object CMakeFiles/cmTC_2a418.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wformatsignedness  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wformat-signedness -MD -MT CMakeFiles/cmTC_2a418.dir/src.c.o -MF CMakeFiles/cmTC_2a418.dir/src.c.o.d -o CMakeFiles/cmTC_2a418.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wformat-signedness' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_2a418
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2a418.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_2a418.dir/src.c.o -o cmTC_2a418 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wjumpmissesinit failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_2f3f5/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_2f3f5.dir/build.make CMakeFiles/cmTC_2f3f5.dir/build
+Building C object CMakeFiles/cmTC_2f3f5.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wjumpmissesinit  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wjump-misses-init -MD -MT CMakeFiles/cmTC_2f3f5.dir/src.c.o -MF CMakeFiles/cmTC_2f3f5.dir/src.c.o.d -o CMakeFiles/cmTC_2f3f5.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wjump-misses-init' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_2f3f5
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2f3f5.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_2f3f5.dir/src.c.o -o cmTC_2f3f5 
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_Wformattruncation=2 failed with the following output:
+Change Dir: /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_5442a/fast && /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_5442a.dir/build.make CMakeFiles/cmTC_5442a.dir/build
+Building C object CMakeFiles/cmTC_5442a.dir/src.c.o
+/Library/Developer/CommandLineTools/usr/bin/cc -DCOMPILER_SUPPORTS_Wformattruncation=2  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk   -Wformat-truncation=2 -MD -MT CMakeFiles/cmTC_5442a.dir/src.c.o -MF CMakeFiles/cmTC_5442a.dir/src.c.o.d -o CMakeFiles/cmTC_5442a.dir/src.c.o -c /Users/mud/cProjects/projects/cshell/build/CMakeFiles/CMakeTmp/src.c
+warning: unknown warning option '-Wformat-truncation=2' [-Wunknown-warning-option]
+1 warning generated.
+Linking C executable cmTC_5442a
+/opt/homebrew/Cellar/cmake/3.24.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5442a.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_5442a.dir/src.c.o -o cmTC_5442a 
+
+
+Source file was:
+int main(void) { return 0; }
