@@ -271,11 +271,17 @@ size_t count_char_in_string(char c, char *str)
 
 void do_reset_state(struct supervisor *supvis, struct state *state)
 {
-    supvis->mm->mm_free(supvis->mm, state->current_line);
-    state->current_line        = NULL;
-    state->current_line_length = 0;
-    do_reset_command(supvis, state->command);
-    supvis->mm->mm_free(supvis->mm, state->command);
+    if (state->current_line)
+    {
+        supvis->mm->mm_free(supvis->mm, state->current_line);
+        state->current_line        = NULL;
+        state->current_line_length = 0;
+    }
+    if (state->command)
+    {
+        do_reset_command(supvis, state->command);
+        supvis->mm->mm_free(supvis->mm, state->command);
+    }
     state->fatal_error = false;
     
     dc_error_reset(supvis->err);

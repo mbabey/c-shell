@@ -17,6 +17,14 @@
 #define EXIT_ENOENT 127
 
 /**
+ * pid_global
+ * <p>
+ * Global store for pid to allow signal to be sent to child process.
+ * </p>
+ */
+pid_t pid_global;
+
+/**
  * exec_command
  * <p>
  * Attempt to execute a command.
@@ -75,6 +83,15 @@ int get_exit_code(int err_code);
 void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command);
 
 /**
+ * kill_child_handler
+ * <p>
+ * Signal handler. Sends a kill signal to a the child process.
+ * </p>
+ * @param signal
+ */
+void kill_child_handler(int signal);
+
+/**
  * print_err_message
  * <p>
  * Print an error message based on the exit code of the state. The message will be printed
@@ -115,12 +132,8 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     return ret_val;
 }
 
-pid_t pid_global;
-
 void fork_and_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
-    pid_t pid;
-    
     pid_global = fork();
     
     if (pid_global < 0)
@@ -135,15 +148,11 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
     }
 }
 
-void child_handler(int signal);
-
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
     size_t cmd_len;
     int    status;
     int    exit_code;
-    
-//    signal(SIGINT, child_handler);
     
     cmd_len = strlen(command->command);
     
@@ -159,11 +168,6 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     free(supvis);
     
     exit(exit_code);
-}
-
-void child_handler(int signal)
-{
-    printf("Received signal %d\n", signal);
 }
 
 int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len)
@@ -249,14 +253,12 @@ int get_exit_code(int err_code)
     return exit_code;
 }
 
-void parent_handler(int signal);
-
 void parent_wait(const struct supervisor *supvis, struct state *state, struct command *command)
 {
     pid_t wait_ret;
     int   ret_val;
     
-    signal(SIGINT, parent_handler);
+    signal(SIGINT, kill_child_handler);
     
     wait_ret = waitpid(pid_global, &ret_val, 0);
     if (wait_ret == -1)
@@ -269,7 +271,7 @@ void parent_wait(const struct supervisor *supvis, struct state *state, struct co
     }
 }
 
-void parent_handler(int signal)
+void kill_child_handler(int signal)
 {
     kill(pid_global, SIGKILL);
 }
