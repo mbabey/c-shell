@@ -108,7 +108,7 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     
     if (strcmp(command->command, "cd") == 0)
     {
-        state->command->exit_code = builtin_cd(supvis, command, state->stderr);
+        state->command->exit_code = builtin_cd(supvis, command, state->stdout);
         ret_val = (state->command->exit_code) ? ERROR : RESET_STATE;
     } else if (strcmp(command->command, "exit") == 0)
     {
@@ -197,7 +197,6 @@ void parent_wait(const struct supervisor *supvis, struct state *state, struct co
     } else if (WIFEXITED(ret_val))
     {
         command->exit_code = WEXITSTATUS(ret_val);
-        fprintf(state->stdout, "%s exited with status %d\n", command->command, command->exit_code);
     }
 }
 

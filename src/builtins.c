@@ -20,7 +20,10 @@ int builtin_cd(struct supervisor *supvis, struct command *command, FILE *ostream
         exit_code = (home) ? chdir(home) : -1;
     }
     
-    cd_error_message(errno, ostream);
+    if (exit_code == -1)
+    {
+        cd_error_message(errno, ostream);
+    }
     
     return exit_code;
 }

@@ -281,6 +281,7 @@ void do_reset_state(struct supervisor *supvis, struct state *state)
     {
         do_reset_command(supvis, state->command);
         supvis->mm->mm_free(supvis->mm, state->command);
+        state->command = NULL;
     }
     state->fatal_error = false;
     
