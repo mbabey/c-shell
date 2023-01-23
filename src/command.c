@@ -15,7 +15,9 @@
  * @param overwrite whether to overwrite the contents of the file
  * @return the name of the IO file
  */
-char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite, bool is_io);
+char *
+get_regex_substring(struct supervisor *supvis, struct state *state, regex_t *regex, const char *line, bool *overwrite,
+                    bool is_io);
 
 /**
  * get_command_name
@@ -42,7 +44,7 @@ char *get_command_name(struct supervisor *supvis, const char *line, size_t st_su
  * @param overwrite whether the io command is an overwrite command
  * @return the index of the character immediately following the last '<' or '>', or 0 on a failure.
  */
-size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite);
+size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite, FILE *out);
 
 /**
  * get_filename
@@ -57,7 +59,7 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite);
  * @param st_substr the start pointer
  * @return the substring containing the filename
  */
-char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr);
+char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr, FILE *out);
 
 /**
  * substr
@@ -76,18 +78,20 @@ char *substr(char *dest, const char *src, size_t st, size_t en);
 /**
  * expand_filename
  * <p>
- * Expand a single filename to an absolute filename.
+ * Expand a single filename to an absolute filename. If a parse error occurs, print a message to out
+ * and set errno to EINVAL.
  * </p>
  * @param supvis the supervisor
  * @param filename the filename to expand
  * @return the expanded filename
  */
-void expand_filename(struct supervisor *supvis, char **filename);
+char *expand_filename(struct supervisor *supvis, char *filename, FILE *out);
 
 /**
  * expand_cmds
  * <p>
- * Expand all cmds from their condensed forms
+ * Expand all cmds from their condensed forms. If a parse error occurs, print a message to out
+ * and set errno to EINVAL.
  * </p>
  * @param line the cmds to expand
  */
@@ -122,9 +126,8 @@ char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, 
  * @param is_io whether to parse as io
  * @return the allocated substring, or NULL if the command is invalid.
  */
-char *get_substring(struct supervisor *supvis, char *substring, const char *line,
-                    size_t st_substr, size_t en_substr,
-                    bool **overwrite, bool is_io);
+char *get_substring(struct supervisor *supvis, char *substring, const char *line, size_t st_substr, size_t en_substr,
+                    bool **overwrite, bool is_io, FILE *out);
 
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
@@ -135,7 +138,6 @@ void do_separate_commands(struct supervisor *supvis, struct state *state)
     
     if (!command)
     {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         state->fatal_error = true;
         return;
     }
@@ -153,27 +155,26 @@ void do_parse_commands(struct supervisor *supvis, struct state *state)
 
 void parse_command(struct supervisor *supvis, struct state *state, struct command *command)
 {
-    command->command = get_regex_substring(supvis, state->command_regex, command->line,
+    command->command = get_regex_substring(supvis, state, state->command_regex, command->line,
                                            NULL, false);
     command->argv    = expand_cmds(supvis, command->command, &command->argc, state->stdout);
     supvis->mm->mm_free(supvis->mm, command->command);
     
     command->command = (command->argv) ? *command->argv : NULL;
     
-    command->stdin_file = get_regex_substring(supvis, state->in_redirect_regex, command->line,
+    command->stdin_file = get_regex_substring(supvis, state, state->in_redirect_regex, command->line,
                                               NULL, true);
-    supvis->mm->mm_add(supvis->mm, command->stdin_file);
     
-    command->stdout_file = get_regex_substring(supvis, state->out_redirect_regex, command->line,
+    command->stdout_file = get_regex_substring(supvis, state, state->out_redirect_regex, command->line,
                                                &command->stdout_overwrite, true);
-    supvis->mm->mm_add(supvis->mm, command->stdout_file);
     
-    command->stderr_file = get_regex_substring(supvis, state->err_redirect_regex, command->line,
+    command->stderr_file = get_regex_substring(supvis, state, state->err_redirect_regex, command->line,
                                                &command->stderr_overwrite, true);
-    supvis->mm->mm_add(supvis->mm, command->stderr_file);
 }
 
-char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char *line, bool *overwrite, bool is_io)
+char *
+get_regex_substring(struct supervisor *supvis, struct state *state, regex_t *regex, const char *line,
+                    bool *overwrite, bool is_io)
 {
     char       *substring;
     regmatch_t regmatch[2];
@@ -186,7 +187,9 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
     {
         case 0: // success
         {
-            substring = get_substring(supvis, substring, line, regmatch[1].rm_so, regmatch[1].rm_eo, &overwrite, is_io);
+            substring = get_substring(supvis, substring, line,
+                                      regmatch[1].rm_so, regmatch[1].rm_eo,
+                                      &overwrite, is_io, state->stdout);
             break;
         }
         case REG_NOMATCH: // No match
@@ -195,7 +198,9 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
         }
         default: // other error
         {
-            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+            fprintf(state->stderr, "csh: fatal error parsing command\n");
+            errno = ENOTRECOVERABLE;
+            state->fatal_error = true;
         }
     }
     
@@ -204,25 +209,21 @@ char *get_regex_substring(struct supervisor *supvis, regex_t *regex, const char 
 
 char *get_substring(struct supervisor *supvis, char *substring, const char *line,
                     size_t st_substr, size_t en_substr,
-                    bool **overwrite, bool is_io)
+                    bool **overwrite, bool is_io, FILE *out)
 {
     if (is_io)
     {
-        st_substr = check_io_valid(line, st_substr, overwrite);
+        st_substr = check_io_valid(line, st_substr, overwrite, out);
         if (!st_substr)
         {
             return NULL; // Command is invalid
         }
-        substring = get_filename(supvis, line, st_substr);
+        substring = get_filename(supvis, line, st_substr, out);
     } else
     {
         substring = get_command_name(supvis, line, st_substr, en_substr);
     }
     
-    if (!substring)
-    {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-    }
     return substring;
 }
 
@@ -248,7 +249,7 @@ char *get_command_name(struct supervisor *supvis, const char *line, size_t st_su
     return substring;
 }
 
-size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite)
+size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite, FILE *out)
 {
     size_t st_substr;
     size_t indicator_count;
@@ -268,11 +269,11 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite)
     // if command looks like ">>> ..." or "<< ...", it is invalid.
     if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
     {
-        // print error: not a valid command
+        fprintf(out, "csh: parse error in I/O redirection near \'%c\'\n", io_indicator);
         return 0;
     }
     
-    if (io_indicator == '>' && indicator_count == 2)
+    if (io_indicator == '>' && indicator_count == 1)
     {
         **overwrite = true;
     }
@@ -280,7 +281,7 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite)
     return st_substr;
 }
 
-char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr)
+char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr, FILE *out)
 {
     char   *filename;
     size_t en_substr;
@@ -311,7 +312,7 @@ char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr
     if (filename)
     {
         filename = substr(filename, line, st_substr, en_substr);
-        expand_filename(supvis, &filename);
+        filename = expand_filename(supvis, filename, out);
     }
     
     return filename;
@@ -326,28 +327,31 @@ char *substr(char *dest, const char *src, size_t st, size_t en)
     return dest;
 }
 
-void expand_filename(struct supervisor *supvis, char **filename)
+char *expand_filename(struct supervisor *supvis, char *filename, FILE *out)
 {
     wordexp_t we;
     
-    switch (wordexp(*filename, &we, 0))
+    switch (wordexp(filename, &we, 0))
     {
         case 0:
         {
-            supvis->mm->mm_free(supvis->mm, *filename);
-            *filename = strdup(*we.we_wordv);
-            supvis->mm->mm_add(supvis->mm, *filename);
+            supvis->mm->mm_free(supvis->mm, filename);
+            filename = strdup(*we.we_wordv);
+            supvis->mm->mm_add(supvis->mm, filename);
             break;
         }
         default:
         {
-            supvis->mm->mm_free(supvis->mm, *filename);
-            *filename = NULL;
-            DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+            fprintf(out, "csh: parse error in command near: \'%s\'\n", filename);
+            supvis->mm->mm_free(supvis->mm, filename);
+            errno = EINVAL;
+            return NULL;
         }
     }
     
     wordfree(&we);
+    
+    return filename;
 }
 
 char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FILE *out)
@@ -370,8 +374,8 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FI
     status = wordexp(line_no_newline, &we, 0);
     if (status)
     {
-        fprintf(out, "csh: parse error in command: \'%s\'\n", line_no_newline);
-        errno = 1;
+        fprintf(out, "csh: parse error in command near: \'%s\'\n", line_no_newline);
+        errno = EINVAL;
         return NULL;
     }
     
