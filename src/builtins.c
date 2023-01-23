@@ -115,12 +115,20 @@ void cd_error_message(int err_code, const char *arg, FILE *ostream)
 
 int builtin_which(char *cmd, char **path, FILE *ostream)
 {
+    if (!cmd)
+    {
+        (void) fprintf(ostream, "which: must provide an argument\n");
+        return -1;
+    }
+    
     int status;
     size_t cmd_len;
     char *location;
     
+    
     cmd_len = strlen(cmd);
     
+    location = NULL;
     for (; *path && !location; ++path)
     {
         location = find_command(cmd, *path, cmd_len);
@@ -130,10 +138,10 @@ int builtin_which(char *cmd, char **path, FILE *ostream)
     {
         (void) fprintf(ostream, "%s\n", location);
         status = 0;
+        free(location);
     } else
     {
-        which_err_message(errno, NULL, NULL);
-        
+        which_err_message(errno, cmd, ostream);
         status = -1;
     }
     
