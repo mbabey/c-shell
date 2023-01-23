@@ -241,7 +241,7 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite, FILE *ou
     
     // Regex matches the space character as the first character; adding one will get the first io character.
     st_substr    = rm_so + 1;
-    io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr);
+    io_indicator = (*(line + st_substr) == '2') ? *(line + ++st_substr) : *(line + st_substr); // NOLINT(bugprone-narrowing-conversions,cppcoreguidlines-narrowing-conversions): char -> char conversion
     
     // Get the number of > or < symbols
     indicator_count = 1;

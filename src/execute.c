@@ -3,8 +3,8 @@
 #include "../include/shell.h"
 
 #include <signal.h>
-#include <sys/wait.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define EXIT_EACCES 4

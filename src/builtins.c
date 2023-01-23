@@ -24,7 +24,7 @@ int builtin_cd(struct command *command, FILE *ostream)
     {
         char *home;
         
-        home = getenv("HOME");
+        home = getenv("HOME"); // NOLINT(concurrency-mt-unsafe): no threads here
         
         exit_code = (home) ? chdir(home) : -1;
     }
