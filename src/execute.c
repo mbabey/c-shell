@@ -36,7 +36,7 @@ pid_t pid_global;
  * @param cmd_len the length of the command field
  * @return 0 if process found and executed.
  */
-int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len);
+int exec_command(struct command *command, char *const *path, size_t cmd_len);
 
 /**
  * fork_and_exec
@@ -71,7 +71,7 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
  * @param command the command object
  * @param pid the pid_global of the child process
  */
-void parent_wait(const struct supervisor *supvis, struct command *command);
+void parent_wait(struct state *state, struct command *command);
 
 /**
  * kill_child_handler
@@ -129,13 +129,15 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
     
     if (pid_global < 0)
     {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        fprintf(state->stderr, "csh: fatal error: could not fork process\n");
+        state->fatal_error = true;
+        command->exit_code = EXIT_FAILURE;
     } else if (pid_global == 0)
     {
         child_parse_path_exec(supvis, state, command, path);
     } else
     {
-        parent_wait(supvis, command);
+        parent_wait(NULL, command);
     }
 }
 
@@ -148,9 +150,9 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     cmd_len = strlen(command->command);
     
     status = 1;
-    for (; *path || status == 0; ++path)
+    for (; *path && status != 0; ++path)
     {
-        status = exec_command(state, command, path, cmd_len);
+        status = exec_command(command, path, cmd_len);
     }
     
     exit_code = get_exit_code(errno);
@@ -162,7 +164,7 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     exit(exit_code);
 }
 
-int exec_command(struct state *state, struct command *command, char *const *path, size_t cmd_len)
+int exec_command(struct command *command, char *const *path, size_t cmd_len)
 {
     size_t len;
     char   *path_and_cmd;
@@ -175,16 +177,12 @@ int exec_command(struct state *state, struct command *command, char *const *path
     strcat(path_and_cmd, command->command);
     
     status = execv(path_and_cmd, command->argv);
-    if (status == -1 && errno != ENOENT)
-    {
-        state->fatal_error = true;
-    }
     
     free(path_and_cmd);
     return status;
 }
 
-void parent_wait(const struct supervisor *supvis, struct command *command)
+void parent_wait(struct state *state, struct command *command)
 {
     pid_t wait_ret;
     int   ret_val;
@@ -194,7 +192,9 @@ void parent_wait(const struct supervisor *supvis, struct command *command)
     wait_ret = waitpid(pid_global, &ret_val, 0);
     if (wait_ret == -1)
     {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
+        fprintf(state->stderr, "csh: fatal error: could not wait for child process to finish execution.\n");
+        state->fatal_error = true;
+        command->exit_code = EXIT_FAILURE;
     } else if (WIFEXITED(ret_val))
     {
         command->exit_code = WEXITSTATUS(ret_val);
