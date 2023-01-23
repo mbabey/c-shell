@@ -10,7 +10,7 @@
  * @param err_code the errno passed
  * @param ostream the stream on which to print the message
  */
-void cd_error_message(int err_code, FILE *ostream);
+void cd_error_message(int err_code, const char *arg, FILE *ostream);
 
 int builtin_cd(struct command *command, FILE *ostream)
 {
@@ -30,44 +30,44 @@ int builtin_cd(struct command *command, FILE *ostream)
     
     if (exit_code == -1)
     {
-        cd_error_message(errno, ostream);
+        cd_error_message(errno, *(command->argv + 1), ostream);
     }
     
     return exit_code;
 }
 
-void cd_error_message(int err_code, FILE *ostream)
+void cd_error_message(int err_code, const char *arg, FILE *ostream)
 {
     switch(err_code)
     {
         case ENOENT:
         {
-            fprintf(ostream, "cd: no such file or directory\n");
+            fprintf(ostream, "cd: no such file or directory: %s\n", arg);
             break;
         }
         case EACCES:
         {
-            fprintf(ostream, "cd: permission denied\n");
+            fprintf(ostream, "cd: permission denied: %s\n", arg);
             break;
         }
         case ENAMETOOLONG:
         {
-            fprintf(ostream, "cd: file name too long\n");
+            fprintf(ostream, "cd: file name too long: %s\n", arg);
             break;
         }
         case ELOOP:
         {
-            fprintf(ostream, "cd: too many levels of symbolic links\n");
+            fprintf(ostream, "cd: too many levels of symbolic links: %s\n", arg);
             break;
         }
         case ENOTDIR:
         {
-            fprintf(ostream, "cd: not a directory\n");
+            fprintf(ostream, "cd: not a directory: %s\n", arg);
             break;
         }
         case EBUSY:
         {
-            fprintf(ostream, "cd: device / resource busy\n");
+            fprintf(ostream, "cd: device / resource busy: %s\n", arg);
             break;
         }
         case EINVAL:
@@ -82,7 +82,7 @@ void cd_error_message(int err_code, FILE *ostream)
         }
         default:
         {
-            fprintf(ostream, "cd: undefined error\n");
+            fprintf(ostream, "cd: undefined error: %s\n", arg);
             break;
         }
     }

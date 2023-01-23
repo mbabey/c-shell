@@ -137,7 +137,7 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
         child_parse_path_exec(supvis, state, command, path);
     } else
     {
-        parent_wait(NULL, command);
+        parent_wait(state, command);
     }
 }
 
