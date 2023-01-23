@@ -187,9 +187,10 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     memset(streams, 0, sizeof(streams));
     setup_redirection(state, command, streams);
     
+    status = execv(command->command, command->argv);
+    
     cmd_len = strlen(command->command);
     
-    status = 1;
     for (; *path && status != 0; ++path)
     {
         status = exec_command(command, path, cmd_len);
