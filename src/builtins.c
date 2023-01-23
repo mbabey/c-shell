@@ -22,7 +22,7 @@ void cd_error_message(int err_code, const char *arg, FILE *ostream);
  * @param cmd the command to check for existence
  * @param path the path on which to check existence
  * @param cmd_len the length of the command
- * @return 0 if found, -1 otherwise
+ * @return the location if found, NULL otherwise
  */
 char *find_command(const char *cmd, const char *path, size_t cmd_len);
 

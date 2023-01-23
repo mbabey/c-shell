@@ -21,7 +21,7 @@ int builtin_cd(struct command *command, FILE *ostream);
  * <p>
  * Print to the stream specified by ostream the location of a command that exists on the path.
  * </p>
- * @param command the command structure
+ * @param cmd the command to search for
  * @param path the path on which to search
  * @param ostream the stream on which to print the result
  * @return 0 on success, -1 on failure
