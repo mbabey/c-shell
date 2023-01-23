@@ -205,7 +205,7 @@ get_regex_substring(struct supervisor *supvis, struct state *state, regex_t *reg
         }
         default: // other error
         {
-            fprintf(state->stderr, "csh: fatal error parsing command\n");
+            (void) fprintf(state->stderr, "csh: fatal error parsing command\n");
             errno = ENOTRECOVERABLE;
             state->fatal_error = true;
         }
@@ -253,14 +253,14 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite, FILE *ou
     // if command looks like ">>> ..." or "<< ...", it is invalid.
     if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
     {
-        fprintf(out, "csh: parse error in I/O redirection near \'%c\'\n", io_indicator);
+        (void) fprintf(out, "csh: parse error in I/O redirection near \'%c\'\n", io_indicator);
         errno = EINVAL;
         return 0;
     }
     
     if (io_indicator == '>' && indicator_count == 1)
     {
-        **overwrite = true;
+        **overwrite = true; // NOLINT(clang-analyzer-core.NullDereference): branch not accessed when **overwrite = NULL
     }
     
     return st_substr;
@@ -277,7 +277,7 @@ char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr
     {
         case true:
         {
-            while (isspace(*(line + ++st_substr)));
+            while (isspace(*(line + ++st_substr))); // NOLINT(hicpp-braces-around-statements,readability-braces-around-statements): braces not needed here
             break;
         }
         default:
@@ -288,7 +288,7 @@ char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr
     
     // set the end pointer to the start pointer, and move forward to the first whitespace character
     en_substr = st_substr;
-    while (!isspace(*(line + ++en_substr)));
+    while (!isspace(*(line + ++en_substr))); // NOLINT(hicpp-braces-around-statements,readability-braces-around-statements): braces not needed here
     
     // Get the filename substring.
     len      = en_substr - st_substr + 1;
@@ -316,7 +316,7 @@ char *expand_filename(struct supervisor *supvis, char *filename, FILE *out)
 {
     wordexp_t we;
     
-    switch (wordexp(filename, &we, 0))
+    switch (wordexp(filename, &we, 0)) // NOLINT(concurrency-mt-unsafe): no threads here
     {
         case 0:
         {
@@ -327,7 +327,7 @@ char *expand_filename(struct supervisor *supvis, char *filename, FILE *out)
         }
         default:
         {
-            fprintf(out, "csh: parse error in command near: \'%s\'\n", filename);
+            (void) fprintf(out, "csh: parse error in command near: \'%s\'\n", filename);
             supvis->mm->mm_free(supvis->mm, filename);
             errno = EINVAL;
             return NULL;
@@ -378,10 +378,10 @@ char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FI
         *newline_ptr = '\0';
     }
     
-    status = wordexp(line_no_newline, &we, 0);
+    status = wordexp(line_no_newline, &we, 0); // NOLINT(concurrency-mt-unsafe): no threads here
     if (status)
     {
-        fprintf(out, "csh: parse error in command near: \'%s\'\n", line_no_newline);
+        (void) fprintf(out, "csh: parse error in command near: \'%s\'\n", line_no_newline);
         errno = EINVAL;
         return NULL;
     }

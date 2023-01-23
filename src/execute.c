@@ -3,6 +3,7 @@
 #include "../include/shell.h"
 
 #include <signal.h>
+#include <sys/wait.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -23,7 +24,7 @@
  * Global store for pid to allow signal to be sent to child process.
  * </p>
  */
-pid_t pid_global;
+pid_t pid_global; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables): cannot be const
 
 /**
  * execute
@@ -165,7 +166,7 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
     
     if (pid_global < 0)
     {
-        fprintf(state->stderr, "csh: fatal error: could not fork process\n");
+        (void) fprintf(state->stderr, "csh: fatal error: could not fork process\n");
         state->fatal_error = true;
         command->exit_code = EXIT_FAILURE;
     } else if (pid_global == 0)
@@ -201,12 +202,12 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     
     for (size_t i = 0; i < sizeof(streams); ++i)
     {
-        fclose(*(streams + i));
+        (void) fclose(*(streams + i));
     }
     supvis->mm->mm_free_all(supvis->mm);
     free(supvis);
     
-    exit(exit_code);
+    exit(exit_code); // NOLINT(concurrency-mt-unsafe): no threads here
 }
 
 void setup_redirection(struct state *state, struct command *command, FILE **streams)
@@ -258,12 +259,12 @@ void parent_wait(struct state *state, struct command *command)
     pid_t wait_ret;
     int   ret_val;
     
-    signal(SIGINT, kill_child_handler);
+    (void) signal(SIGINT, kill_child_handler);
     
     wait_ret = waitpid(pid_global, &ret_val, 0);
     if (wait_ret == -1)
     {
-        fprintf(state->stderr, "csh: fatal error: could not wait for child process to finish execution.\n");
+        (void) fprintf(state->stderr, "csh: fatal error: could not wait for child process to finish execution.\n");
         state->fatal_error = true;
         command->exit_code = EXIT_FAILURE;
     } else if (WIFEXITED(ret_val))
@@ -367,52 +368,52 @@ void print_err_message(int exit_code, const char *command, FILE *ostream)
     {
         case EXIT_ENOENT:
         {
-            fprintf(ostream, "csh: command not found: %s\n", command);
+            (void) fprintf(ostream, "csh: command not found: %s\n", command);
             break;
         }
         case EXIT_EACCES:
         {
-            fprintf(ostream, "csh: permission denied: %s\n", command);
+            (void) fprintf(ostream, "csh: permission denied: %s\n", command);
             break;
         }
         case EXIT_EFAULT:
         {
-            fprintf(ostream, "csh: bad address: %s\n", command);
+            (void) fprintf(ostream, "csh: bad address: %s\n", command);
             break;
         }
         case EXIT_EINVAL:
         {
-            fprintf(ostream, "csh: invalid argument: %s\n", command);
+            (void) fprintf(ostream, "csh: invalid argument: %s\n", command);
             break;
         }
         case EXIT_ENOTDIR:
         {
-            fprintf(ostream, "csh: not a directory: %s\n", command);
+            (void) fprintf(ostream, "csh: not a directory: %s\n", command);
             break;
         }
         case EXIT_ELOOP:
         {
-            fprintf(ostream, "csh: too many levels of symbolic links: %s\n", command);
+            (void) fprintf(ostream, "csh: too many levels of symbolic links: %s\n", command);
             break;
         }
         case EXIT_ENAMETOOLONG:
         {
-            fprintf(ostream, "csh: file name too long: %s\n", command);
+            (void) fprintf(ostream, "csh: file name too long: %s\n", command);
             break;
         }
         case EXIT_ENOEXEC:
         {
-            fprintf(ostream, "csh: exec format error: %s\n", command);
+            (void) fprintf(ostream, "csh: exec format error: %s\n", command);
             break;
         }
         case EXIT_E2BIG:
         {
-            fprintf(ostream, "csh: argument list too long: %s\n", command);
+            (void) fprintf(ostream, "csh: argument list too long: %s\n", command);
             break;
         }
         default:
         {
-            fprintf(ostream, "csh: undefined error: %s\n", command);
+            (void) fprintf(ostream, "csh: undefined error: %s\n", command);
             break;
         }
     }

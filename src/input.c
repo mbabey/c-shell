@@ -49,7 +49,7 @@ void display_prompt(struct supervisor *supvis, struct state *state)
     
     cwd = dc_get_working_dir(supvis->env, supvis->err);
     
-    fprintf(state->stdout, "[%s] %s", cwd, state->prompt);
+    (void) fprintf(state->stdout, "[%s] %s", cwd, state->prompt);
 }
 
 char *read_command_line(FILE *istream, size_t *line_size)

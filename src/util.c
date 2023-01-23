@@ -5,8 +5,8 @@
 #include <dc_c/dc_string.h>
 #include <dc_posix/dc_stdlib.h>
 
-#include <string.h>
 #include <regex.h>
+#include <string.h>
 #include <unistd.h>
 
 #define IN_DIRECT_REGEX "([ \t\f\v]<.*)"
@@ -310,17 +310,17 @@ void do_destroy_state(struct supervisor *supvis, struct state *state)
 {
     if (state->stdin && state->stdin != stdin)
     {
-        fclose(state->stdin);
+        (void) fclose(state->stdin);
         state->stdin = NULL;
     }
     if (state->stdout && state->stdout != stdout)
     {
-        fclose(state->stdout);
+        (void) fclose(state->stdout);
         state->stdout = NULL;
     }
     if (state->stderr && state->stderr != stderr)
     {
-        fclose(state->stderr);
+        (void) fclose(state->stderr);
         state->stderr = NULL;
     }
     

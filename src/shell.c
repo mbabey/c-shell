@@ -44,6 +44,7 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
     state.stdout = out;
     state.stderr = err;
     
+    exit_status = EXIT_SUCCESS;
     run = 1;
     next_state = INIT_STATE;
     while (run)
