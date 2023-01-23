@@ -16,4 +16,16 @@
  */
 int builtin_cd(struct command *command, FILE *ostream);
 
+/**
+ * builtin_which
+ * <p>
+ * Print to the stream specified by ostream the location of a command that exists on the path.
+ * </p>
+ * @param command the command structure
+ * @param path the path on which to search
+ * @param ostream the stream on which to print the result
+ * @return 0 on success, -1 on failure
+ */
+int builtin_which(char *cmd, char **path, FILE *ostream);
+
 #endif //CSH_BUILTINS_H

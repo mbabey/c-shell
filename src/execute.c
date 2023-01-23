@@ -151,6 +151,10 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
     } else if (strcmp(command->command, "exit") == 0)
     {
         ret_val = DESTROY_STATE;
+    } else if (strcmp(command->command, "which") == 0 || strcmp(command->command, "where") == 0)
+    {
+        state->command->exit_code = builtin_which(0, path, state->stdout);
+        ret_val = (state->command->exit_code) ? ERROR : RESET_STATE;
     } else
     {
         fork_and_exec(supvis, state, command, path);
