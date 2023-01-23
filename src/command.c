@@ -270,6 +270,7 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite, FILE *ou
     if ((io_indicator == '>' && indicator_count > 2) || (io_indicator == '<' && indicator_count > 1))
     {
         fprintf(out, "csh: parse error in I/O redirection near \'%c\'\n", io_indicator);
+        errno = EINVAL;
         return 0;
     }
     
