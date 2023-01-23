@@ -51,13 +51,11 @@ int parse_commands(struct supervisor *supvis, void *arg);
 /**
  * execute_commands
  * <p>
- * Run the command (see execute).
- * If the command->command is "cd", run builtin_cd.
- * If the command->command is
+ * Run the commands.
  * </p>
  * @param supvis the supervisor object
  * @param arg the current struct state
- * @return EXECUTE_COMMANDS or ERROR
+ * @return RESET_STATE or DESTROY_STATE or ERROR
  */
 int execute_commands(struct supervisor *supvis, void *arg);
 
@@ -75,7 +73,7 @@ int reset_state(struct supervisor *supvis, void *arg);
 /**
  * handle_error
  * <p>
- * Print the err->message to stderr and reset the err (see dc_err_reset)
+ * Check state->fatal_error and return the next state depending on state->fatal_error.
  * </p>
  * @param arg the current struct state
  * @return RESET_STATE or DESTROY_STATE (if state->fatal_error)

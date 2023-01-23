@@ -26,17 +26,19 @@
 pid_t pid_global;
 
 /**
- * exec_command
+ * execute
  * <p>
- * Attempt to execute a command.
+ * Create a child process, exec the command with any redirection, and set the exit code.
+ * Return DESTROY_STATE if the command is "exit"; return RESET_STATE if the exit code is 0;
+ * return ERROR otherwise.
  * </p>
- * @param state the state object
- * @param command the command object; contains the command to execute
- * @param path the path upon which to search for the executable
- * @param cmd_len the length of the command field
- * @return 0 if process found and executed.
+ * @param supvis the supervisor object
+ * @param state the state struct
+ * @param command the command struct
+ * @param path the path
+ * @return DESTROY_STATE or RESET_STATE or ERROR
  */
-int exec_command(struct command *command, char *const *path, size_t cmd_len);
+int execute(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 /**
  * fork_and_exec
@@ -55,9 +57,10 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
  * <p>
  * Parse the path to find the executable and execute the executable.
  * </p>
+ * @param supvis the supervisor object
  * @param state the state object
  * @param command the command object
- * @param path the path upon which to find the object
+ * @param path the path upon which to find the command
  */
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
@@ -74,25 +77,46 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
 void setup_redirection(struct state *state, struct command *command, FILE **streams);
 
 /**
+ * exec_command
+ * <p>
+ * Attempt to execute a command.
+ * </p>
+ * @param state the state object
+ * @param command the command object; contains the command to execute
+ * @param path the path upon which to search for the executable
+ * @param cmd_len the length of the command field
+ * @return 0 if process found and executed, or -1 if an error occurs
+ */
+int exec_command(struct command *command, char *const *path, size_t cmd_len);
+
+/**
  * parent_wait
  * <p>
  * Wait for the child process to terminate. Store the return value in the state object.
  * </p>
- * @param supvis the supervisor object
  * @param state the state object
  * @param command the command object
- * @param pid the pid_global of the child process
  */
 void parent_wait(struct state *state, struct command *command);
 
 /**
  * kill_child_handler
  * <p>
- * Signal handler. Sends a kill signal to a the child process.
+ * Signal handler. Sends a kill signal to the child process.
  * </p>
- * @param signal
+ * @param signal dummy
  */
 void kill_child_handler(int signal);
+
+/**
+ * get_exit_code
+ * <p>
+ * Get an exit code for the child process based on the result of running execv.
+ * </p>
+ * @param err_code the errno
+ * @return the exit code
+ */
+int get_exit_code(int err_code);
 
 /**
  * print_err_message

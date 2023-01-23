@@ -57,26 +57,4 @@ void do_reset_command(struct supervisor *supvis, struct command *command);
  */
 void do_destroy_state(struct supervisor *supvis, struct state *state);
 
-/**
- * display_state
- * <p>
- * Display the state values to the parameter stream.
- * </p>
- * @param supvis the supervisor object
- * @param state the state to display
- * @param stream the stream on which to display the state
- */
-void display_state(struct supervisor *supvis, const struct state *state, FILE *stream);
-
-/**
- * state_to_string
- * <p>
- * Display the state value as a string.
- * </p>
- * @param supvis the supervisor object
- * @param state the state to display
- * @return the state as a string
- */
-char *state_to_string(struct supervisor *supvis, const struct state *state);
-
 #endif //CSHELL_TESTS_UTIL_H

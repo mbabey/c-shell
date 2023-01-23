@@ -2,6 +2,8 @@
 #include "../include/shell.h"
 #include "../include/shell_impl.h"
 
+#include <string.h>
+
 /**
  * run_shell
  * <p>
@@ -35,6 +37,8 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
     int          next_state;
     int          exit_status;
     int          run;
+    
+    memset(&state, 0, sizeof(struct state));
     
     state.stdin  = in;
     state.stdout = out;

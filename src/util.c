@@ -105,20 +105,8 @@ char *get_prompt(struct supervisor *supvis);
  */
 void free_string_array(struct supervisor *supvis, char **array);
 
-/**
- * bool_to_string
- * <p>
- * Convert a boolean to a string, either "true" or "false".
- * </p>
- * @param boolean the boolean to convert
- * @return the boolean as a string
- */
-inline const char *bool_to_string(bool boolean);
-
 struct state *do_init_state(struct supervisor *supvis, struct state *state)
 {
-    memset(state, 0, sizeof(struct state));
-    
     if (state)
     {
         state->max_line_length = sysconf(_SC_ARG_MAX);
@@ -285,18 +273,13 @@ char *get_prompt(struct supervisor *supvis)
 
 void do_reset_state(struct supervisor *supvis, struct state *state)
 {
-    if (state->current_line)
-    {
-        supvis->mm->mm_free(supvis->mm, state->current_line);
-        state->current_line        = NULL;
-        state->current_line_length = 0;
-    }
-    if (state->command)
-    {
-        do_reset_command(supvis, state->command);
-        supvis->mm->mm_free(supvis->mm, state->command);
-        state->command = NULL;
-    }
+    
+    supvis->mm->mm_free(supvis->mm, state->current_line);
+    state->current_line        = NULL;
+    state->current_line_length = 0;
+    do_reset_command(supvis, state->command);
+    supvis->mm->mm_free(supvis->mm, state->command);
+    state->command     = NULL;
     state->fatal_error = false;
     
     dc_error_reset(supvis->err);
@@ -338,6 +321,11 @@ void do_destroy_state(struct supervisor *supvis, struct state *state)
         state->stderr = NULL;
     }
     
+    if (state->command_regex)
+    {
+        regfree(state->command_regex);
+        state->command_regex = NULL;
+    }
     if (state->in_redirect_regex)
     {
         regfree(state->in_redirect_regex);
@@ -387,44 +375,4 @@ void free_string_array(struct supervisor *supvis, char **array)
     }
     
     supvis->mm->mm_free(supvis->mm, head_ptr);
-}
-
-void display_state(struct supervisor *supvis, const struct state *state, FILE *stream)
-{
-    char *state_str;
-    
-    state_str = state_to_string(supvis, state);
-    fprintf(stream, "%s", state_str);
-    free(state_str);
-}
-
-char *state_to_string(struct supervisor *supvis, const struct state *state)
-{
-    size_t len;
-    char   *line;
-    
-    /* Get the length of the line to print. */
-    len = (state->current_line == NULL) ? strlen("Current line: NULL\n") : strlen("Current line: \n");
-    len += (state->fatal_error) ? strlen("Fatal error: true\n") : strlen("Fatal error: false\n");
-    
-    line = dc_malloc(supvis->env, supvis->err, len + state->current_line_length + 1);
-    
-    /* Print the line. */
-    if (state->current_line == NULL)
-    {
-        sprintf(line, "Current line: NULL\n"
-                      "Fatal error: %s\n", bool_to_string(state->fatal_error));
-    } else
-    {
-        sprintf(line, "Current line: %s\n"
-                      "Fatal error: %s\n", state->current_line, bool_to_string(state->fatal_error));
-    }
-    
-    return line;
-}
-
-const char *bool_to_string(bool boolean)
-{
-    const char *str = (boolean) ? "true" : "false";
-    return str;
 }

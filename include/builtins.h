@@ -8,12 +8,11 @@
  * builtin_cd
  * <p>
  * Change the working directory. ~ and no arguments are converted into
- * the user's home directory. command->exit_code is set to 0 on success,
- * or err->errno_code on failure.
+ * the user's home directory.
  * </p>
- * @param supvis the supervisor object
  * @param command the command structure
  * @param ostream the steam onto which errors shall be printed
+ * @return 0 on success, -1 on failure
  */
 int builtin_cd(struct command *command, FILE *ostream);
 

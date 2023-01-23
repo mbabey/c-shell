@@ -8,6 +8,7 @@
  * Print an error message based on the value of errno passed to this function.
  * </p>
  * @param err_code the errno passed
+ * @param arg the argument to chdir in builtin_cd
  * @param ostream the stream on which to print the message
  */
 void cd_error_message(int err_code, const char *arg, FILE *ostream);

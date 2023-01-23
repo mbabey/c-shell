@@ -7,30 +7,38 @@
 /**
  * get_regex_substring
  * <p>
- * Get the filename for the IO file and whether the file should be overwritten.
+ * Get a substring based on a regex. In the case of an IO redirection, is_io should be set to true.
+ * Overwrite points to a boolean that declares whether an IO redirection should be an overwrite or
+ * an append.
  * </p>
  * @param supvis the supervisor object
  * @param regex the regex to compare against the line
  * @param line the line
  * @param overwrite whether to overwrite the contents of the file
- * @return the name of the IO file
+ * @return the substring, or NULL on failure
  */
 char *
 get_regex_substring(struct supervisor *supvis, struct state *state, regex_t *regex, const char *line, bool *overwrite,
                     bool is_io);
 
 /**
- * get_command_name
+ * get_substring
  * <p>
- * Get the command name and its arguments as a substring from the line.
+ * Get a substring from the line. If is_io, parse as a filename; otherwise,
+ * parse as a command.
  * </p>
  * @param supvis the supervisor object
+ * @param substring the substring to be allocated
  * @param line the line to parse
- * @param st_substr the start of the command substring
- * @param en_substr the end of the command substring
- * @return the command substring
+ * @param st_substr the start of the substring
+ * @param en_substr the end of the substring
+ * @param overwrite whether, if is_io, to overwrite the contents of a file.
+ * @param is_io whether to parse as io
+ * @param out the stream on which to print error messages
+ * @return the allocated substring, or NULL if the command is invalid.
  */
-char *get_command_name(struct supervisor *supvis, const char *line, size_t st_substr, size_t en_substr);
+char *get_substring(struct supervisor *supvis, char *substring, const char *line, size_t st_substr, size_t en_substr,
+                    bool is_io, bool **overwrite, FILE *out);
 
 /**
  * check_io_valid
@@ -42,6 +50,7 @@ char *get_command_name(struct supervisor *supvis, const char *line, size_t st_su
  * @param line the line from which to read
  * @param rm_so the index at which to begin parsing the io command
  * @param overwrite whether the io command is an overwrite command
+ * @param out the stream on which to print error messages
  * @return the index of the character immediately following the last '<' or '>', or 0 on a failure.
  */
 size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite, FILE *out);
@@ -56,8 +65,8 @@ size_t check_io_valid(const char *line, size_t rm_so, bool **overwrite, FILE *ou
  * </p>
  * @param supvis the supervisor object
  * @param line the line to parse
- * @param st_substr the start pointer
- * @return the substring containing the filename
+ * @param st_substr the start of the substring
+ * @return the substring containing the filename, or NULL on failure
  */
 char *get_filename(struct supervisor *supvis, const char *line, size_t st_substr, FILE *out);
 
@@ -83,9 +92,22 @@ char *substr(char *dest, const char *src, size_t st, size_t en);
  * </p>
  * @param supvis the supervisor
  * @param filename the filename to expand
- * @return the expanded filename
+ * @return the expanded filename, or NULL on failure
  */
 char *expand_filename(struct supervisor *supvis, char *filename, FILE *out);
+
+/**
+ * get_command_name
+ * <p>
+ * Get the command name and its arguments as a substring from the line.
+ * </p>
+ * @param supvis the supervisor object
+ * @param line the line to parse
+ * @param st_substr the start of the command substring
+ * @param en_substr the end of the command substring
+ * @return the command substring, or NULL on failure
+ */
+char *get_command_name(struct supervisor *supvis, const char *line, size_t st_substr, size_t en_substr);
 
 /**
  * expand_cmds
@@ -93,41 +115,26 @@ char *expand_filename(struct supervisor *supvis, char *filename, FILE *out);
  * Expand all cmds from their condensed forms. If a parse error occurs, print a message to out
  * and set errno to EINVAL.
  * </p>
+ * @param supvis the supervisor object
  * @param line the cmds to expand
+ * @param argc a pointer to variable holding the number of arguments in the command
+ * @param out the stream on which to print errors
+ * @return the list of expanded commands, or NULL if an error occurs
  */
 char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FILE *out);
 
 /**
  * save_wordv_to_argv
  * <p>
- * Duplicate expanded path names from a wordexp_t into a char * array for use
- * elsewhere.
+ * Duplicate expanded arguments from a wordexp_t into a char * array.
  * </p>
  * @param supvis the supervisor object
- * @param argv the list into which expanded path names shall be saved
- * @param exp_cmd_index the current number of saved expanded path names
- * @param wordv the wordexp_t temporarily storing expanded path names
- * @return the updated list of expanded path names
+ * @param argv the list into which expanded arguments shall be saved
+ * @param exp_cmd_index the number of arguments to save
+ * @param wordv the wordexp_t temporarily storing expanded arguments
+ * @return the list of expanded arguments
  */
 char **save_wordv_to_argv(struct supervisor *supvis, char **wordv, char **argv, size_t argc);
-
-/**
- * get_substring
- * <p>
- * Get a substring from the line. If is_io, parse as an filename; otherwise,
- * parse as a command.
- * </p>
- * @param supvis the supervisor object
- * @param substring the substring to be allocated
- * @param line the line to parse
- * @param st_substr the start of the substring
- * @param en_substr the end of the substring
- * @param overwrite whether, if is_io, to overwrite the contents of a file.
- * @param is_io whether to parse as io
- * @return the allocated substring, or NULL if the command is invalid.
- */
-char *get_substring(struct supervisor *supvis, char *substring, const char *line, size_t st_substr, size_t en_substr,
-                    bool **overwrite, bool is_io, FILE *out);
 
 void do_separate_commands(struct supervisor *supvis, struct state *state)
 {
@@ -188,8 +195,8 @@ get_regex_substring(struct supervisor *supvis, struct state *state, regex_t *reg
         case 0: // success
         {
             substring = get_substring(supvis, substring, line,
-                                      regmatch[1].rm_so, regmatch[1].rm_eo,
-                                      &overwrite, is_io, state->stdout);
+                                      regmatch[1].rm_so, regmatch[1].rm_eo, is_io,
+                                      &overwrite, state->stdout);
             break;
         }
         case REG_NOMATCH: // No match
@@ -207,9 +214,8 @@ get_regex_substring(struct supervisor *supvis, struct state *state, regex_t *reg
     return substring;
 }
 
-char *get_substring(struct supervisor *supvis, char *substring, const char *line,
-                    size_t st_substr, size_t en_substr,
-                    bool **overwrite, bool is_io, FILE *out)
+char *get_substring(struct supervisor *supvis, char *substring, const char *line, size_t st_substr, size_t en_substr,
+                    bool is_io, bool **overwrite, FILE *out)
 {
     if (is_io)
     {
@@ -222,28 +228,6 @@ char *get_substring(struct supervisor *supvis, char *substring, const char *line
     } else
     {
         substring = get_command_name(supvis, line, st_substr, en_substr);
-    }
-    
-    return substring;
-}
-
-char *get_command_name(struct supervisor *supvis, const char *line, size_t st_substr, size_t en_substr)
-{
-    char   *substring;
-    size_t len;
-    
-    if (*(line + en_substr - 1) == '2') // If an error io redirect, the regex will not capture the 2.
-    {
-        --en_substr;
-    }
-    
-    len = en_substr - st_substr + 1;
-    
-    substring = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
-    
-    if (substring)
-    {
-        substring = substr(substring, line, st_substr, en_substr);
     }
     
     return substring;
@@ -353,6 +337,28 @@ char *expand_filename(struct supervisor *supvis, char *filename, FILE *out)
     wordfree(&we);
     
     return filename;
+}
+
+char *get_command_name(struct supervisor *supvis, const char *line, size_t st_substr, size_t en_substr)
+{
+    char   *substring;
+    size_t len;
+    
+    if (*(line + en_substr - 1) == '2') // If an error io redirect, the regex will not capture the 2.
+    {
+        --en_substr;
+    }
+    
+    len = en_substr - st_substr + 1;
+    
+    substring = (char *) mm_malloc(len, supvis->mm, __FILE__, __func__, __LINE__);
+    
+    if (substring)
+    {
+        substring = substr(substring, line, st_substr, en_substr);
+    }
+    
+    return substring;
 }
 
 char **expand_cmds(struct supervisor *supvis, const char *line, size_t *argc, FILE *out)
