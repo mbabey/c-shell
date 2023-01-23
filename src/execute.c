@@ -141,11 +141,17 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
     }
 }
 
+void setup_redirection(struct state *state, struct command *command, FILE **streams);
+
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
     size_t cmd_len;
     int    status;
     int    exit_code;
+    FILE   *streams[3];
+    
+    memset(streams, 0, sizeof(streams));
+    setup_redirection(state, command, streams);
     
     cmd_len = strlen(command->command);
     
@@ -158,10 +164,40 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     exit_code = get_exit_code(errno);
     print_err_message(exit_code, state->command->command, state->stdout);
     
+    for (size_t i = 0; i < sizeof(streams); ++i)
+    {
+        fclose(*(streams + i));
+    }
     supvis->mm->mm_free_all(supvis->mm);
     free(supvis);
     
     exit(exit_code);
+}
+
+void setup_redirection(struct state *state, struct command *command, FILE **streams)
+{
+    if (command->stdin_file)
+    {
+        *streams = freopen(command->stdin_file, "r", state->stdin);
+    }
+    
+    if (command->stdout_file)
+    {
+        const char *mode;
+        
+        mode = (command->stdout_overwrite) ? "w" : "a";
+        
+        *(streams + 1) = freopen(command->stdout_file, mode, state->stdout);
+    }
+    
+    if (command->stderr_file)
+    {
+        const char *mode;
+        
+        mode = (command->stderr_overwrite) ? "w" : "a";
+    
+        *(streams + 2) = freopen(command->stderr_file, mode, state->stderr);
+    }
 }
 
 int exec_command(struct command *command, char *const *path, size_t cmd_len)
@@ -204,10 +240,12 @@ void parent_wait(struct state *state, struct command *command)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+
 void kill_child_handler(int signal)
 {
     kill(pid_global, SIGKILL);
 }
+
 #pragma GCC diagnostic pop
 
 int do_handle_error(struct state *state)
