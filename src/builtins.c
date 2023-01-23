@@ -63,7 +63,7 @@ int builtin_cd(struct command *command, FILE *ostream)
 
 void cd_error_message(int err_code, const char *arg, FILE *ostream)
 {
-    switch(err_code)
+    switch (err_code)
     {
         case ENOENT:
         {
@@ -121,10 +121,9 @@ int builtin_which(char *cmd, char **path, FILE *ostream)
         return -1;
     }
     
-    int status;
+    int    status;
     size_t cmd_len;
-    char *location;
-    
+    char   *location;
     
     cmd_len = strlen(cmd);
     
