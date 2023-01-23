@@ -62,6 +62,18 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path);
 
 /**
+ * setup_redirection
+ * <p>
+ * If redirection filenames are present, open the files; redirect the state's stdin, stdout, and stderr
+ * to the files respectively.
+ * </p>
+ * @param state the state object
+ * @param command the command object
+ * @param streams an array holding the newly opened files
+ */
+void setup_redirection(struct state *state, struct command *command, FILE **streams);
+
+/**
  * parent_wait
  * <p>
  * Wait for the child process to terminate. Store the return value in the state object.
@@ -140,8 +152,6 @@ void fork_and_exec(struct supervisor *supvis, struct state *state, struct comman
         parent_wait(state, command);
     }
 }
-
-void setup_redirection(struct state *state, struct command *command, FILE **streams);
 
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {

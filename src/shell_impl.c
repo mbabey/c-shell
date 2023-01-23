@@ -11,7 +11,7 @@ int init_state(struct supervisor *supvis, void *arg)
     
     do_init_state(supvis, arg);
     
-    ret_val = (errno) ? READ_COMMANDS : ERROR;
+    ret_val = (errno) ? ERROR : READ_COMMANDS;
     
     return ret_val;
 }

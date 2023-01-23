@@ -6,12 +6,23 @@
 /**
  * display_prompt
  * <p>
- * Display the current working directory and the state->prompt on the state->stdout
+ * Display the current working directory and the state->prompt on the state->stdout.
  * </p>
  * @param supvis the supervisor object
  * @param state the state object
  */
 void display_prompt(struct supervisor *supvis, struct state *state);
+
+/**
+ * read_command_line
+ * <p>
+ * Read the command line from the user.
+ * </p>
+ * @param istream the stream from which to read (eg. stdin)
+ * @param line_size the maximum number of characters to read
+ * @return the command line that the user entered, or NULL on failure
+ */
+char *read_command_line(FILE *istream, size_t *line_size);
 
 size_t do_read_commands(struct supervisor *supvis, struct state *state)
 {
@@ -19,7 +30,7 @@ size_t do_read_commands(struct supervisor *supvis, struct state *state)
     
     state->current_line_length = state->max_line_length;
     
-    state->current_line = read_command_line(supvis, state->stdin, &state->current_line_length);
+    state->current_line = read_command_line(state->stdin, &state->current_line_length);
     
     if (!state->current_line)
     {
@@ -41,7 +52,7 @@ void display_prompt(struct supervisor *supvis, struct state *state)
     fprintf(state->stdout, "[%s] %s", cwd, state->prompt);
 }
 
-char *read_command_line(struct supervisor *supvis, FILE *istream, size_t *line_size)
+char *read_command_line(FILE *istream, size_t *line_size)
 {
     char    *line;
     size_t  len;
@@ -53,7 +64,6 @@ char *read_command_line(struct supervisor *supvis, FILE *istream, size_t *line_s
     result_len = getline(&line, &len, istream);
     if (result_len == -1)
     {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         return NULL;
     }
     

@@ -6,17 +6,8 @@
 /**
  * init_state
  * <p>
- * Set up the initial state.
+ * Initialize the state with its default values.
  * </p>
- *
- * <ul>
- * <li>in_redirect_regex: "[&#x2216;t&#x2216;f&#x2216;v]<.*"</li>
- * <li>out_redirect_regex: "[&#x2216;t&#x2216;f&#x2216;v][1^2]?>[>]?.*"</li>
- * <li>err_redirect_regex: "[&#x2216;t&#x2216;f&#x2216;v]2>[>].*"</li>
- * <li>path: the PATH env var separated into directories</li>
- * <li>prompt: the PS1 env var if set, otherwise "$"</li>
- * <li>max_line_length: the value of _SC_ARG_MAX (see sysconfig)</li>
- * </ul>
  * @param supvis the supervisor object
  * @param arg the current struct state
  * @return READ_COMMANDS or ERROR
@@ -38,7 +29,7 @@ int read_commands(struct supervisor *supvis, void *arg);
 /**
  * separate_commands
  * <p>
- * Separate the commands. Sets state->command fields based on the
+ * Separate the commands.
  * </p>
  * @param supvis the supervisor object
  * @param arg the current struct state

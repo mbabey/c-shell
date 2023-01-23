@@ -7,43 +7,19 @@
 #include <stdio.h>
 
 /**
- * get_prompt
- * <p>
- * Get the prompt to use.
- * </p>
- * @param supvis the supervisor object
- * @return the value of the PS1 env var or "$ " if PS1 not set
- */
-char *get_prompt(struct supervisor *supvis);
-
-/**
- * get_path
- * <p>
- * Get the PATH environment variable.
- * </p>
- * @param supvis the supervisor object
- * @return the PATH env var
- */
-char *get_path(struct supervisor *supvis);
-
-/**
- * parse_path
- * <p>
- * Separate a path, such as the PATH env var, into separate directories.
- * Directories are separated with a ':' character. Any paths with '~'
- * are converted to the user's home directory.
- * </p>
- * @param supvis the supervisor object
- * @param path_str the path var
- * @return the directories that make up the path
- */
-char **parse_path(struct supervisor *supvis, const char *path_str);
-
-/**
  * do_init_state
  * <p>
- * Initialize the state with its default values.
+ * Set up the initial state.
  * </p>
+ *
+ * <ul>
+ * <li>in_redirect_regex: "[&#x2216;t&#x2216;f&#x2216;v]<.*"</li>
+ * <li>out_redirect_regex: "[&#x2216;t&#x2216;f&#x2216;v][1^2]?>[>]?.*"</li>
+ * <li>err_redirect_regex: "[&#x2216;t&#x2216;f&#x2216;v]2>[>].*"</li>
+ * <li>path: the PATH env var separated into directories</li>
+ * <li>prompt: the PS1 env var if set, otherwise "$"</li>
+ * <li>max_line_length: the value of _SC_ARG_MAX (see sysconfig)</li>
+ * </ul>
  * @param supvis the supervisor object
  * @param state the state to initialize
  * @return the initialized state, or NULL if an error occurs.
@@ -102,16 +78,5 @@ void display_state(struct supervisor *supvis, const struct state *state, FILE *s
  * @return the state as a string
  */
 char *state_to_string(struct supervisor *supvis, const struct state *state);
-
-/**
- * count_char_in_string
- * <p>
- * Count the number of occurrences of a character in a string.
- * </p>
- * @param c the char of which to find occurrences
- * @param str the string in which to find occurrences
- * @return the number of occurrences of c in str
- */
-size_t count_char_in_string(char c, char *str);
 
 #endif //CSHELL_TESTS_UTIL_H

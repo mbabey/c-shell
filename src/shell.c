@@ -5,7 +5,7 @@
 /**
  * run_shell
  * <p>
- * Run the shell FSM.
+ * Run the shell.
  * </p>
  * @param supvis the supervisor object
  * @param in the input stream
@@ -91,7 +91,6 @@ int run_shell(struct supervisor *supvis, FILE *in, FILE *out, FILE *err)
             default:
             {
                 run = 0; // Should never get here.
-                break;
             }
         }
     }

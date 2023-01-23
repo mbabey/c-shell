@@ -17,7 +17,7 @@
 /**
  * set_regex
  * <p>
- * Set a regex_t to a pattern. If an error occurs, print an error message and return -1.
+ * Set a regex_t to a pattern.
  * </p>
  * @param supvis the supervisor object
  * @param regex the regex_t to set
@@ -50,6 +50,30 @@ int set_state_regex(struct supervisor *supvis, struct state *state);
 int set_state_path(struct supervisor *supvis, struct state *state);
 
 /**
+ * parse_path
+ * <p>
+ * Separate a path, such as the PATH env var, into separate directories.
+ * Directories are separated with a ':' character. Any paths with '~'
+ * are converted to the user's home directory.
+ * </p>
+ * @param supvis the supervisor object
+ * @param path_str the path environment variable
+ * @return the directories that make up the path
+ */
+char **parse_path(struct supervisor *supvis, const char *path_str);
+
+/**
+ * count_char_in_string
+ * <p>
+ * Count the number of occurrences of a character in a string.
+ * </p>
+ * @param c the char of which to find occurrences
+ * @param str the string in which to find occurrences
+ * @return the number of occurrences of c in str
+ */
+size_t count_char_in_string(char c, char *str);
+
+/**
  * tokenize_path
  * <p>
  * Given a path, separate it into individual directory paths based on the ':' character.
@@ -57,10 +81,20 @@ int set_state_path(struct supervisor *supvis, struct state *state);
  * </p>
  * @param supvis the supervisor object
  * @param path_str_dup the path string
- * @param num_paths the number of paths
- * @return the list of tokenized paths, or NULL if an error occurs
+ * @param num_paths the number of directories on the path
+ * @return the list of directories on the path, or NULL if an error occurs
  */
 char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_paths);
+
+/**
+ * get_prompt
+ * <p>
+ * Get the prompt to use.
+ * </p>
+ * @param supvis the supervisor object
+ * @return the value of the PS1 env var or "$ " if PS1 not set
+ */
+char *get_prompt(struct supervisor *supvis);
 
 /**
  * free_string_array
@@ -87,10 +121,6 @@ struct state *do_init_state(struct supervisor *supvis, struct state *state)
     
     if (state)
     {
-        state->stdin  = stdin;
-        state->stdout = stdout;
-        state->stderr = stderr;
-        
         state->max_line_length = sysconf(_SC_ARG_MAX);
         
         if (set_state_regex(supvis, state) == -1)
@@ -157,10 +187,6 @@ int set_regex(struct supervisor *supvis, regex_t **regex, const char *pattern, i
     *regex = (regex_t *) mm_malloc(sizeof(regex_t), supvis->mm, __FILE__, __func__, __LINE__);
     
     status = regcomp(*regex, pattern, flags);
-    if (status != 0)
-    {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
-    }
     
     return status;
 }
@@ -169,7 +195,7 @@ int set_state_path(struct supervisor *supvis, struct state *state)
 {
     char *path;
     
-    path = get_path(supvis);
+    path = dc_getenv(supvis->env, "PATH");
     if (!path)
     {
         return -1;
@@ -182,33 +208,6 @@ int set_state_path(struct supervisor *supvis, struct state *state)
     }
     
     return 0;
-}
-
-char *get_prompt(struct supervisor *supvis)
-{
-    char *prompt;
-    
-    prompt = dc_getenv(supvis->env, "PS1");
-    if (!prompt)
-    {
-        dc_setenv(supvis->env, supvis->err, "PS1", "$ ", true);
-        prompt = dc_getenv(supvis->env, "PS1");
-    }
-    
-    return prompt;
-}
-
-char *get_path(struct supervisor *supvis)
-{
-    char *path;
-    
-    path = dc_getenv(supvis->env, "PATH");
-    if (!path)
-    {
-        DC_ERROR_RAISE_ERRNO(supvis->err, ENODATA);
-    }
-    
-    return path;
 }
 
 char **parse_path(struct supervisor *supvis, const char *path_str)
@@ -234,9 +233,8 @@ char **tokenize_path(struct supervisor *supvis, char *path_str_dup, size_t num_p
     paths = mm_malloc((num_paths + 1) * sizeof(char *), supvis->mm,
                       __FILE__, __func__, __LINE__); // mem alloc here
     
-    if (errno)
+    if (!paths)
     {
-        DC_ERROR_RAISE_ERRNO(supvis->err, errno);
         return NULL;
     }
     
@@ -269,6 +267,20 @@ size_t count_char_in_string(char c, char *str)
         }
     }
     return occurrences;
+}
+
+char *get_prompt(struct supervisor *supvis)
+{
+    char *prompt;
+    
+    prompt = dc_getenv(supvis->env, "PS1");
+    if (!prompt)
+    {
+        dc_setenv(supvis->env, supvis->err, "PS1", "$ ", true);
+        prompt = dc_getenv(supvis->env, "PS1");
+    }
+    
+    return prompt;
 }
 
 void do_reset_state(struct supervisor *supvis, struct state *state)
