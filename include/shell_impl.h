@@ -31,7 +31,7 @@ int init_state(struct supervisor *supvis, void *arg);
  * </p>
  * @param supvis the supervisor object
  * @param arg the current struct state
- * @return SEPARATE_COMMANDS or ERROR
+ * @return RESET_STATE or SEPARATE_COMMANDS or ERROR
  */
 int read_commands(struct supervisor *supvis, void *arg);
 

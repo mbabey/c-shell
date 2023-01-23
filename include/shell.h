@@ -19,10 +19,9 @@ enum State
     SEPARATE_COMMANDS,              // separate commands    4
     PARSE_COMMANDS,                 // parse commands       5
     EXECUTE_COMMANDS,               // execute commands     6
-    EXIT,                           // exit the shell       7
-    RESET_STATE,                    // reset the state      8
-    ERROR,                          // handle errors        9
-    DESTROY_STATE                   // destroy the state    10
+    RESET_STATE,                    // reset the state      7
+    ERROR,                          // handle errors        8
+    DESTROY_STATE                   // destroy the state    9
 };
 
 /**
