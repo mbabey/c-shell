@@ -32,6 +32,6 @@ struct supervisor *init_supervisor(void)
 
 void destroy_supervisor(struct supervisor *supervisor)
 {
-    supervisor->mm->mm_free_all(supervisor->mm);
+    free_mem_manager(supervisor->mm);
     free(supervisor);
 }
