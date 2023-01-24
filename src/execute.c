@@ -166,22 +166,20 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
 
 void fork_and_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
-//    pid_global = fork();
-//
-//    if (pid_global < 0)
-//    {
-//        (void) fprintf(state->stderr, "csh: fatal error: could not fork process\n");
-//        state->fatal_error = true;
-//        command->exit_code = EXIT_FAILURE;
-//    } else if (pid_global == 0)
-//    {
-//        child_parse_path_exec(supvis, state, command, path);
-//    } else
-//    {
-//        parent_wait(state, command);
-//    }
-    
-    child_parse_path_exec(supvis, state, command, path);
+    pid_global = fork();
+
+    if (pid_global < 0)
+    {
+        (void) fprintf(state->stderr, "csh: fatal error: could not fork process\n");
+        state->fatal_error = true;
+        command->exit_code = EXIT_FAILURE;
+    } else if (pid_global == 0)
+    {
+        child_parse_path_exec(supvis, state, command, path);
+    } else
+    {
+        parent_wait(state, command);
+    }
 }
 
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
