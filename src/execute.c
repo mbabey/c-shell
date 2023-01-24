@@ -166,20 +166,22 @@ int execute(struct supervisor *supvis, struct state *state, struct command *comm
 
 void fork_and_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
 {
-    pid_global = fork();
+//    pid_global = fork();
+//
+//    if (pid_global < 0)
+//    {
+//        (void) fprintf(state->stderr, "csh: fatal error: could not fork process\n");
+//        state->fatal_error = true;
+//        command->exit_code = EXIT_FAILURE;
+//    } else if (pid_global == 0)
+//    {
+//        child_parse_path_exec(supvis, state, command, path);
+//    } else
+//    {
+//        parent_wait(state, command);
+//    }
     
-    if (pid_global < 0)
-    {
-        (void) fprintf(state->stderr, "csh: fatal error: could not fork process\n");
-        state->fatal_error = true;
-        command->exit_code = EXIT_FAILURE;
-    } else if (pid_global == 0)
-    {
-        child_parse_path_exec(supvis, state, command, path);
-    } else
-    {
-        parent_wait(state, command);
-    }
+    child_parse_path_exec(supvis, state, command, path);
 }
 
 void child_parse_path_exec(struct supervisor *supvis, struct state *state, struct command *command, char **path)
@@ -204,9 +206,12 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     exit_code = get_exit_code(errno);
     print_err_message(exit_code, state->command->command, state->stdout);
     
-    for (size_t i = 0; i < sizeof(streams); ++i)
+    for (size_t i = 0; i < (sizeof(streams) / sizeof(*streams)); ++i)
     {
-        (void) fclose(*(streams + i));
+        if (*(streams + i))
+        {
+            (void) fclose(*(streams + i));
+        }
     }
     supvis->mm->mm_free_all(supvis->mm);
     free(supvis);
