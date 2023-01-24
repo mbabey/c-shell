@@ -206,7 +206,7 @@ void child_parse_path_exec(struct supervisor *supvis, struct state *state, struc
     exit_code = get_exit_code(errno);
     print_err_message(exit_code, state->command->command, state->stdout);
     
-    for (size_t i = 0; i < (sizeof(streams) / sizeof(*streams)); ++i)
+    for (size_t i = 0; i < (sizeof(streams) / sizeof(*streams)); ++i) // NOLINT(bugprone-sizeof-expression): I know what I am doing
     {
         if (*(streams + i))
         {
